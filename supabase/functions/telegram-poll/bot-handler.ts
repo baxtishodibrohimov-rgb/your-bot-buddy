@@ -674,6 +674,11 @@ export async function handleUpdate(
   if (hasMedia) {
     const admin = await isAdmin(supabase, patient.telegram_id);
     if (admin) {
+      // Rezidentura bo'limiga media yuklash
+      if (patient.state === 'admin:res:addmed') {
+        const handled = await handleAdminResidentMediaUpload(supabase, patient, admin, chatId, msg, lovableKey, telegramKey);
+        if (handled) return;
+      }
       // Agar broadcast oqimida media kutilmoqda bo'lsa — to'g'ridan-to'g'ri broadcastga qo'shamiz
       if (patient.state === 'admin:bc:media') {
         const saved = await saveAdminMedia(supabase, admin, msg);
