@@ -684,17 +684,8 @@ export async function handleUpdate(
   if (text === '/start') {
     await setState(supabase, patient.id, null, null);
 
-    // Agar foydalanuvchi koordinator (staff.position='koordinator') bo'lsa
-    // — avtomatik xodim portaliga kiradi (qo'shimcha tugmalar bilan)
-    {
-      const { isCoordinator } = await import('./coordinator-handler.ts');
-      const coord = await isCoordinator(supabase, patient.telegram_id);
-      if (coord) {
-        const { handleStaffCommand } = await import('./staff-handler.ts');
-        await handleStaffCommand(supabase, patient, chatId, lovableKey, telegramKey);
-        return;
-      }
-    }
+    // Koordinator ham boshqa bemorlar kabi — bemor menyusini ko'radi.
+    // Xodim/koordinator portaliga faqat /staff orqali kiradi.
 
     // Til tanlanmaganmi tekshirish — yangi yoki avvalgisi
     if (!patient.state && (patient.language === 'uz' || patient.language === 'ru')) {
