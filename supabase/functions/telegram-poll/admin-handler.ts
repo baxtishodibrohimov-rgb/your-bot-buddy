@@ -540,6 +540,11 @@ async function handleServiceStep(
     };
     await supabase.from('services').insert(payload);
     await setState(supabase, patient.id, 'admin:menu', null);
+    await sendMessage(chatId, t.adminSaved[lang], {}, lovableKey, telegramKey);
+    await listServices(supabase, patient, chatId, lovableKey, telegramKey);
+  }
+}
+
 // ============= XODIMLAR =============
 // (Eski doctor logikasi olib tashlandi — endi staff-handler.ts ishlatiladi)
 
