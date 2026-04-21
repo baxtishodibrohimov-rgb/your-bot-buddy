@@ -395,6 +395,15 @@ export async function showChecklistForStaff(
   const status = new Map<string, boolean>();
   for (const c of completions ?? []) status.set(c.item_id, c.is_done);
 
+  // Bugungi tekshiruv holati
+  const { data: review } = await supabase
+    .from('checklist_reviews')
+    .select('status')
+    .eq('staff_id', staff.id)
+    .eq('checklist_id', checklistId)
+    .eq('review_date', date)
+    .maybeSingle();
+
   const badge = cl.is_daily_required ? '⭐' : '📌';
   let text = `${badge} <b>${escapeHtml(cl.title)}</b>\n<i>${todayDateLabel(lang)}</i>\n\n`;
   let doneCount = 0;
@@ -406,15 +415,22 @@ export async function showChecklistForStaff(
   });
   text += `\n<b>${t.chkProgress[lang]}:</b> ${doneCount}/${items.length}`;
 
+  // Tekshiruv badge
+  if (review?.status === 'pending') text += t.chkSentForReviewBadge[lang];
+  else if (review?.status === 'approved') text += t.chkApprovedBadge[lang];
+  else if (review?.status === 'rejected') text += t.chkRejectedBadge[lang];
+
   const buttons: InlineKeyboard = [];
-  for (const it of items as ChecklistItem[]) {
-    const s = status.get(it.id);
-    const label = it.text.length > 28 ? it.text.slice(0, 28) + '…' : it.text;
-    // callback_data 64 byte limit — faqat itemId va 0/1 saqlaymiz
-    buttons.push([
-      { text: `${s === true ? '✅' : '☑️'} ${label}`, callback_data: `cm:${it.id}:1` },
-      { text: `${s === false ? '❌' : '✖️'}`, callback_data: `cm:${it.id}:0` },
-    ]);
+  // Approved bo'lsa — tugmalarni ko'rsatmaymiz (kun yopilgan)
+  if (review?.status !== 'approved') {
+    for (const it of items as ChecklistItem[]) {
+      const s = status.get(it.id);
+      const label = it.text.length > 28 ? it.text.slice(0, 28) + '…' : it.text;
+      buttons.push([
+        { text: `${s === true ? '✅' : '☑️'} ${label}`, callback_data: `cm:${it.id}:1` },
+        { text: `${s === false ? '❌' : '✖️'}`, callback_data: `cm:${it.id}:0` },
+      ]);
+    }
   }
   buttons.push([{ text: t.chkRefreshBtn[lang], callback_data: `chk:open:${checklistId}` }]);
   buttons.push([{ text: t.chkBackToList[lang], callback_data: 'chk:list' }]);
