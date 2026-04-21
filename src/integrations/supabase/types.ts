@@ -375,6 +375,219 @@ export type Database = {
           },
         ]
       }
+      lab_appliance_types: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      lab_doctors: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          is_active: boolean
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      lab_order_media: {
+        Row: {
+          caption_override: string | null
+          created_at: string
+          id: string
+          kind: string
+          media_id: string
+          order_id: string
+          sort_order: number
+        }
+        Insert: {
+          caption_override?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          media_id: string
+          order_id: string
+          sort_order?: number
+        }
+        Update: {
+          caption_override?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          media_id?: string
+          order_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_order_media_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "media_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_order_media_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "lab_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_orders: {
+        Row: {
+          accepted_at: string | null
+          accepted_by_lab_worker_id: string | null
+          appliance_name: string
+          appliance_type_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by_coord_staff_id: string | null
+          created_by_telegram_id: number
+          doctor_id: string | null
+          doctor_name: string
+          id: string
+          notes: string | null
+          patient_full_name: string
+          ready_due_date: string | null
+          reject_reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by_lab_worker_id?: string | null
+          appliance_name: string
+          appliance_type_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by_coord_staff_id?: string | null
+          created_by_telegram_id: number
+          doctor_id?: string | null
+          doctor_name: string
+          id?: string
+          notes?: string | null
+          patient_full_name: string
+          ready_due_date?: string | null
+          reject_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by_lab_worker_id?: string | null
+          appliance_name?: string
+          appliance_type_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by_coord_staff_id?: string | null
+          created_by_telegram_id?: number
+          doctor_id?: string | null
+          doctor_name?: string
+          id?: string
+          notes?: string | null
+          patient_full_name?: string
+          ready_due_date?: string | null
+          reject_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_orders_accepted_by_lab_worker_id_fkey"
+            columns: ["accepted_by_lab_worker_id"]
+            isOneToOne: false
+            referencedRelation: "lab_workers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_orders_appliance_type_id_fkey"
+            columns: ["appliance_type_id"]
+            isOneToOne: false
+            referencedRelation: "lab_appliance_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_orders_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "lab_doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_workers: {
+        Row: {
+          added_by_admin_id: string | null
+          added_by_telegram_id: number | null
+          created_at: string
+          full_name: string
+          id: string
+          is_active: boolean
+          telegram_id: number
+        }
+        Insert: {
+          added_by_admin_id?: string | null
+          added_by_telegram_id?: number | null
+          created_at?: string
+          full_name: string
+          id?: string
+          is_active?: boolean
+          telegram_id: number
+        }
+        Update: {
+          added_by_admin_id?: string | null
+          added_by_telegram_id?: number | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          telegram_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_workers_added_by_admin_id_fkey"
+            columns: ["added_by_admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       media_attachments: {
         Row: {
           caption_override: string | null
