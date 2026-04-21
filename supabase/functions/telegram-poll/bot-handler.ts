@@ -335,6 +335,10 @@ export async function handleUpdate(
       return;
     }
 
+    // Admin callbacks
+    const handled = await handleAdminCallback(supabase, patient, chatId, data, cq.id, lovableKey, telegramKey);
+    if (handled) return;
+
     await answerCallbackQuery(cq.id, undefined, lovableKey, telegramKey);
     return;
   }
