@@ -632,8 +632,9 @@ export async function handleUpdate(
       if (handled) return;
     }
 
-    // Koordinator tekshiruv callback (admin emas — alohida yo'l)
-    if (data.startsWith('crv:')) {
+    // Koordinator callback'lari (crv: tekshiruv, crd: admin boshqaruv)
+    // Admin bo'lmagan koordinator ham crv: ishlata olishi uchun adminCallback'dan oldin
+    if (data.startsWith('crv:') || data.startsWith('crd:')) {
       const { handleCoordinatorCallback } = await import('./coordinator-handler.ts');
       const handled = await handleCoordinatorCallback(
         supabase, patient, chatId, data,
@@ -709,6 +710,24 @@ export async function handleUpdate(
   if (text === '/staff' || text === '/xodim') {
     const { handleStaffCommand } = await import('./staff-handler.ts');
     await handleStaffCommand(supabase, patient, chatId, lovableKey, telegramKey);
+    return;
+  }
+
+  // /coordinator — koordinator portali
+  if (text === '/coordinator' || text === '/koordinator') {
+    const { handleCoordinatorCommand } = await import('./coordinator-handler.ts');
+    await handleCoordinatorCommand(supabase, patient, chatId, lovableKey, telegramKey);
+    return;
+  }
+
+  // Koordinator portali state'i (bemor menyusi tushmasin)
+  if (patient.state === 'coord:menu') {
+    const { handleCoordinatorPortalMessage } = await import('./coordinator-handler.ts');
+    const handled = await handleCoordinatorPortalMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handled) return;
+    // tushunilmagan matn — menyu qayta ko'rsatamiz
+    const { handleCoordinatorCommand } = await import('./coordinator-handler.ts');
+    await handleCoordinatorCommand(supabase, patient, chatId, lovableKey, telegramKey);
     return;
   }
 
