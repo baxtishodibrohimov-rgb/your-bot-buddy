@@ -682,14 +682,25 @@ export async function handleChecklistCallback(
     await showChecklistForStaff(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
   }
+  if (data.startsWith('cm:')) {
+    // cm:<itemId>:<0|1> — qisqa format (Telegram callback_data 64 bayt limiti)
+    const rest = data.slice('cm:'.length);
+    const parts = rest.split(':');
+    if (parts.length === 2) {
+      const [itemId, val] = parts;
+      await answerCb(val === '1' ? '✅' : '❌');
+      await markChecklistItem(supabase, patient, chatId, itemId, val === '1', lovableKey, telegramKey);
+      return true;
+    }
+  }
   if (data.startsWith('chk:m:')) {
-    // chk:m:<checklistId>:<itemId>:<0|1>
+    // Eski format — orqaga moslik uchun
     const rest = data.slice('chk:m:'.length);
     const parts = rest.split(':');
     if (parts.length === 3) {
-      const [checklistId, itemId, val] = parts;
+      const [, itemId, val] = parts;
       await answerCb(val === '1' ? '✅' : '❌');
-      await markChecklistItem(supabase, patient, chatId, checklistId, itemId, val === '1', lovableKey, telegramKey);
+      await markChecklistItem(supabase, patient, chatId, itemId, val === '1', lovableKey, telegramKey);
       return true;
     }
   }
