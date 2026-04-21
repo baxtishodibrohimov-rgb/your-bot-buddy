@@ -683,10 +683,26 @@ export async function handleUpdate(
     return;
   }
 
-  // /staff — xodimni tanish va salom berish (admin emas)
+  // /staff — xodim portali
   if (text === '/staff' || text === '/xodim') {
     const { handleStaffCommand } = await import('./staff-handler.ts');
     await handleStaffCommand(supabase, patient, chatId, lovableKey, telegramKey);
+    return;
+  }
+
+  // Xodim portali state'lari (bemor menyusi tushmasin)
+  if (patient.state === 'staff:menu') {
+    const { handleStaffPortalMessage } = await import('./staff-handler.ts');
+    const handled = await handleStaffPortalMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handled) return;
+    // tushunilmagan matn — menyu qayta ko'rsatamiz
+    const { handleStaffCommand } = await import('./staff-handler.ts');
+    await handleStaffCommand(supabase, patient, chatId, lovableKey, telegramKey);
+    return;
+  }
+  if (patient.state === 'staff:complaint') {
+    const { handleStaffComplaint } = await import('./staff-handler.ts');
+    await handleStaffComplaint(supabase, patient, chatId, text, lovableKey, telegramKey);
     return;
   }
 
