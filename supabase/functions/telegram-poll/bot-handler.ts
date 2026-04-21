@@ -683,6 +683,17 @@ export async function handleUpdate(
   // /start
   if (text === '/start') {
     await setState(supabase, patient.id, null, null);
+
+    // Agar foydalanuvchi koordinator bo'lsa — avtomatik koordinator portali
+    {
+      const { isCoordinator, handleCoordinatorCommand } = await import('./coordinator-handler.ts');
+      const coord = await isCoordinator(supabase, patient.telegram_id);
+      if (coord) {
+        await handleCoordinatorCommand(supabase, patient, chatId, lovableKey, telegramKey);
+        return;
+      }
+    }
+
     // Til tanlanmaganmi tekshirish — yangi yoki avvalgisi
     if (!patient.state && (patient.language === 'uz' || patient.language === 'ru')) {
       // Birinchi marta — har doim til tanlash
