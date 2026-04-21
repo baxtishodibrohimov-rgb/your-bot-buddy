@@ -1,5 +1,5 @@
 // Bot xabarlarini qayta ishlash
-import { sendMessage, answerCallbackQuery, escapeHtml, type ReplyKeyboard } from './telegram-api.ts';
+import { sendMessage, answerCallbackQuery, escapeHtml, type ReplyKeyboard, type InlineKeyboard } from './telegram-api.ts';
 import { t, tr, type Lang } from './i18n.ts';
 import { handleAdminMessage, handleAdminCallback } from './admin-handler.ts';
 
@@ -9,15 +9,30 @@ type Patient = {
   language: Lang;
   state: string | null;
   state_data: Record<string, unknown> | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  phone?: string | null;
+  telegram_username?: string | null;
 };
 
 function mainKeyboard(lang: Lang): ReplyKeyboard {
   return [
-    [{ text: t.menu.about[lang] }, { text: t.menu.services[lang] }],
-    [{ text: t.menu.doctors[lang] }, { text: t.menu.address[lang] }],
-    [{ text: t.menu.medicalCard[lang] }, { text: t.menu.contact[lang] }],
-    [{ text: t.menu.complaint[lang] }, { text: t.menu.changeLang[lang] }],
+    [{ text: t.menu.appointment[lang] }, { text: t.menu.medicalCard[lang] }],
+    [{ text: t.menu.services[lang] }, { text: t.menu.doctors[lang] }],
+    [{ text: t.menu.about[lang] }, { text: t.menu.address[lang] }],
+    [{ text: t.menu.contact[lang] }, { text: t.menu.complaint[lang] }],
+    [{ text: t.menu.changeLang[lang] }],
   ];
+}
+
+// Telefon raqamini tozalash va validatsiya
+// Qabul qiladi: +998901234567, 998901234567, 90 123 45 67 va h.k.
+function normalizePhone(input: string): string | null {
+  const digits = input.replace(/\D/g, '');
+  if (digits.length < 9 || digits.length > 15) return null;
+  if (digits.length === 9 && digits.startsWith('9')) return '+998' + digits;
+  if (digits.length === 12 && digits.startsWith('998')) return '+' + digits;
+  return '+' + digits;
 }
 
 async function getOrCreatePatient(
