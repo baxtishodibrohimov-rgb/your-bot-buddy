@@ -1287,7 +1287,26 @@ export async function handleAdminMessage(
   telegramKey: string,
 ): Promise<boolean> {
   const admin = await isAdmin(supabase, patient.telegram_id);
-  if (!admin) return false;
+
+  // Koordinator uchun cheklangan bypass: faqat xodimlar/cheklist state'lari
+  if (!admin) {
+    const { isCoordinator } = await import('./coordinator-handler.ts');
+    const coord = await isCoordinator(supabase, patient.telegram_id);
+    if (!coord) return false;
+    const st = patient.state ?? '';
+    if (st.startsWith('admin:stf:')) {
+      const { handleStaffStep } = await import('./staff-handler.ts');
+      const handled = await handleStaffStep(supabase, patient, chatId, text, lovableKey, telegramKey);
+      if (handled) return true;
+    }
+    if (st.startsWith('admin:chk:')) {
+      const { handleChecklistStep } = await import('./checklist-handler.ts');
+      const handled = await handleChecklistStep(supabase, patient, chatId, text, lovableKey, telegramKey);
+      if (handled) return true;
+    }
+    return false;
+  }
+
   const lang = patient.language;
   const state = patient.state ?? '';
 
@@ -1434,7 +1453,41 @@ export async function handleAdminCallback(
   telegramKey: string,
 ): Promise<boolean> {
   const admin = await isAdmin(supabase, patient.telegram_id);
-  if (!admin) return false;
+
+  // Koordinator uchun bypass: faqat ruxsat etilgan prefikslar
+  if (!admin) {
+    const { isCoordinator } = await import('./coordinator-handler.ts');
+    const coord = await isCoordinator(supabase, patient.telegram_id);
+    if (!coord) return false;
+    if (data.startsWith('chk:')) {
+      const { handleChecklistCallback } = await import('./checklist-handler.ts');
+      const handled = await handleChecklistCallback(
+        supabase, patient, chatId, data,
+        async (txt?: string) => { await answerCallbackQuery(callbackId, txt, lovableKey, telegramKey); },
+        lovableKey, telegramKey,
+      );
+      if (handled) return true;
+    }
+    if (data.startsWith('crd:') || data.startsWith('crv:')) {
+      const { handleCoordinatorCallback } = await import('./coordinator-handler.ts');
+      const handled = await handleCoordinatorCallback(
+        supabase, patient, chatId, data,
+        async (txt?: string) => { await answerCallbackQuery(callbackId, txt, lovableKey, telegramKey); },
+        lovableKey, telegramKey,
+      );
+      if (handled) return true;
+    }
+    if (data.startsWith('stf:')) {
+      const { handleStaffCallback } = await import('./staff-handler.ts');
+      const handled = await handleStaffCallback(
+        supabase, patient, chatId, data,
+        async (txt?: string) => { await answerCallbackQuery(callbackId, txt, lovableKey, telegramKey); },
+        lovableKey, telegramKey,
+      );
+      if (handled) return true;
+    }
+    return false;
+  }
 
   // Media callbacks (kutubxona, biriktirish, ko'rish)
   if (data.startsWith('med:') || data.startsWith('ent:med:')) {
