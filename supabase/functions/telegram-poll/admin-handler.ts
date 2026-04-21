@@ -1,6 +1,7 @@
 // Admin panel - Telegram bot ichida
 import { sendMessage, answerCallbackQuery, escapeHtml, type ReplyKeyboard, type InlineKeyboard } from './telegram-api.ts';
 import { t, type Lang } from './i18n.ts';
+import { showMediaLibrary, showEntityMedia, handleMediaCallback } from './media-handler.ts';
 
 type Admin = {
   id: string;
