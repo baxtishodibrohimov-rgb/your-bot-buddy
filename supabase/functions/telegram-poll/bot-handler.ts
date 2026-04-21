@@ -713,6 +713,13 @@ export async function handleUpdate(
   const hasMedia = msg.photo || msg.video || msg.document || msg.audio || msg.voice || msg.animation;
   if (hasMedia) {
     const admin = await isAdmin(supabase, patient.telegram_id);
+
+    // Koordinator lab media (xray/scanner/note bosqichlari) — admin emas ham bo'lishi mumkin
+    if (patient.state?.startsWith('clab:add:')) {
+      const handledLabMedia = await handleCoordLabMedia(supabase, patient, admin, chatId, msg, lovableKey, telegramKey);
+      if (handledLabMedia) return;
+    }
+
     if (admin) {
       // Rezidentura bo'limiga media yuklash
       if (patient.state === 'admin:res:addmed') {
