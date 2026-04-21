@@ -6,6 +6,13 @@ import { handleAdminMediaUpload, sendEntityMediaToUser } from './media-handler.t
 import { saveAdminMedia } from './media-handler.ts';
 import { bcAddMedia } from './admin-handler.ts';
 import { notifyAdminsAboutComplaint } from './notifications.ts';
+import {
+  isResident,
+  showResidentHome,
+  handleResidentMessage,
+  handleResidentCallback,
+  handleAdminResidentMediaUpload,
+} from './resident-handler.ts';
 
 type Patient = {
   id: string;
