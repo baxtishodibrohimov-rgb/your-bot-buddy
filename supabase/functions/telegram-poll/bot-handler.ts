@@ -126,11 +126,11 @@ async function showServices(supabase: any, chatId: number, lang: Lang, lovableKe
     return;
   }
 
-  let text = t.servicesTitle[lang];
+  await sendMessage(chatId, t.servicesTitle[lang], {}, lovableKey, telegramKey);
   for (const s of data) {
     const name = lang === 'uz' ? s.name_uz : s.name_ru;
     const desc = lang === 'uz' ? s.description_uz : s.description_ru;
-    text += `\n🔹 <b>${escapeHtml(name)}</b>\n`;
+    let text = `🔹 <b>${escapeHtml(name)}</b>\n`;
     if (desc) text += `${escapeHtml(desc)}\n`;
     if (s.price_from) {
       const priceText = s.price_to
@@ -138,9 +138,9 @@ async function showServices(supabase: any, chatId: number, lang: Lang, lovableKe
         : `${s.price_from.toLocaleString()}+`;
       text += `💰 ${priceText} ${t.sum[lang]}\n`;
     }
+    await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+    await sendEntityMediaToUser(supabase, chatId, 'service', s.id, lovableKey, telegramKey);
   }
-
-  await sendMessage(chatId, text, {}, lovableKey, telegramKey);
 }
 
 async function showDoctors(supabase: any, chatId: number, lang: Lang, lovableKey: string, telegramKey: string) {
