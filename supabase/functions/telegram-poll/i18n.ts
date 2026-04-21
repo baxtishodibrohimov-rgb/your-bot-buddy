@@ -176,6 +176,82 @@ export const t = {
   adminAskName: { uz: 'Ismi (ixtiyoriy, "—" o\'tkazish):', ru: 'Имя (опционально, "—" пропустить):' },
   adminListEmpty: { uz: 'Adminlar yo\'q.', ru: 'Админов нет.' },
 
+  // Klinika sehrgari (wizard)
+  clinicWizardBtn: {
+    uz: '📝 To\'liq to\'ldirish (sehrgar)',
+    ru: '📝 Полное заполнение (мастер)',
+  },
+  clinicWizardStart: {
+    uz: '📝 <b>Klinika ma\'lumotlarini to\'ldirish sehrgari</b>\n\nMen sizga 8 ta savol beraman. Har bir javobdan keyin keyingi savol keladi.\n\n💡 Maydonni o\'tkazib yuborish uchun <code>—</code> (chiziq) yuboring.\nBekor qilish uchun /cancel.\n\nBoshlaymi?',
+    ru: '📝 <b>Мастер заполнения информации о клинике</b>\n\nЯ задам вам 8 вопросов. После каждого ответа будет следующий вопрос.\n\n💡 Чтобы пропустить поле, отправьте <code>—</code> (тире).\nДля отмены — /cancel.\n\nНачнём?',
+  },
+  clinicWizardStartBtn: { uz: '▶️ Boshlash', ru: '▶️ Начать' },
+  clinicWizardStep: { uz: 'Qadam', ru: 'Шаг' },
+  clinicWizardOf: { uz: 'dan', ru: 'из' },
+
+  clinicWizQ: {
+    name_uz: {
+      uz: '1️⃣ <b>Klinika nomi (o\'zbekcha)</b>\n\nMasalan: <i>Biodent stomatologiya klinikasi</i>',
+      ru: '1️⃣ <b>Название клиники (на узбекском)</b>\n\nПример: <i>Biodent stomatologiya klinikasi</i>',
+    },
+    name_ru: {
+      uz: '2️⃣ <b>Klinika nomi (ruscha)</b>\n\nMasalan: <i>Стоматологическая клиника Биодент</i>',
+      ru: '2️⃣ <b>Название клиники (на русском)</b>\n\nПример: <i>Стоматологическая клиника Биодент</i>',
+    },
+    address_uz: {
+      uz: '3️⃣ <b>Manzil (o\'zbekcha)</b>\n\nMasalan: <i>Toshkent sh., Chilonzor t., Bunyodkor 12</i>',
+      ru: '3️⃣ <b>Адрес (на узбекском)</b>\n\nПример: <i>Toshkent sh., Chilonzor t., Bunyodkor 12</i>',
+    },
+    address_ru: {
+      uz: '4️⃣ <b>Manzil (ruscha)</b>\n\nMasalan: <i>г. Ташкент, Чиланзарский р-н, ул. Бунёдкор 12</i>',
+      ru: '4️⃣ <b>Адрес (на русском)</b>\n\nПример: <i>г. Ташкент, Чиланзарский р-н, ул. Бунёдкор 12</i>',
+    },
+    phone: {
+      uz: '5️⃣ <b>Telefon raqam</b>\n\nMasalan: <i>+998 90 123 45 67</i>',
+      ru: '5️⃣ <b>Номер телефона</b>\n\nПример: <i>+998 90 123 45 67</i>',
+    },
+    working_hours_uz: {
+      uz: '6️⃣ <b>Ish vaqti (o\'zbekcha)</b>\n\nMasalan: <i>Du-Sha: 9:00 - 19:00, Yak: dam olish</i>',
+      ru: '6️⃣ <b>Часы работы (на узбекском)</b>\n\nПример: <i>Du-Sha: 9:00 - 19:00, Yak: dam olish</i>',
+    },
+    working_hours_ru: {
+      uz: '7️⃣ <b>Ish vaqti (ruscha)</b>\n\nMasalan: <i>Пн-Сб: 9:00 - 19:00, Вс: выходной</i>',
+      ru: '7️⃣ <b>Часы работы (на русском)</b>\n\nПример: <i>Пн-Сб: 9:00 - 19:00, Вс: выходной</i>',
+    },
+    about_uz: {
+      uz: '8️⃣ <b>Klinika haqida (o\'zbekcha)</b>\n\nQisqacha tavsif. Masalan: <i>Biodent — zamonaviy uskunalar bilan jihozlangan stomatologiya klinikasi.</i>',
+      ru: '8️⃣ <b>О клинике (на узбекском)</b>\n\nКраткое описание.',
+    },
+    about_ru: {
+      uz: '9️⃣ <b>Klinika haqida (ruscha)</b>\n\nQisqacha tavsif (ruscha).',
+      ru: '9️⃣ <b>О клинике (на русском)</b>\n\nКраткое описание клиники.',
+    },
+    instagram: {
+      uz: '🔟 <b>Instagram havolasi</b>\n\nMasalan: <i>https://instagram.com/biodent</i>\n\nYo\'q bo\'lsa <code>—</code> yuboring.',
+      ru: '🔟 <b>Ссылка Instagram</b>\n\nПример: <i>https://instagram.com/biodent</i>\n\nЕсли нет — отправьте <code>—</code>.',
+    },
+    telegram_channel: {
+      uz: '1️⃣1️⃣ <b>Telegram kanal</b>\n\nMasalan: <i>https://t.me/biodent</i> yoki <code>—</code>',
+      ru: '1️⃣1️⃣ <b>Telegram канал</b>\n\nПример: <i>https://t.me/biodent</i> или <code>—</code>',
+    },
+    location_url: {
+      uz: '1️⃣2️⃣ <b>Xarita havolasi</b> (Google Maps / Yandex)\n\nMasalan: <i>https://goo.gl/maps/...</i> yoki <code>—</code>',
+      ru: '1️⃣2️⃣ <b>Ссылка на карту</b> (Google Maps / Yandex)\n\nПример: <i>https://goo.gl/maps/...</i> или <code>—</code>',
+    },
+  },
+
+  clinicWizardReview: {
+    uz: '📋 <b>Ko\'rib chiqing</b>\n\nQuyidagi ma\'lumotlar saqlanadi:',
+    ru: '📋 <b>Проверьте</b>\n\nБудут сохранены следующие данные:',
+  },
+  clinicWizardSave: { uz: '✅ Saqlash', ru: '✅ Сохранить' },
+  clinicWizardRestart: { uz: '🔄 Qaytadan boshlash', ru: '🔄 Начать заново' },
+  clinicWizardCancel: { uz: '❌ Bekor qilish', ru: '❌ Отменить' },
+  clinicWizardDone: {
+    uz: '✅ <b>Klinika ma\'lumotlari saqlandi!</b>\n\nEndi bemorlar yangi ma\'lumotlarni ko\'radi.',
+    ru: '✅ <b>Информация о клинике сохранена!</b>\n\nТеперь пациенты увидят новые данные.',
+  },
+
   // Shikoyatlar
   complaintsEmpty: { uz: 'Shikoyatlar yo\'q.', ru: 'Жалоб нет.' },
   complaintReply: { uz: '💬 Javob yozish', ru: '💬 Ответить' },
