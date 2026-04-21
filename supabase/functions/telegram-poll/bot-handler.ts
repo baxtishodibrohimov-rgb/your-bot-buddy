@@ -651,6 +651,16 @@ export async function handleUpdate(
       if (handled) return;
     }
 
+    // Rezident callbacks (foydalanuvchi tomon)
+    if (data.startsWith('res:')) {
+      const handledRes = await handleResidentCallback(
+        supabase, patient, chatId, data,
+        async (txt?: string) => { await answerCallbackQuery(cq.id, txt, lovableKey, telegramKey); },
+        lovableKey, telegramKey,
+      );
+      if (handledRes) return;
+    }
+
     // Admin callbacks
     const handled = await handleAdminCallback(supabase, patient, chatId, data, cq.id, lovableKey, telegramKey);
     if (handled) return;
