@@ -632,9 +632,9 @@ export async function handleUpdate(
       if (handled) return;
     }
 
-    // Koordinator callback'lari (crv: tekshiruv, crd: admin boshqaruv)
-    // Admin bo'lmagan koordinator ham crv: ishlata olishi uchun adminCallback'dan oldin
-    if (data.startsWith('crv:') || data.startsWith('crd:')) {
+    // Koordinator tekshiruv tugmalari (crv:)
+    // Admin bo'lmagan koordinator ham ishlata olishi uchun adminCallback'dan oldin
+    if (data.startsWith('crv:')) {
       const { handleCoordinatorCallback } = await import('./coordinator-handler.ts');
       const handled = await handleCoordinatorCallback(
         supabase, patient, chatId, data,

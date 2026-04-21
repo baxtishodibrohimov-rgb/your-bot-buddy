@@ -271,7 +271,7 @@ export type Database = {
             foreignKeyName: "checklist_reviews_reviewed_by_coordinator_id_fkey"
             columns: ["reviewed_by_coordinator_id"]
             isOneToOne: false
-            referencedRelation: "coordinators"
+            referencedRelation: "staff"
             referencedColumns: ["id"]
           },
           {
@@ -374,27 +374,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      coordinators: {
-        Row: {
-          created_at: string
-          full_name: string | null
-          id: string
-          telegram_id: number
-        }
-        Insert: {
-          created_at?: string
-          full_name?: string | null
-          id?: string
-          telegram_id: number
-        }
-        Update: {
-          created_at?: string
-          full_name?: string | null
-          id?: string
-          telegram_id?: number
-        }
-        Relationships: []
       }
       media_attachments: {
         Row: {

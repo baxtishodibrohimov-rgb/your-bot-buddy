@@ -40,7 +40,7 @@ export function adminMainKeyboard(lang: Lang, isSuper: boolean): ReplyKeyboard {
     [{ text: t.adminMenu.clinic[lang] }, { text: t.adminMenu.services[lang] }],
     [{ text: t.adminMenu.doctors[lang] }, { text: t.adminMenu.patients[lang] }],
     [{ text: t.adminMenuMedia[lang] }, { text: t.adminMenuBroadcast[lang] }],
-    [{ text: t.adminMenu.stats[lang] }, { text: t.coordMenuBtn[lang] }],
+    [{ text: t.adminMenu.stats[lang] }],
   ];
   if (isSuper) rows.push([{ text: t.adminMenu.admins[lang] }]);
   rows.push([{ text: t.adminMenu.exit[lang] }]);
@@ -1342,11 +1342,6 @@ export async function handleAdminMessage(
     await handleStaffStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
   }
-  if (state.startsWith('admin:crd:')) {
-    const { handleCoordinatorStep } = await import('./coordinator-handler.ts');
-    const handled = await handleCoordinatorStep(supabase, patient, chatId, text, lovableKey, telegramKey);
-    if (handled) return true;
-  }
   if (state.startsWith('admin:chk:')) {
     const { handleChecklistStep } = await import('./checklist-handler.ts');
     const handled = await handleChecklistStep(supabase, patient, chatId, text, lovableKey, telegramKey);
@@ -1420,11 +1415,6 @@ export async function handleAdminMessage(
     await showStatsMenu(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
-  if (text === t.coordMenuBtn.uz || text === t.coordMenuBtn.ru) {
-    const { showCoordinatorsAdmin } = await import('./coordinator-handler.ts');
-    await showCoordinatorsAdmin(supabase, patient, chatId, lovableKey, telegramKey);
-    return true;
-  }
   if (m('admins') && admin.is_super_admin) {
     await listAdmins(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
@@ -1468,7 +1458,7 @@ export async function handleAdminCallback(
       );
       if (handled) return true;
     }
-    if (data.startsWith('crd:') || data.startsWith('crv:')) {
+    if (data.startsWith('crv:')) {
       const { handleCoordinatorCallback } = await import('./coordinator-handler.ts');
       const handled = await handleCoordinatorCallback(
         supabase, patient, chatId, data,
@@ -1572,8 +1562,8 @@ export async function handleAdminCallback(
     );
     if (handled) return true;
   }
-  // Koordinator (admin: crd:add/del, koordinator: crv:a/r)
-  if (data.startsWith('crd:') || data.startsWith('crv:')) {
+  // Koordinator tekshiruv tugmalari (crv:a/r)
+  if (data.startsWith('crv:')) {
     const { handleCoordinatorCallback } = await import('./coordinator-handler.ts');
     const handled = await handleCoordinatorCallback(
       supabase, patient, chatId, data,
