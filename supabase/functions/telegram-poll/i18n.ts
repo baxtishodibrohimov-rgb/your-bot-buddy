@@ -16,6 +16,7 @@ export const t = {
     doctors: { uz: '👨‍⚕️ Shifokorlar', ru: '👨‍⚕️ Врачи' },
     address: { uz: '📍 Manzil', ru: '📍 Адрес' },
     contact: { uz: '📞 Bog\'lanish', ru: '📞 Связаться' },
+    appointment: { uz: '📅 Qabulga yozilish', ru: '📅 Записаться на приём' },
     medicalCard: { uz: '📋 Mening tibbiy kartam', ru: '📋 Моя медицинская карта' },
     complaint: { uz: '✍️ Shikoyat / Taklif', ru: '✍️ Жалоба / Предложение' },
     changeLang: { uz: '🌐 Tilni o\'zgartirish', ru: '🌐 Сменить язык' },
