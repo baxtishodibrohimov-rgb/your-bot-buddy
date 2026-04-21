@@ -1533,6 +1533,21 @@ export async function handleAdminMessage(
     await handleAdminStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
   }
+  if (state === 'admin:apt:time') {
+    await saveAppointmentTime(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return true;
+  }
+  if (state === 'admin:bc:text') {
+    await bcReceiveText(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return true;
+  }
+  if (state === 'admin:bc:media') {
+    // Matn keldi — uni e'tiborsiz qoldirib, "Davom etish" bosishni so'raymiz
+    await sendMessage(chatId, t.bcAskMedia[lang], {
+      inlineKeyboard: [[{ text: t.bcContinueBtn[lang], callback_data: 'bc:next' }]],
+    }, lovableKey, telegramKey);
+    return true;
+  }
 
   // Admin menyu tugmalari
   if (!state.startsWith('admin:')) return false;
