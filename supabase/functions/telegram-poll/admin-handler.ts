@@ -985,7 +985,29 @@ export async function handleAdminCallback(
   const admin = await isAdmin(supabase, patient.telegram_id);
   if (!admin) return false;
 
-  // Klinika
+  // Klinika sehrgari (wizard)
+  if (data === 'cli:wiz:start') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await clinicWizardStart(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'cli:wiz:go') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await clinicWizardAsk(supabase, patient, chatId, 0, {}, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'cli:wiz:save') {
+    await answerCallbackQuery(callbackId, '✅', lovableKey, telegramKey);
+    await clinicWizardSave(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'cli:wiz:cancel') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await clinicWizardCancel(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+
+  // Klinika (alohida maydon tahriri)
   if (data.startsWith('cli:edit:')) {
     const field = data.slice('cli:edit:'.length);
     await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
