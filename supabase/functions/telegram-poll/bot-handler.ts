@@ -1,7 +1,8 @@
 // Bot xabarlarini qayta ishlash
 import { sendMessage, answerCallbackQuery, escapeHtml, type ReplyKeyboard, type InlineKeyboard } from './telegram-api.ts';
 import { t, tr, type Lang } from './i18n.ts';
-import { handleAdminMessage, handleAdminCallback } from './admin-handler.ts';
+import { handleAdminMessage, handleAdminCallback, isAdmin } from './admin-handler.ts';
+import { handleAdminMediaUpload, sendEntityMediaToUser } from './media-handler.ts';
 
 type Patient = {
   id: string;
