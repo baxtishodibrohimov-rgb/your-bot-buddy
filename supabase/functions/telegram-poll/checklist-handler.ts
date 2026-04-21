@@ -442,7 +442,6 @@ export async function markChecklistItem(
   if (!staff) return;
 
   const date = todayDate();
-  // Item -> checklist_id, keyin checklist staff_id ga tegishli ekanini tekshiramiz
   const { data: item } = await supabase
     .from('checklist_items')
     .select('id, checklist_id')
@@ -452,7 +451,7 @@ export async function markChecklistItem(
 
   const { data: cl } = await supabase
     .from('staff_checklists')
-    .select('id, staff_id')
+    .select('id, staff_id, is_daily_required')
     .eq('id', item.checklist_id)
     .maybeSingle();
   if (!cl || cl.staff_id !== staff.id) return;
@@ -469,7 +468,41 @@ export async function markChecklistItem(
     { onConflict: 'staff_id,item_id,completion_date' },
   );
 
+  // Agar majburiy cheklist barcha punktlari belgilangan bo'lsa — koordinatorga yuboramiz
+  if (cl.is_daily_required) {
+    await maybeSendForReview(supabase, staff.id, cl.id, lovableKey, telegramKey);
+  }
+
   await showChecklistForStaff(supabase, patient, chatId, cl.id, lovableKey, telegramKey);
+}
+
+async function maybeSendForReview(
+  supabase: any,
+  staffId: string,
+  checklistId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const date = todayDate();
+  const { data: items } = await supabase
+    .from('checklist_items')
+    .select('id')
+    .eq('checklist_id', checklistId);
+  const total = (items ?? []).length;
+  if (total === 0) return;
+
+  const itemIds = (items ?? []).map((i: any) => i.id);
+  const { data: comps } = await supabase
+    .from('checklist_completions')
+    .select('item_id')
+    .eq('staff_id', staffId)
+    .eq('completion_date', date)
+    .in('item_id', itemIds);
+
+  if ((comps ?? []).length < total) return;
+
+  const { notifyCoordinatorsForReview } = await import('./coordinator-handler.ts');
+  await notifyCoordinatorsForReview(supabase, staffId, checklistId, lovableKey, telegramKey);
 }
 
 // "Ishni boshlash" — majburiy cheklistni avto chiqarish
