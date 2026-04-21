@@ -1370,6 +1370,12 @@ export async function handleAdminMessage(
     }, lovableKey, telegramKey);
     return true;
   }
+  // Rezidentura admin state'lari
+  if (state.startsWith('admin:res:')) {
+    const { handleAdminResidentMessage } = await import('./resident-handler.ts');
+    const handled = await handleAdminResidentMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handled) return true;
+  }
 
   // Admin menyu tugmalari
   if (!state.startsWith('admin:')) return false;
