@@ -621,6 +621,17 @@ export async function handleUpdate(
       return;
     }
 
+    // Xodim cheklist callback'lari (admin emas — alohida yo'l)
+    if (data === 'chk:list' || data.startsWith('chk:open:') || data.startsWith('cm:') || data.startsWith('chk:m:')) {
+      const { handleChecklistCallback } = await import('./checklist-handler.ts');
+      const handled = await handleChecklistCallback(
+        supabase, patient, chatId, data,
+        async (txt?: string) => { await answerCallbackQuery(cq.id, txt, lovableKey, telegramKey); },
+        lovableKey, telegramKey,
+      );
+      if (handled) return;
+    }
+
     // Admin callbacks
     const handled = await handleAdminCallback(supabase, patient, chatId, data, cq.id, lovableKey, telegramKey);
     if (handled) return;
