@@ -379,10 +379,18 @@ export async function handleUpdate(
     return;
   }
 
-  // Admin (/admin buyrug'i va admin state/menu xabarlari)
-  if (text === '/admin' || patient.state?.startsWith('admin:')) {
-    const handled = await handleAdminMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+  // Admin (/admin, /staff, /xodim buyruqlari va admin state/menu xabarlari)
+  const isAdminCmd = text === '/admin' || text === '/staff' || text === '/xodim' || text === '/xodimlar';
+  if (isAdminCmd || patient.state?.startsWith('admin:')) {
+    // Buyruqni /admin ga normalizatsiya qilamiz
+    const normalizedText = isAdminCmd ? '/admin' : text;
+    const handled = await handleAdminMessage(supabase, patient, chatId, normalizedText, lovableKey, telegramKey);
     if (handled) return;
+    // Agar admin emas bo'lsa va buyruq bo'lsa — xabar beramiz
+    if (isAdminCmd) {
+      await sendMessage(chatId, t.adminNotAuthorized[lang], {}, lovableKey, telegramKey);
+      return;
+    }
   }
 
   // State'da turgan bo'lsa
