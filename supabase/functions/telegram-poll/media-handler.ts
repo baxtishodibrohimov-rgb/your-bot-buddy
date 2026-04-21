@@ -373,9 +373,13 @@ export async function showMediaItem(
   if (attachments && attachments.length > 0) {
     for (const a of attachments) {
       let name = '?';
-      if (a.entity_type === 'doctor' && a.entity_id) {
-        const { data } = await supabase.from('doctors').select('full_name').eq('id', a.entity_id).maybeSingle();
-        name = `👨‍⚕️ ${data?.full_name ?? '?'}`;
+      if (a.entity_type === 'staff' && a.entity_id) {
+        const { data } = await supabase.from('staff').select('full_name').eq('id', a.entity_id).maybeSingle();
+        name = `👤 ${data?.full_name ?? '?'}`;
+      } else if (a.entity_type === 'staff_position' && a.entity_id) {
+        const posKey = a.entity_id as keyof typeof t.staffPositions;
+        const label = t.staffPositions[posKey]?.[lang] ?? a.entity_id;
+        name = label;
       } else if (a.entity_type === 'service' && a.entity_id) {
         const { data } = await supabase.from('services').select('name_uz, name_ru').eq('id', a.entity_id).maybeSingle();
         name = `🦷 ${(lang === 'uz' ? data?.name_uz : data?.name_ru) ?? '?'}`;
@@ -459,7 +463,7 @@ export async function startAttachFlow(
     t.mediaPickEntity[lang],
     {
       inlineKeyboard: [
-        [{ text: t.mediaEntityDoctor[lang], callback_data: `med:at:doctor:${mediaId}` }],
+        [{ text: t.mediaEntityDoctor[lang], callback_data: `med:at:staff_position:${mediaId}` }],
         [{ text: t.mediaEntityService[lang], callback_data: `med:at:service:${mediaId}` }],
         [{ text: t.mediaEntityClinic[lang], callback_data: `med:at:clinic:${mediaId}` }],
       ],
@@ -473,7 +477,7 @@ export async function pickAttachTarget(
   supabase: any,
   patient: Patient,
   chatId: number,
-  entityType: 'doctor' | 'service' | 'clinic',
+  entityType: 'staff' | 'staff_position' | 'service' | 'clinic',
   mediaId: string,
   lovableKey: string,
   telegramKey: string,
@@ -485,16 +489,15 @@ export async function pickAttachTarget(
     return;
   }
 
-  if (entityType === 'doctor') {
-    const { data } = await supabase.from('doctors').select('id, full_name').order('sort_order').limit(50);
-    if (!data || data.length === 0) {
-      await sendMessage(chatId, t.noDoctors[lang], {}, lovableKey, telegramKey);
-      return;
-    }
-    const buttons: InlineKeyboard = data.map((d: any) => [
-      { text: `👨‍⚕️ ${d.full_name.slice(0, 40)}`, callback_data: `med:do:doctor:${mediaId}:${d.id}` },
+  if (entityType === 'staff_position') {
+    // Lavozim tanlash menyusi
+    const positions: Array<keyof typeof t.staffPositions> = [
+      'registratura', 'koordinator', 'shifokor', 'shifokor_yordamchisi', 'hisobchi', 'sterilizatsiya',
+    ];
+    const buttons: InlineKeyboard = positions.map((p) => [
+      { text: t.staffPositions[p][lang], callback_data: `med:do:staff_position:${mediaId}:${p}` },
     ]);
-    await sendMessage(chatId, t.mediaPickDoctor[lang], { inlineKeyboard: buttons }, lovableKey, telegramKey);
+    await sendMessage(chatId, lang === 'uz' ? 'Qaysi lavozimga?' : 'К какой должности?', { inlineKeyboard: buttons }, lovableKey, telegramKey);
     return;
   }
 
@@ -517,7 +520,7 @@ export async function attachMedia(
   patient: Patient,
   chatId: number,
   mediaId: string,
-  entityType: 'doctor' | 'service' | 'clinic' | 'broadcast',
+  entityType: 'staff' | 'staff_position' | 'service' | 'clinic' | 'broadcast',
   entityId: string | null,
   lovableKey: string,
   telegramKey: string,
@@ -564,7 +567,7 @@ export async function showEntityMedia(
   supabase: any,
   patient: Patient,
   chatId: number,
-  entityType: 'doctor' | 'service' | 'clinic',
+  entityType: 'staff' | 'staff_position' | 'service' | 'clinic',
   entityId: string | null,
   lovableKey: string,
   telegramKey: string,
@@ -628,7 +631,7 @@ export async function showEntityMedia(
 export async function sendEntityMediaToUser(
   supabase: any,
   chatId: number,
-  entityType: 'doctor' | 'service' | 'clinic',
+  entityType: 'staff' | 'staff_position' | 'service' | 'clinic',
   entityId: string | null,
   lovableKey: string,
   telegramKey: string,
@@ -716,7 +719,7 @@ export async function handleMediaCallback(
     const rest = data.slice('med:at:'.length);
     const idx = rest.indexOf(':');
     if (idx > 0) {
-      const entityType = rest.slice(0, idx) as 'doctor' | 'service' | 'clinic';
+      const entityType = rest.slice(0, idx) as 'staff' | 'staff_position' | 'service' | 'clinic';
       const mediaId = rest.slice(idx + 1);
       await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
       await pickAttachTarget(supabase, patient, chatId, entityType, mediaId, lovableKey, telegramKey);
@@ -730,7 +733,7 @@ export async function handleMediaCallback(
     // med:do:{entityType}:{mediaId}:{entityId}
     const parts = data.split(':');
     if (parts.length >= 5) {
-      const entityType = parts[2] as 'doctor' | 'service';
+      const entityType = parts[2] as 'staff' | 'staff_position' | 'service';
       const mediaId = parts[3];
       const entityId = parts[4];
       await answerCallbackQuery(callbackId, '✅', lovableKey, telegramKey);
@@ -754,7 +757,7 @@ export async function handleMediaCallback(
     const rest = data.slice('ent:med:'.length);
     const idx = rest.indexOf(':');
     if (idx > 0) {
-      const entityType = rest.slice(0, idx) as 'doctor' | 'service' | 'clinic';
+      const entityType = rest.slice(0, idx) as 'staff' | 'staff_position' | 'service' | 'clinic';
       const entityId = rest.slice(idx + 1);
       await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
       await showEntityMedia(
