@@ -343,6 +343,12 @@ export async function handleStaffPortalMessage(
       await showPendingReviewsForStaff(supabase, chatId, lang, lovableKey, telegramKey);
       return true;
     }
+    // 🦷 Laboratoriya — koordinator lab menyusi
+    if (text === t.coordExtraLab.uz || text === t.coordExtraLab.ru) {
+      const { showCoordLabMenu } = await import('./lab-handler.ts');
+      await showCoordLabMenu(supabase, patient, chatId, lovableKey, telegramKey);
+      return true;
+    }
   }
   return false;
 }
