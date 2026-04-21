@@ -33,6 +33,7 @@ export function adminMainKeyboard(lang: Lang, isSuper: boolean): ReplyKeyboard {
     [{ text: t.adminMenu.doctors[lang] }, { text: t.adminMenu.patients[lang] }],
     [{ text: t.adminMenu.stats[lang] }],
   ];
+  // (Appointments tugmasi yuqorida)
   if (isSuper) rows.push([{ text: t.adminMenu.admins[lang] }]);
   rows.push([{ text: t.adminMenu.exit[lang] }]);
   return rows;
@@ -997,6 +998,12 @@ export async function handleAdminMessage(
   const m = (key: keyof typeof t.adminMenu) =>
     text === t.adminMenu[key].uz || text === t.adminMenu[key].ru;
 
+  // Qo'ng'iroq so'rovlari (alohida i18n kaliti)
+  if (text === t.adminMenuAppointments.uz || text === t.adminMenuAppointments.ru) {
+    await listAppointments(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+
   if (m('clinic')) {
     await showClinicInfo(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
@@ -1135,6 +1142,26 @@ export async function handleAdminCallback(
     const id = data.slice('cmp:done:'.length);
     await answerCallbackQuery(callbackId, '✅', lovableKey, telegramKey);
     await markComplaintResolved(supabase, patient, chatId, id, lovableKey, telegramKey);
+    return true;
+  }
+
+  // Qabul so'rovlari (status o'zgartirish)
+  if (data.startsWith('apt:called:')) {
+    const id = data.slice('apt:called:'.length);
+    await answerCallbackQuery(callbackId, '📞', lovableKey, telegramKey);
+    await updateAppointmentStatus(supabase, patient, chatId, id, 'called', lovableKey, telegramKey);
+    return true;
+  }
+  if (data.startsWith('apt:done:')) {
+    const id = data.slice('apt:done:'.length);
+    await answerCallbackQuery(callbackId, '✅', lovableKey, telegramKey);
+    await updateAppointmentStatus(supabase, patient, chatId, id, 'done', lovableKey, telegramKey);
+    return true;
+  }
+  if (data.startsWith('apt:cancel:')) {
+    const id = data.slice('apt:cancel:'.length);
+    await answerCallbackQuery(callbackId, '❌', lovableKey, telegramKey);
+    await updateAppointmentStatus(supabase, patient, chatId, id, 'cancelled', lovableKey, telegramKey);
     return true;
   }
 
