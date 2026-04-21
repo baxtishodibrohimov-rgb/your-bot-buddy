@@ -729,6 +729,23 @@ export async function handleUpdate(
     return;
   }
 
+  // /rezidentura — rezidentlar uchun
+  if (text === '/rezidentura' || text === '/residency' || text === '/rezident') {
+    const resident = await isResident(supabase, patient.telegram_id);
+    if (!resident) {
+      await sendMessage(chatId, t.residencyNotAuthorized[lang], {}, lovableKey, telegramKey);
+      return;
+    }
+    await showResidentHome(supabase, patient, chatId, lovableKey, telegramKey);
+    return;
+  }
+
+  // Rezident menyusi state'i
+  if (patient.state === 'res:home' || patient.state?.startsWith('res:t:')) {
+    const handled = await handleResidentMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handled) return;
+  }
+
   // Koordinator statistika menyusi state'i
   if (patient.state === 'coord:stats') {
     const { handleCoordStatsMessage, handleStaffCommand } = await import('./staff-handler.ts');
