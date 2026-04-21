@@ -322,6 +322,67 @@ export async function handleStaffPortalMessage(
     await sendMessage(chatId, t.staffExited[lang], { removeKeyboard: true }, lovableKey, telegramKey);
     return true;
   }
+
+  // ===== KOORDINATOR uchun qo'shimcha tugmalar =====
+  if (isCoord) {
+    // 👥 Xodimlar (admin) — admindagi xodimlar bo'limi
+    if (text === t.coordExtraStaff.uz || text === t.coordExtraStaff.ru) {
+      await showStaffPositionsMenu(supabase, patient, chatId, lovableKey, telegramKey);
+      return true;
+    }
+    // 📊 Statistika — koordinator statistikasi menyusi
+    if (text === t.coordExtraStats.uz || text === t.coordExtraStats.ru) {
+      const { showCoordStatsMenu } = await import('./coordinator-stats.ts');
+      await setState(supabase, patient.id, 'coord:stats', { staff_id: staff.id });
+      await showCoordStatsMenu(chatId, lang, lovableKey, telegramKey);
+      return true;
+    }
+    // ⏳ Tekshiruvlar — pending reviews ro'yxati
+    if (text === t.coordMenu.pending.uz || text === t.coordMenu.pending.ru) {
+      const { showPendingReviewsForStaff } = await import('./coordinator-handler.ts');
+      await showPendingReviewsForStaff(supabase, chatId, lang, lovableKey, telegramKey);
+      return true;
+    }
+  }
+  return false;
+}
+
+// Statistika menyusidan tugmalarni ushlash (koordinator uchun)
+export async function handleCoordStatsMessage(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+): Promise<boolean> {
+  const lang = patient.language;
+  const staff = await getStaffByTgId(supabase, patient.telegram_id);
+  if (!staff || staff.position !== 'koordinator') {
+    await setState(supabase, patient.id, null, null);
+    return false;
+  }
+
+  if (text === t.coordStatsAttendance.uz || text === t.coordStatsAttendance.ru) {
+    const { showAttendanceReport } = await import('./coordinator-stats.ts');
+    await showAttendanceReport(supabase, chatId, lang, lovableKey, telegramKey);
+    return true;
+  }
+  if (text === t.coordStatsChecklists.uz || text === t.coordStatsChecklists.ru) {
+    const { showChecklistsReport } = await import('./coordinator-stats.ts');
+    await showChecklistsReport(supabase, chatId, lang, lovableKey, telegramKey);
+    return true;
+  }
+  if (text === t.coordStatsPatients.uz || text === t.coordStatsPatients.ru) {
+    const { showPatientsList } = await import('./coordinator-stats.ts');
+    await showPatientsList(supabase, chatId, lang, lovableKey, telegramKey);
+    return true;
+  }
+  // Chiqish — staff portaliga qaytish
+  if (text === t.staffMenu.exit.uz || text === t.staffMenu.exit.ru) {
+    await handleStaffCommand(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
   return false;
 }
 
