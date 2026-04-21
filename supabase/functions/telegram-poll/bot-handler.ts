@@ -671,6 +671,26 @@ export async function handleUpdate(
       if (handledRes) return;
     }
 
+    // Lab xodim callbacks (lab:o:, lab:acc:, lab:rej:, lab:rdy:)
+    if (data.startsWith('lab:')) {
+      const handledLab = await handleLabCallback(
+        supabase, patient, chatId, data,
+        async (txt?: string) => { await answerCallbackQuery(cq.id, txt, lovableKey, telegramKey); },
+        lovableKey, telegramKey,
+      );
+      if (handledLab) return;
+    }
+
+    // Koordinator lab callbacks (clab:add, clab:ready, clab:app:, clab:doc:)
+    if (data.startsWith('clab:')) {
+      const handledCLab = await handleCoordLabCallback(
+        supabase, patient, chatId, data,
+        async (txt?: string) => { await answerCallbackQuery(cq.id, txt, lovableKey, telegramKey); },
+        lovableKey, telegramKey,
+      );
+      if (handledCLab) return;
+    }
+
     // Admin callbacks
     const handled = await handleAdminCallback(supabase, patient, chatId, data, cq.id, lovableKey, telegramKey);
     if (handled) return;
