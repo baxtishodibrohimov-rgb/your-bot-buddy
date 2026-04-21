@@ -1,6 +1,7 @@
 // Xodimlar (staff) — admin bo'limi va /staff buyrug'i
 import { sendMessage, escapeHtml, sendMediaByType, type InlineKeyboard, type ReplyKeyboard } from './telegram-api.ts';
 import { t, type Lang } from './i18n.ts';
+import { isCoordinator } from './coordinator-handler.ts';
 
 export type StaffPosition =
   | 'registratura'
