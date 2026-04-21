@@ -219,6 +219,25 @@ export async function deleteStaffMember(
 
 // ============= /staff buyrug'i (xodim botga yozsa) =============
 
+function staffMenuKeyboard(lang: Lang): ReplyKeyboard {
+  return [
+    [{ text: t.staffMenu.instruction[lang] }, { text: t.staffMenu.checklist[lang] }],
+    [{ text: t.staffMenu.startDay[lang] }],
+    [{ text: t.staffMenu.complaint[lang] }],
+    [{ text: t.staffMenu.exit[lang] }],
+  ];
+}
+
+async function getStaffByTgId(supabase: any, telegramId: number) {
+  const { data } = await supabase
+    .from('staff')
+    .select('id, full_name, position, is_active')
+    .eq('telegram_id', telegramId)
+    .eq('is_active', true)
+    .maybeSingle();
+  return data;
+}
+
 export async function handleStaffCommand(
   supabase: any,
   patient: Patient,
@@ -227,12 +246,7 @@ export async function handleStaffCommand(
   telegramKey: string,
 ) {
   const lang = patient.language;
-  const { data: staff } = await supabase
-    .from('staff')
-    .select('full_name, position, is_active')
-    .eq('telegram_id', patient.telegram_id)
-    .eq('is_active', true)
-    .maybeSingle();
+  const staff = await getStaffByTgId(supabase, patient.telegram_id);
 
   if (!staff) {
     await sendMessage(chatId, t.staffNotRegistered[lang], {}, lovableKey, telegramKey);
@@ -244,27 +258,150 @@ export async function handleStaffCommand(
     .replace('{name}', escapeHtml(staff.full_name))
     .replace('{position}', escapeHtml(positionLabel));
 
-  await sendMessage(chatId, greeting, {}, lovableKey, telegramKey);
+  await setState(supabase, patient.id, 'staff:menu', { staff_id: staff.id });
+  await sendMessage(
+    chatId,
+    greeting + '\n\n' + t.staffPortalTitle[lang],
+    { replyKeyboard: staffMenuKeyboard(lang) },
+    lovableKey,
+    telegramKey,
+  );
+}
 
-  // Lavozim mediasini yuborish
-  const { data: media } = await supabase
+// Xodim portalidagi tugma matnlarini ushlash
+export async function handleStaffPortalMessage(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+): Promise<boolean> {
+  const lang = patient.language;
+  const staff = await getStaffByTgId(supabase, patient.telegram_id);
+  if (!staff) {
+    // Xodimligi bekor qilingan — state'dan chiqaramiz
+    await setState(supabase, patient.id, null, null);
+    return false;
+  }
+
+  const matches = (key: keyof typeof t.staffMenu) =>
+    text === t.staffMenu[key].uz || text === t.staffMenu[key].ru;
+
+  if (matches('instruction')) {
+    await sendStaffInstruction(supabase, chatId, staff, lang, lovableKey, telegramKey);
+    return true;
+  }
+  if (matches('checklist')) {
+    await sendMessage(chatId, t.staffChecklistMsg[lang], {}, lovableKey, telegramKey);
+    return true;
+  }
+  if (matches('startDay')) {
+    const time = new Date().toLocaleString(lang === 'uz' ? 'uz-UZ' : 'ru-RU', {
+      hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric',
+    });
+    await sendMessage(chatId, t.staffStartDayMsg[lang].replace('{time}', escapeHtml(time)), {}, lovableKey, telegramKey);
+    return true;
+  }
+  if (matches('complaint')) {
+    await setState(supabase, patient.id, 'staff:complaint', { staff_id: staff.id });
+    await sendMessage(chatId, t.staffComplaintAsk[lang], { removeKeyboard: true }, lovableKey, telegramKey);
+    return true;
+  }
+  if (matches('exit')) {
+    await setState(supabase, patient.id, null, null);
+    await sendMessage(chatId, t.staffExited[lang], { removeKeyboard: true }, lovableKey, telegramKey);
+    return true;
+  }
+  return false;
+}
+
+async function sendStaffInstruction(
+  supabase: any,
+  chatId: number,
+  staff: { id: string; position: string },
+  lang: Lang,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  // Avval shaxsiy media (entity_type=staff, entity_id=staff.id), keyin lavozim mediasi
+  const { data: personal } = await supabase
+    .from('media_attachments')
+    .select('caption_override, sort_order, media_library(file_type, file_id, caption)')
+    .eq('entity_type', 'staff')
+    .eq('entity_id', staff.id)
+    .order('sort_order');
+
+  const { data: positionMedia } = await supabase
     .from('media_attachments')
     .select('caption_override, sort_order, media_library(file_type, file_id, caption)')
     .eq('entity_type', 'staff_position')
     .eq('entity_id', staff.position)
     .order('sort_order');
 
-  if (media && media.length > 0) {
-    await sendMessage(chatId, t.staffPositionMediaIntro[lang], {}, lovableKey, telegramKey);
-    for (const a of media) {
-      const m = (a as any).media_library;
-      if (!m) continue;
-      const caption = a.caption_override ?? m.caption ?? undefined;
-      try {
-        await sendMediaByType(chatId, m.file_type, m.file_id, caption ? { caption } : {}, lovableKey, telegramKey);
-      } catch (e) {
-        console.error('staff media send failed', e);
-      }
+  const all = [...(personal ?? []), ...(positionMedia ?? [])];
+  if (all.length === 0) {
+    await sendMessage(chatId, t.staffInstructionEmpty[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+
+  await sendMessage(chatId, t.staffInstructionIntro[lang], {}, lovableKey, telegramKey);
+  for (const a of all) {
+    const m = (a as any).media_library;
+    if (!m) continue;
+    const caption = a.caption_override ?? m.caption ?? undefined;
+    try {
+      await sendMediaByType(chatId, m.file_type, m.file_id, caption ? { caption } : {}, lovableKey, telegramKey);
+    } catch (e) {
+      console.error('staff instruction media send failed', e);
+    }
+  }
+}
+
+// Xodim shikoyat yozganda
+export async function handleStaffComplaint(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as Record<string, any>) ?? {};
+  const staffId = data.staff_id as string | undefined;
+
+  let prefix = '[XODIM] ';
+  if (staffId) {
+    const { data: s } = await supabase.from('staff').select('full_name, position').eq('id', staffId).maybeSingle();
+    if (s) {
+      const posLabel = t.staffPositions[s.position as StaffPosition]?.uz ?? s.position;
+      prefix = `[XODIM: ${s.full_name} — ${posLabel}] `;
+    }
+  }
+
+  const { data: created } = await supabase.from('complaints').insert({
+    patient_id: patient.id,
+    type: 'staff_feedback',
+    message: prefix + text,
+  }).select('*').single();
+
+  await setState(supabase, patient.id, 'staff:menu', { staff_id: staffId });
+  await sendMessage(
+    chatId,
+    t.staffComplaintSaved[lang],
+    { replyKeyboard: staffMenuKeyboard(lang) },
+    lovableKey,
+    telegramKey,
+  );
+
+  // Adminlarga bildirishnoma
+  if (created) {
+    try {
+      const { notifyAdminsAboutComplaint } = await import('./notifications.ts');
+      await notifyAdminsAboutComplaint(supabase, created, lovableKey, telegramKey);
+    } catch (e) {
+      console.error('Notify staff complaint failed', e);
     }
   }
 }
