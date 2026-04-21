@@ -331,14 +331,127 @@ async function listServices(
   if (data && data.length > 0) {
     for (const s of data) {
       const name = lang === 'uz' ? s.name_uz : s.name_ru;
+      const toggleLabel = s.is_active ? t.toggleInactive[lang] : t.toggleActive[lang];
       buttons.push([
-        { text: `✏️ ${name.slice(0, 20)}`, callback_data: `svc:edit:${s.id}` },
+        { text: `✏️ ${name.slice(0, 18)}`, callback_data: `svc:edit:${s.id}` },
+        { text: toggleLabel, callback_data: `svc:tog:${s.id}` },
         { text: '🗑', callback_data: `svc:del:${s.id}` },
       ]);
     }
   }
   await setState(supabase, patient.id, 'admin:services', null);
   await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+}
+
+// Xizmatni tahrirlash menyusi (qaysi maydon)
+async function showServiceEditMenu(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  serviceId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const { data: s } = await supabase.from('services').select('*').eq('id', serviceId).maybeSingle();
+  if (!s) {
+    await sendMessage(chatId, '—', {}, lovableKey, telegramKey);
+    return;
+  }
+  const name = lang === 'uz' ? s.name_uz : s.name_ru;
+  let text = `✏️ <b>${escapeHtml(name)}</b>\n\n`;
+  const fields: Array<keyof typeof t.svcFields> = [
+    'name_uz', 'name_ru', 'description_uz', 'description_ru', 'price_from', 'price_to', 'sort_order',
+  ];
+  for (const f of fields) {
+    const label = t.svcFields[f][lang];
+    const val = s[f] ?? '—';
+    text += `<b>${escapeHtml(label)}:</b> ${escapeHtml(String(val))}\n`;
+  }
+  const buttons: InlineKeyboard = [];
+  for (let i = 0; i < fields.length; i += 2) {
+    const row = [
+      { text: '✏️ ' + t.svcFields[fields[i]][lang], callback_data: `svc:fld:${serviceId}:${fields[i]}` },
+    ];
+    if (i + 1 < fields.length) {
+      row.push({ text: '✏️ ' + t.svcFields[fields[i + 1]][lang], callback_data: `svc:fld:${serviceId}:${fields[i + 1]}` });
+    }
+    buttons.push(row);
+  }
+  await setState(supabase, patient.id, 'admin:services', null);
+  await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+}
+
+async function askServiceFieldValue(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  serviceId: string,
+  field: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const label = (t.svcFields as any)[field]?.[lang] ?? field;
+  await setState(supabase, patient.id, 'admin:svc:editfld', { serviceId, field });
+  await sendMessage(
+    chatId,
+    `<b>${escapeHtml(label)}</b>\n\n${t.editEnterValue[lang]}\n\n/cancel — ${t.adminCancel[lang]}`,
+    { removeKeyboard: true },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function saveServiceFieldValue(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? {};
+  const { serviceId, field } = data;
+  if (!serviceId || !field) return;
+
+  const trimmed = text.trim();
+  const skip = trimmed === '—' || trimmed === '-';
+  let value: any;
+
+  if (field === 'price_from' || field === 'price_to' || field === 'sort_order') {
+    if (skip) {
+      value = field === 'sort_order' ? 0 : null;
+    } else {
+      const n = Number(trimmed.replace(/\s/g, ''));
+      if (isNaN(n)) {
+        await sendMessage(chatId, t.editInvalidNumber[lang], {}, lovableKey, telegramKey);
+        return;
+      }
+      value = n;
+    }
+  } else {
+    value = skip ? null : trimmed;
+  }
+
+  await supabase.from('services').update({ [field]: value, updated_at: new Date().toISOString() }).eq('id', serviceId);
+  await sendMessage(chatId, t.editSaved[lang], {}, lovableKey, telegramKey);
+  await showServiceEditMenu(supabase, patient, chatId, serviceId, lovableKey, telegramKey);
+}
+
+async function toggleService(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  serviceId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const { data: s } = await supabase.from('services').select('is_active').eq('id', serviceId).maybeSingle();
+  if (!s) return;
+  await supabase.from('services').update({ is_active: !s.is_active, updated_at: new Date().toISOString() }).eq('id', serviceId);
+  await listServices(supabase, patient, chatId, lovableKey, telegramKey);
 }
 
 async function startNewService(
