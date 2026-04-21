@@ -1800,5 +1800,23 @@ export async function handleAdminCallback(
     return true;
   }
 
+  // Broadcast (yangilik yuborish)
+  if (data === 'bc:next') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await bcShowReview(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'bc:send') {
+    await answerCallbackQuery(callbackId, '📨', lovableKey, telegramKey);
+    await bcExecute(supabase, patient, admin, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'bc:cancel') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await setState(supabase, patient.id, 'admin:menu', null);
+    await sendMessage(chatId, t.adminCancelled[patient.language], {}, lovableKey, telegramKey);
+    return true;
+  }
+
   return false;
 }
