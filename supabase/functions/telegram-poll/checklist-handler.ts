@@ -410,9 +410,10 @@ export async function showChecklistForStaff(
   for (const it of items as ChecklistItem[]) {
     const s = status.get(it.id);
     const label = it.text.length > 28 ? it.text.slice(0, 28) + '…' : it.text;
+    // callback_data 64 byte limit — faqat itemId va 0/1 saqlaymiz
     buttons.push([
-      { text: `${s === true ? '✅' : '☑️'} ${label}`, callback_data: `chk:m:${checklistId}:${it.id}:1` },
-      { text: `${s === false ? '❌' : '✖️'}`, callback_data: `chk:m:${checklistId}:${it.id}:0` },
+      { text: `${s === true ? '✅' : '☑️'} ${label}`, callback_data: `cm:${it.id}:1` },
+      { text: `${s === false ? '❌' : '✖️'}`, callback_data: `cm:${it.id}:0` },
     ]);
   }
   buttons.push([{ text: t.chkRefreshBtn[lang], callback_data: `chk:open:${checklistId}` }]);
