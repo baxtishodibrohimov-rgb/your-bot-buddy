@@ -1306,10 +1306,6 @@ export async function handleAdminMessage(
     await saveServiceFieldValue(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
   }
-  if (state === 'admin:doc:editfld') {
-    await saveDoctorFieldValue(supabase, patient, chatId, text, lovableKey, telegramKey);
-    return true;
-  }
   if (state === 'admin:pat:search') {
     await searchPatients(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
@@ -1318,8 +1314,8 @@ export async function handleAdminMessage(
     await handleServiceStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
   }
-  if (state.startsWith('admin:doc:')) {
-    await handleDoctorStep(supabase, patient, chatId, text, lovableKey, telegramKey);
+  if (state.startsWith('admin:stf:')) {
+    await handleStaffStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
   }
   if (state === 'admin:cmp:reply') {
@@ -1367,7 +1363,7 @@ export async function handleAdminMessage(
     return true;
   }
   if (m('doctors')) {
-    await listDoctors(supabase, patient, chatId, lovableKey, telegramKey);
+    await showStaffPositionsMenu(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
   if (m('patients')) {
