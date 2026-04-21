@@ -1401,6 +1401,11 @@ export async function handleAdminMessage(
     await showStatsMenu(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
+  if (text === t.coordMenuBtn.uz || text === t.coordMenuBtn.ru) {
+    const { showCoordinatorsAdmin } = await import('./coordinator-handler.ts');
+    await showCoordinatorsAdmin(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
   if (m('admins') && admin.is_super_admin) {
     await listAdmins(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
