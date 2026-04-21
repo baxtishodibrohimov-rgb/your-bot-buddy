@@ -3,6 +3,7 @@ import { sendMessage, answerCallbackQuery, escapeHtml, sendMediaByType, type Rep
 import { t, type Lang } from './i18n.ts';
 import { showMediaLibrary, showEntityMedia, handleMediaCallback } from './media-handler.ts';
 import { runBroadcast, notifyPatientAboutAppointmentStatus } from './notifications.ts';
+import { buildStatsReport, type Period } from './stats.ts';
 
 type Admin = {
   id: string;
@@ -1190,7 +1191,7 @@ async function markComplaintResolved(
 
 // ============= STATISTIKA =============
 
-async function showStats(
+async function showStatsMenu(
   supabase: any,
   patient: Patient,
   chatId: number,
@@ -1198,30 +1199,58 @@ async function showStats(
   telegramKey: string,
 ) {
   const lang = patient.language;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayIso = today.toISOString();
+  await setState(supabase, patient.id, 'admin:stats', null);
+  await sendMessage(
+    chatId,
+    t.statsChoosePeriod[lang],
+    {
+      inlineKeyboard: [
+        [
+          { text: t.statsBtnToday[lang], callback_data: 'stat:p:today' },
+          { text: t.statsBtnWeek[lang], callback_data: 'stat:p:week' },
+        ],
+        [
+          { text: t.statsBtnMonth[lang], callback_data: 'stat:p:month' },
+          { text: t.statsBtnAll[lang], callback_data: 'stat:p:all' },
+        ],
+      ],
+    },
+    lovableKey,
+    telegramKey,
+  );
+}
 
-  const [pat, cards, svc, doc, cNew, cAll, pToday] = await Promise.all([
-    supabase.from('patients').select('*', { count: 'exact', head: true }),
-    supabase.from('medical_cards').select('*', { count: 'exact', head: true }).not('full_name', 'is', null),
-    supabase.from('services').select('*', { count: 'exact', head: true }).eq('is_active', true),
-    supabase.from('doctors').select('*', { count: 'exact', head: true }).eq('is_active', true),
-    supabase.from('complaints').select('*', { count: 'exact', head: true }).eq('status', 'new'),
-    supabase.from('complaints').select('*', { count: 'exact', head: true }),
-    supabase.from('patients').select('*', { count: 'exact', head: true }).gte('created_at', todayIso),
-  ]);
-
-  let text = t.statsTitle[lang];
-  text += `👥 ${t.statsPatients[lang]}: <b>${pat.count ?? 0}</b>\n`;
-  text += `🆕 ${t.statsToday[lang]}: <b>${pToday.count ?? 0}</b>\n`;
-  text += `📋 ${t.statsCards[lang]}: <b>${cards.count ?? 0}</b>\n`;
-  text += `🦷 ${t.statsServices[lang]}: <b>${svc.count ?? 0}</b>\n`;
-  text += `👨‍⚕️ ${t.statsDoctors[lang]}: <b>${doc.count ?? 0}</b>\n`;
-  text += `✉️ ${t.statsComplaintsNew[lang]}: <b>${cNew.count ?? 0}</b>\n`;
-  text += `📨 ${t.statsComplaintsTotal[lang]}: <b>${cAll.count ?? 0}</b>\n`;
-
-  await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+async function showStatsForPeriod(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  period: Period,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const text = await buildStatsReport(supabase, period, lang);
+  await sendMessage(
+    chatId,
+    text,
+    {
+      inlineKeyboard: [
+        [
+          { text: t.statsBtnToday[lang], callback_data: 'stat:p:today' },
+          { text: t.statsBtnWeek[lang], callback_data: 'stat:p:week' },
+        ],
+        [
+          { text: t.statsBtnMonth[lang], callback_data: 'stat:p:month' },
+          { text: t.statsBtnAll[lang], callback_data: 'stat:p:all' },
+        ],
+        [
+          { text: t.statsBtnRefresh[lang], callback_data: `stat:p:${period}` },
+        ],
+      ],
+    },
+    lovableKey,
+    telegramKey,
+  );
 }
 
 // ============= BROADCAST (Yangilik yuborish) =============
@@ -1590,7 +1619,7 @@ export async function handleAdminMessage(
     return true;
   }
   if (m('stats')) {
-    await showStats(supabase, patient, chatId, lovableKey, telegramKey);
+    await showStatsMenu(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
   if (m('admins') && admin.is_super_admin) {
@@ -1816,6 +1845,16 @@ export async function handleAdminCallback(
     await setState(supabase, patient.id, 'admin:menu', null);
     await sendMessage(chatId, t.adminCancelled[patient.language], {}, lovableKey, telegramKey);
     return true;
+  }
+
+  // Statistika davri tanlash
+  if (data.startsWith('stat:p:')) {
+    const period = data.slice('stat:p:'.length) as Period;
+    if (period === 'today' || period === 'week' || period === 'month' || period === 'all') {
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+      await showStatsForPeriod(supabase, patient, chatId, period, lovableKey, telegramKey);
+      return true;
+    }
   }
 
   return false;
