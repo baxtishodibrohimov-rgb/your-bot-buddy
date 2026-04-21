@@ -585,6 +585,30 @@ export async function handleUpdate(
       return;
     }
 
+    if (data.startsWith('mc:edit:')) {
+      const field = data.slice('mc:edit:'.length);
+      await answerCallbackQuery(cq.id, undefined, lovableKey, telegramKey);
+      await startMcEdit(supabase, patient, chatId, field, lovableKey, telegramKey);
+      return;
+    }
+
+    if (data === 'appt:save') {
+      await answerCallbackQuery(cq.id, '✅', lovableKey, telegramKey);
+      await saveAppointment(supabase, patient, chatId, lovableKey, telegramKey);
+      return;
+    }
+    if (data === 'appt:restart') {
+      await answerCallbackQuery(cq.id, undefined, lovableKey, telegramKey);
+      await startAppointment(supabase, patient, chatId, lovableKey, telegramKey);
+      return;
+    }
+    if (data === 'appt:cancel') {
+      await answerCallbackQuery(cq.id, undefined, lovableKey, telegramKey);
+      await setState(supabase, patient.id, null, null);
+      await sendMessage(chatId, t.cancelled[patient.language], { replyKeyboard: mainKeyboard(patient.language) }, lovableKey, telegramKey);
+      return;
+    }
+
     // Admin callbacks
     const handled = await handleAdminCallback(supabase, patient, chatId, data, cq.id, lovableKey, telegramKey);
     if (handled) return;
