@@ -1519,6 +1519,16 @@ export async function handleAdminCallback(
     );
     if (handled) return true;
   }
+  // Koordinator (admin: crd:add/del, koordinator: crv:a/r)
+  if (data.startsWith('crd:') || data.startsWith('crv:')) {
+    const { handleCoordinatorCallback } = await import('./coordinator-handler.ts');
+    const handled = await handleCoordinatorCallback(
+      supabase, patient, chatId, data,
+      async (txt?: string) => { await answerCallbackQuery(callbackId, txt, lovableKey, telegramKey); },
+      lovableKey, telegramKey,
+    );
+    if (handled) return true;
+  }
   // stf:back:<staffId> — orqaga xodim ekraniga
   if (data.startsWith('stf:back:')) {
     const staffId = data.slice('stf:back:'.length);
