@@ -32,9 +32,8 @@ export function adminMainKeyboard(lang: Lang, isSuper: boolean): ReplyKeyboard {
     [{ text: t.adminMenuAppointments[lang] }, { text: t.adminMenu.complaints[lang] }],
     [{ text: t.adminMenu.clinic[lang] }, { text: t.adminMenu.services[lang] }],
     [{ text: t.adminMenu.doctors[lang] }, { text: t.adminMenu.patients[lang] }],
-    [{ text: t.adminMenu.stats[lang] }],
+    [{ text: t.adminMenuMedia[lang] }, { text: t.adminMenu.stats[lang] }],
   ];
-  // (Appointments tugmasi yuqorida)
   if (isSuper) rows.push([{ text: t.adminMenu.admins[lang] }]);
   rows.push([{ text: t.adminMenu.exit[lang] }]);
   return rows;
