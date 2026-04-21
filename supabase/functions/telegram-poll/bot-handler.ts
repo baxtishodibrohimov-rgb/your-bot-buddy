@@ -628,6 +628,16 @@ export async function handleUpdate(
   const patient = await getOrCreatePatient(supabase, msg.from);
   const lang = patient.language;
 
+  // Admin media yuklash (rasm/video/hujjat) — faqat admin uchun
+  const hasMedia = msg.photo || msg.video || msg.document || msg.audio || msg.voice || msg.animation;
+  if (hasMedia) {
+    const admin = await isAdmin(supabase, patient.telegram_id);
+    if (admin) {
+      await handleAdminMediaUpload(supabase, patient, admin, chatId, msg, lovableKey, telegramKey);
+      return;
+    }
+  }
+
   // /start
   if (text === '/start') {
     await setState(supabase, patient.id, null, null);
