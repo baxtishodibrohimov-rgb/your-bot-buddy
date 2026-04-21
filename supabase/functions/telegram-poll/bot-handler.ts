@@ -155,16 +155,16 @@ async function showDoctors(supabase: any, chatId: number, lang: Lang, lovableKey
     return;
   }
 
-  let text = t.doctorsTitle[lang];
+  await sendMessage(chatId, t.doctorsTitle[lang], {}, lovableKey, telegramKey);
   for (const d of data) {
     const spec = lang === 'uz' ? d.specialty_uz : d.specialty_ru;
     const bio = lang === 'uz' ? d.bio_uz : d.bio_ru;
-    text += `\n👨‍⚕️ <b>${escapeHtml(d.full_name)}</b>\n${escapeHtml(spec)}\n`;
+    let text = `👨‍⚕️ <b>${escapeHtml(d.full_name)}</b>\n${escapeHtml(spec)}\n`;
     if (d.experience_years) text += `📅 ${d.experience_years} ${t.yearsExperience[lang]}\n`;
     if (bio) text += `${escapeHtml(bio)}\n`;
+    await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+    await sendEntityMediaToUser(supabase, chatId, 'doctor', d.id, lovableKey, telegramKey);
   }
-
-  await sendMessage(chatId, text, {}, lovableKey, telegramKey);
 }
 
 async function showAddress(supabase: any, chatId: number, lang: Lang, lovableKey: string, telegramKey: string) {
