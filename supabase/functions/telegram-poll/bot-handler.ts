@@ -1,6 +1,7 @@
 // Bot xabarlarini qayta ishlash
 import { sendMessage, answerCallbackQuery, escapeHtml, type ReplyKeyboard } from './telegram-api.ts';
 import { t, tr, type Lang } from './i18n.ts';
+import { handleAdminMessage, handleAdminCallback } from './admin-handler.ts';
 
 type Patient = {
   id: string;
@@ -334,6 +335,10 @@ export async function handleUpdate(
       return;
     }
 
+    // Admin callbacks
+    const handled = await handleAdminCallback(supabase, patient, chatId, data, cq.id, lovableKey, telegramKey);
+    if (handled) return;
+
     await answerCallbackQuery(cq.id, undefined, lovableKey, telegramKey);
     return;
   }
@@ -372,6 +377,12 @@ export async function handleUpdate(
     await setState(supabase, patient.id, null, null);
     await sendMessage(chatId, t.cancelled[lang], { replyKeyboard: mainKeyboard(lang) }, lovableKey, telegramKey);
     return;
+  }
+
+  // Admin (/admin buyrug'i va admin state/menu xabarlari)
+  if (text === '/admin' || patient.state?.startsWith('admin:')) {
+    const handled = await handleAdminMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handled) return;
   }
 
   // State'da turgan bo'lsa

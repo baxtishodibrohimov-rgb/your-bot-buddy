@@ -108,6 +108,105 @@ export const t = {
   yearsExperience: { uz: 'yillik tajriba', ru: 'лет опыта' },
   priceFrom: { uz: 'narx', ru: 'цена' },
   sum: { uz: 'so\'m', ru: 'сум' },
+
+  // ========== ADMIN ==========
+  adminWelcome: {
+    uz: '🛠 <b>Admin panel</b>\n\nKerakli bo\'limni tanlang:',
+    ru: '🛠 <b>Админ-панель</b>\n\nВыберите раздел:',
+  },
+  adminNotAuthorized: {
+    uz: '⛔️ Sizda admin huquqlari yo\'q.',
+    ru: '⛔️ У вас нет прав администратора.',
+  },
+  adminMenu: {
+    clinic: { uz: '🏥 Klinika ma\'lumotlari', ru: '🏥 Информация о клинике' },
+    services: { uz: '🦷 Xizmatlar', ru: '🦷 Услуги' },
+    doctors: { uz: '👨‍⚕️ Shifokorlar', ru: '👨‍⚕️ Врачи' },
+    patients: { uz: '👥 Bemorlar', ru: '👥 Пациенты' },
+    complaints: { uz: '✉️ Shikoyatlar', ru: '✉️ Жалобы' },
+    stats: { uz: '📊 Statistika', ru: '📊 Статистика' },
+    admins: { uz: '🔑 Adminlar', ru: '🔑 Админы' },
+    exit: { uz: '🚪 Chiqish', ru: '🚪 Выход' },
+  },
+  adminBack: { uz: '⬅️ Admin menyu', ru: '⬅️ Меню админа' },
+  adminCancel: { uz: '❌ Bekor qilish', ru: '❌ Отмена' },
+  adminAdd: { uz: '➕ Qo\'shish', ru: '➕ Добавить' },
+  adminEdit: { uz: '✏️ Tahrirlash', ru: '✏️ Редактировать' },
+  adminDelete: { uz: '🗑 O\'chirish', ru: '🗑 Удалить' },
+  adminSaved: { uz: '✅ Saqlandi.', ru: '✅ Сохранено.' },
+  adminDeleted: { uz: '🗑 O\'chirildi.', ru: '🗑 Удалено.' },
+  adminCancelled: { uz: 'Bekor qilindi.', ru: 'Отменено.' },
+  adminPickField: { uz: 'Qaysi maydonni o\'zgartirmoqchisiz?', ru: 'Какое поле изменить?' },
+  adminEnterValue: { uz: 'Yangi qiymatni kiriting:', ru: 'Введите новое значение:' },
+  adminSkip: { uz: '— (o\'tkazib yuborish)', ru: '— (пропустить)' },
+
+  // Klinika
+  clinicFields: {
+    name_uz: { uz: 'Nomi (UZ)', ru: 'Название (UZ)' },
+    name_ru: { uz: 'Nomi (RU)', ru: 'Название (RU)' },
+    about_uz: { uz: 'Klinika haqida (UZ)', ru: 'О клинике (UZ)' },
+    about_ru: { uz: 'Klinika haqida (RU)', ru: 'О клинике (RU)' },
+    address_uz: { uz: 'Manzil (UZ)', ru: 'Адрес (UZ)' },
+    address_ru: { uz: 'Manzil (RU)', ru: 'Адрес (RU)' },
+    working_hours_uz: { uz: 'Ish vaqti (UZ)', ru: 'Часы работы (UZ)' },
+    working_hours_ru: { uz: 'Ish vaqti (RU)', ru: 'Часы работы (RU)' },
+    phone: { uz: 'Telefon', ru: 'Телефон' },
+    instagram: { uz: 'Instagram', ru: 'Instagram' },
+    telegram_channel: { uz: 'Telegram kanal', ru: 'Telegram канал' },
+    location_url: { uz: 'Xarita havolasi', ru: 'Ссылка на карту' },
+  },
+
+  // Xizmat / Shifokor formalari
+  svcAskNameUz: { uz: 'Xizmat nomi (UZ):', ru: 'Название услуги (UZ):' },
+  svcAskNameRu: { uz: 'Xizmat nomi (RU):', ru: 'Название услуги (RU):' },
+  svcAskDescUz: { uz: 'Tavsif (UZ) yoki "—":', ru: 'Описание (UZ) или "—":' },
+  svcAskDescRu: { uz: 'Tavsif (RU) yoki "—":', ru: 'Описание (RU) или "—":' },
+  svcAskPriceFrom: { uz: 'Narx (dan, faqat raqam) yoki "—":', ru: 'Цена (от, число) или "—":' },
+  svcAskPriceTo: { uz: 'Narx (gacha) yoki "—":', ru: 'Цена (до) или "—":' },
+
+  docAskName: { uz: 'Shifokor F.I.SH:', ru: 'Ф.И.О. врача:' },
+  docAskSpecUz: { uz: 'Mutaxassisligi (UZ):', ru: 'Специальность (UZ):' },
+  docAskSpecRu: { uz: 'Mutaxassisligi (RU):', ru: 'Специальность (RU):' },
+  docAskExp: { uz: 'Tajriba (yil, raqam) yoki "—":', ru: 'Опыт (лет, число) или "—":' },
+  docAskBioUz: { uz: 'Bio (UZ) yoki "—":', ru: 'Био (UZ) или "—":' },
+  docAskBioRu: { uz: 'Bio (RU) yoki "—":', ru: 'Био (RU) или "—":' },
+
+  // Adminlar
+  adminAskTgId: { uz: 'Yangi adminning Telegram ID raqamini yuboring:', ru: 'Отправьте Telegram ID нового админа:' },
+  adminAskName: { uz: 'Ismi (ixtiyoriy, "—" o\'tkazish):', ru: 'Имя (опционально, "—" пропустить):' },
+  adminListEmpty: { uz: 'Adminlar yo\'q.', ru: 'Админов нет.' },
+
+  // Shikoyatlar
+  complaintsEmpty: { uz: 'Shikoyatlar yo\'q.', ru: 'Жалоб нет.' },
+  complaintReply: { uz: '💬 Javob yozish', ru: '💬 Ответить' },
+  complaintMarkResolved: { uz: '✅ Hal qilindi', ru: '✅ Решено' },
+  complaintAskReply: { uz: 'Javobingizni yozing:', ru: 'Введите ваш ответ:' },
+  complaintReplied: { uz: '✅ Javob yuborildi.', ru: '✅ Ответ отправлен.' },
+  complaintFromAdmin: {
+    uz: '💬 <b>Klinika javobi:</b>\n\n',
+    ru: '💬 <b>Ответ клиники:</b>\n\n',
+  },
+  complaintStatus: {
+    new: { uz: '🆕 Yangi', ru: '🆕 Новая' },
+    in_progress: { uz: '⏳ Jarayonda', ru: '⏳ В работе' },
+    resolved: { uz: '✅ Hal qilindi', ru: '✅ Решено' },
+  },
+
+  // Bemorlar
+  patientsEmpty: { uz: 'Bemorlar yo\'q.', ru: 'Пациентов нет.' },
+  patientsTitle: { uz: '👥 <b>Bemorlar</b>\n\n', ru: '👥 <b>Пациенты</b>\n\n' },
+  patientCardBtn: { uz: '📋 Karta', ru: '📋 Карта' },
+  patientNoCard: { uz: 'Tibbiy karta to\'ldirilmagan.', ru: 'Медицинская карта не заполнена.' },
+
+  // Statistika
+  statsTitle: { uz: '📊 <b>Statistika</b>\n\n', ru: '📊 <b>Статистика</b>\n\n' },
+  statsPatients: { uz: 'Bemorlar', ru: 'Пациенты' },
+  statsCards: { uz: 'To\'ldirilgan kartalar', ru: 'Заполненные карты' },
+  statsServices: { uz: 'Faol xizmatlar', ru: 'Активные услуги' },
+  statsDoctors: { uz: 'Faol shifokorlar', ru: 'Активные врачи' },
+  statsComplaintsNew: { uz: 'Yangi shikoyatlar', ru: 'Новые жалобы' },
+  statsComplaintsTotal: { uz: 'Jami shikoyatlar', ru: 'Всего жалоб' },
+  statsToday: { uz: 'Bugungi yangi bemorlar', ru: 'Новые пациенты сегодня' },
 };
 
 export function tr(key: keyof typeof t, lang: Lang): string {
