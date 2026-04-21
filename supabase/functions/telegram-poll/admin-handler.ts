@@ -1382,6 +1382,11 @@ export async function handleAdminMessage(
     const handled = await handleAdminResidentMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
     if (handled) return true;
   }
+  // Laboratoriya admin state'lari
+  if (state.startsWith('admin:lab:')) {
+    const handled = await handleAdminLabMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handled) return true;
+  }
 
   // Admin menyu tugmalari
   if (!state.startsWith('admin:')) return false;
@@ -1430,6 +1435,10 @@ export async function handleAdminMessage(
   if (text === t.adminMenuResidency.uz || text === t.adminMenuResidency.ru) {
     const { showAdminResidentMenu } = await import('./resident-handler.ts');
     await showAdminResidentMenu(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (text === t.adminMenuLab.uz || text === t.adminMenuLab.ru) {
+    await showAdminLabHome(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
   if (m('admins') && admin.is_super_admin) {
