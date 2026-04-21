@@ -989,11 +989,75 @@ async function updateAppointmentStatus(
   lovableKey: string,
   telegramKey: string,
 ) {
-  await supabase
+  const { data: updated } = await supabase
     .from('appointments')
     .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', apptId);
+    .eq('id', apptId)
+    .select('*')
+    .single();
   await sendMessage(chatId, t.adminSaved[patient.language], {}, lovableKey, telegramKey);
+  if (updated) {
+    notifyPatientAboutAppointmentStatus(supabase, updated, status, lovableKey, telegramKey).catch((e) =>
+      console.error('Notify patient failed:', e),
+    );
+  }
+}
+
+// Admin appointmentga vaqt belgilashi
+async function askAppointmentTime(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  apptId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  await setState(supabase, patient.id, 'admin:apt:time', { apptId });
+  await sendMessage(
+    chatId,
+    t.apptAskTime[lang],
+    { removeKeyboard: true },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+function parseDateTime(s: string): string | null {
+  // "22.04.2026 14:30" => ISO (Toshkent vaqt zonasi +05)
+  const m = s.trim().match(/^(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})\s+(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  const [, d, mo, y, h, mi] = m;
+  const iso = `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}T${h.padStart(2, '0')}:${mi.padStart(2, '0')}:00+05:00`;
+  const date = new Date(iso);
+  if (isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
+
+async function saveAppointmentTime(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? {};
+  const apptId = data.apptId as string;
+  if (!apptId) return;
+  const iso = parseDateTime(text);
+  if (!iso) {
+    await sendMessage(chatId, t.apptInvalidTime[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+  await supabase
+    .from('appointments')
+    .update({ appointment_at: iso, reminder_sent_at: null, updated_at: new Date().toISOString() })
+    .eq('id', apptId);
+  await setState(supabase, patient.id, 'admin:menu', null);
+  await sendMessage(chatId, t.apptTimeSaved[lang], {}, lovableKey, telegramKey);
+  await listAppointments(supabase, patient, chatId, lovableKey, telegramKey);
 }
 
 // ============= SHIKOYATLAR =============
