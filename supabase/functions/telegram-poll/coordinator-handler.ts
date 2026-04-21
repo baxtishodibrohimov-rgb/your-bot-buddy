@@ -136,6 +136,17 @@ async function showPendingReviews(
   telegramKey: string,
 ) {
   const lang = patient.language;
+  await showPendingReviewsForStaff(supabase, chatId, lang, lovableKey, telegramKey);
+}
+
+// Staff portalidan chaqirish uchun (koordinator bo'lib kirgan xodim)
+export async function showPendingReviewsForStaff(
+  supabase: any,
+  chatId: number,
+  lang: Lang,
+  lovableKey: string,
+  telegramKey: string,
+) {
   const { data: pending } = await supabase
     .from('checklist_reviews')
     .select('id, staff_id, checklist_id, review_date')
