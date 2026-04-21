@@ -378,6 +378,7 @@ async function showServiceEditMenu(
     }
     buttons.push(row);
   }
+  buttons.push([{ text: t.entityMediaBtn[lang], callback_data: `ent:med:service:${serviceId}` }]);
   await setState(supabase, patient.id, 'admin:services', null);
   await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
 }
