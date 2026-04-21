@@ -1489,42 +1489,18 @@ export async function handleAdminCallback(
     return true;
   }
 
-  // Shifokorlar
-  if (data === 'doc:new') {
-    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
-    await startNewDoctor(supabase, patient, chatId, lovableKey, telegramKey);
-    return true;
-  }
-  if (data.startsWith('doc:del:')) {
-    const id = data.slice('doc:del:'.length);
-    await answerCallbackQuery(callbackId, '🗑', lovableKey, telegramKey);
-    await deleteDoctor(supabase, patient, chatId, id, lovableKey, telegramKey);
-    return true;
-  }
-  if (data.startsWith('doc:tog:')) {
-    const id = data.slice('doc:tog:'.length);
-    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
-    await toggleDoctor(supabase, patient, chatId, id, lovableKey, telegramKey);
-    return true;
-  }
-  if (data.startsWith('doc:fld:')) {
-    const rest = data.slice('doc:fld:'.length);
-    const idx = rest.indexOf(':');
-    if (idx > 0) {
-      const id = rest.slice(0, idx);
-      const field = rest.slice(idx + 1);
-      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
-      await askDoctorFieldValue(supabase, patient, chatId, id, field, lovableKey, telegramKey);
-    } else {
-      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
-    }
-    return true;
-  }
-  if (data.startsWith('doc:edit:')) {
-    const id = data.slice('doc:edit:'.length);
-    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
-    await showDoctorEditMenu(supabase, patient, chatId, id, lovableKey, telegramKey);
-    return true;
+  // Xodimlar (staff)
+  if (data === 'stf:menu' || data.startsWith('stf:')) {
+    const handled = await handleStaffCallback(
+      supabase,
+      patient,
+      chatId,
+      data,
+      (text?: string) => answerCallbackQuery(callbackId, text, lovableKey, telegramKey),
+      lovableKey,
+      telegramKey,
+    );
+    if (handled) return true;
   }
 
   // Bemorlar
