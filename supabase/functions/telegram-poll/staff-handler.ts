@@ -98,7 +98,8 @@ export async function showStaffByPosition(
   if (list) {
     for (const s of list) {
       buttons.push([
-        { text: `🖼 ${s.full_name.slice(0, 20)}`, callback_data: `ent:med:staff:${s.id}` },
+        { text: `🖼 ${s.full_name.slice(0, 14)}`, callback_data: `ent:med:staff:${s.id}` },
+        { text: `📋`, callback_data: `chk:s:${s.id}` },
         { text: `🗑`, callback_data: `stf:del:${s.id}` },
       ]);
     }
@@ -221,7 +222,7 @@ export async function deleteStaffMember(
 
 function staffMenuKeyboard(lang: Lang): ReplyKeyboard {
   return [
-    [{ text: t.staffMenu.instruction[lang] }, { text: t.staffMenu.checklist[lang] }],
+    [{ text: t.staffMenu.instruction[lang] }, { text: t.staffMenuChecklists[lang] }],
     [{ text: t.staffMenu.startDay[lang] }],
     [{ text: t.staffMenu.complaint[lang] }],
     [{ text: t.staffMenu.exit[lang] }],
