@@ -74,6 +74,16 @@ const CLINIC_FIELDS: Array<keyof typeof t.clinicFields> = [
   'phone', 'instagram', 'telegram_channel', 'location_url',
 ];
 
+// Wizard tartibi (eng muhimlari avval)
+const WIZARD_FIELDS: Array<keyof typeof t.clinicWizQ> = [
+  'name_uz', 'name_ru',
+  'address_uz', 'address_ru',
+  'phone',
+  'working_hours_uz', 'working_hours_ru',
+  'about_uz', 'about_ru',
+  'instagram', 'telegram_channel', 'location_url',
+];
+
 async function showClinicInfo(
   supabase: any,
   patient: Patient,
@@ -90,7 +100,9 @@ async function showClinicInfo(
     text += `<b>${escapeHtml(label)}:</b> ${escapeHtml(String(val))}\n`;
   }
 
-  const buttons: InlineKeyboard = [];
+  const buttons: InlineKeyboard = [
+    [{ text: t.clinicWizardBtn[lang], callback_data: 'cli:wiz:start' }],
+  ];
   // 2 tadan tugma joylash
   for (let i = 0; i < CLINIC_FIELDS.length; i += 2) {
     const row = [
@@ -138,6 +150,151 @@ async function clinicSaveField(
   if (!field) return;
   await supabase.from('clinic_info').update({ [field]: text, updated_at: new Date().toISOString() }).eq('id', 1);
   await sendMessage(chatId, t.adminSaved[patient.language], {}, lovableKey, telegramKey);
+  await showClinicInfo(supabase, patient, chatId, lovableKey, telegramKey);
+}
+
+// ============= KLINIKA SEHRGARI (WIZARD) =============
+
+async function clinicWizardStart(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  await setState(supabase, patient.id, 'admin:clinic:wiz:confirm', { step: 0, values: {} });
+  await sendMessage(
+    chatId,
+    t.clinicWizardStart[lang],
+    {
+      inlineKeyboard: [
+        [{ text: t.clinicWizardStartBtn[lang], callback_data: 'cli:wiz:go' }],
+        [{ text: t.clinicWizardCancel[lang], callback_data: 'cli:wiz:cancel' }],
+      ],
+    },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function clinicWizardAsk(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  step: number,
+  values: Record<string, string | null>,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const total = WIZARD_FIELDS.length;
+  if (step >= total) {
+    return clinicWizardReview(supabase, patient, chatId, values, lovableKey, telegramKey);
+  }
+  const field = WIZARD_FIELDS[step];
+  await setState(supabase, patient.id, 'admin:clinic:wiz:step', { step, values });
+  const header = `<i>${t.clinicWizardStep[lang]} ${step + 1}/${total}</i>\n\n`;
+  await sendMessage(
+    chatId,
+    header + t.clinicWizQ[field][lang] + `\n\n/cancel — ${t.adminCancel[lang]}`,
+    { removeKeyboard: true },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function clinicWizardHandleStep(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const data = (patient.state_data as any) ?? { step: 0, values: {} };
+  const step: number = data.step ?? 0;
+  const values: Record<string, string | null> = data.values ?? {};
+  const field = WIZARD_FIELDS[step];
+  if (!field) return;
+  const trimmed = text.trim();
+  const skip = trimmed === '—' || trimmed === '-';
+  // Majburiy maydonlar (skip qilib bo'lmaydi)
+  const required: Array<string> = ['name_uz', 'name_ru', 'phone'];
+  if (skip && required.includes(field)) {
+    const lang = patient.language;
+    await sendMessage(
+      chatId,
+      lang === 'uz' ? '⚠️ Bu maydon majburiy. Iltimos, qiymat kiriting.' : '⚠️ Это поле обязательно. Введите значение.',
+      {},
+      lovableKey,
+      telegramKey,
+    );
+    return;
+  }
+  values[field] = skip ? null : trimmed;
+  await clinicWizardAsk(supabase, patient, chatId, step + 1, values, lovableKey, telegramKey);
+}
+
+async function clinicWizardReview(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  values: Record<string, string | null>,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  await setState(supabase, patient.id, 'admin:clinic:wiz:review', { values });
+  let text = t.clinicWizardReview[lang] + '\n\n';
+  for (const f of WIZARD_FIELDS) {
+    const label = t.clinicFields[f][lang];
+    const val = values[f] ?? '—';
+    text += `<b>${escapeHtml(label)}:</b> ${escapeHtml(String(val))}\n`;
+  }
+  await sendMessage(
+    chatId,
+    text,
+    {
+      inlineKeyboard: [
+        [{ text: t.clinicWizardSave[lang], callback_data: 'cli:wiz:save' }],
+        [{ text: t.clinicWizardRestart[lang], callback_data: 'cli:wiz:start' }],
+        [{ text: t.clinicWizardCancel[lang], callback_data: 'cli:wiz:cancel' }],
+      ],
+    },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function clinicWizardSave(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? { values: {} };
+  const values: Record<string, string | null> = data.values ?? {};
+  const payload: Record<string, any> = { updated_at: new Date().toISOString() };
+  for (const f of WIZARD_FIELDS) {
+    if (values[f] !== undefined) payload[f] = values[f];
+  }
+  await supabase.from('clinic_info').update(payload).eq('id', 1);
+  await sendMessage(chatId, t.clinicWizardDone[lang], {}, lovableKey, telegramKey);
+  await showClinicInfo(supabase, patient, chatId, lovableKey, telegramKey);
+}
+
+async function clinicWizardCancel(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  await setState(supabase, patient.id, 'admin:menu', null);
+  await sendMessage(chatId, t.adminCancelled[patient.language], {}, lovableKey, telegramKey);
   await showClinicInfo(supabase, patient, chatId, lovableKey, telegramKey);
 }
 
