@@ -9,6 +9,11 @@ import {
   handleStaffStep,
   handleStaffCallback,
 } from './staff-handler.ts';
+import {
+  showAdminLabHome,
+  handleAdminLabMessage,
+  handleAdminLabCallback,
+} from './lab-handler.ts';
 
 type Admin = {
   id: string;
@@ -41,6 +46,7 @@ export function adminMainKeyboard(lang: Lang, isSuper: boolean): ReplyKeyboard {
     [{ text: t.adminMenu.doctors[lang] }, { text: t.adminMenu.patients[lang] }],
     [{ text: t.adminMenuMedia[lang] }, { text: t.adminMenuBroadcast[lang] }],
     [{ text: t.adminMenu.stats[lang] }, { text: t.adminMenuResidency[lang] }],
+    [{ text: t.adminMenuLab[lang] }],
   ];
   if (isSuper) rows.push([{ text: t.adminMenu.admins[lang] }]);
   rows.push([{ text: t.adminMenu.exit[lang] }]);
