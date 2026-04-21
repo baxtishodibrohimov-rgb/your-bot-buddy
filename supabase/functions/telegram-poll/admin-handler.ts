@@ -1323,6 +1323,11 @@ export async function handleAdminMessage(
     await handleStaffStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
   }
+  if (state.startsWith('admin:crd:')) {
+    const { handleCoordinatorStep } = await import('./coordinator-handler.ts');
+    const handled = await handleCoordinatorStep(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handled) return true;
+  }
   if (state.startsWith('admin:chk:')) {
     const { handleChecklistStep } = await import('./checklist-handler.ts');
     const handled = await handleChecklistStep(supabase, patient, chatId, text, lovableKey, telegramKey);
