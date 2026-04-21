@@ -1762,6 +1762,12 @@ export async function handleAdminCallback(
   }
 
   // Qabul so'rovlari (status o'zgartirish)
+  if (data.startsWith('apt:time:')) {
+    const id = data.slice('apt:time:'.length);
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await askAppointmentTime(supabase, patient, chatId, id, lovableKey, telegramKey);
+    return true;
+  }
   if (data.startsWith('apt:called:')) {
     const id = data.slice('apt:called:'.length);
     await answerCallbackQuery(callbackId, '📞', lovableKey, telegramKey);
