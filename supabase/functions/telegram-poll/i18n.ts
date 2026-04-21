@@ -755,6 +755,121 @@ export const t = {
     uz: '✅ Bugungi ish kuningiz allaqachon boshlangan ({time}).',
     ru: '✅ Ваш рабочий день уже начат сегодня ({time}).',
   },
+
+  // ========== KOORDINATORLAR ==========
+  coordMenuBtn: { uz: '🧭 Koordinatorlar', ru: '🧭 Координаторы' },
+  coordTitle: {
+    uz: '🧭 <b>Koordinatorlar</b>\n\nKoordinatorlar xodimlar bo\'limini va cheklist tekshiruvini boshqara oladi.',
+    ru: '🧭 <b>Координаторы</b>\n\nКоординаторы могут управлять разделом сотрудников и проверять чек-листы.',
+  },
+  coordEmpty: { uz: 'Koordinatorlar yo\'q.', ru: 'Координаторов нет.' },
+  coordAddBtn: { uz: '➕ Koordinator qo\'shish', ru: '➕ Добавить координатора' },
+  coordAskTgId: {
+    uz: '🆔 Koordinatorning <b>Telegram ID</b> raqamini yuboring.\n\n💡 U @userinfobot orqali ID sini bilib oladi.\n\n/cancel — bekor',
+    ru: '🆔 Отправьте <b>Telegram ID</b> координатора.\n\n💡 Узнать ID можно через @userinfobot.\n\n/cancel — отмена',
+  },
+  coordAskName: {
+    uz: '👤 Ism familiyasini yuboring (yoki "—" o\'tkazish):',
+    ru: '👤 Введите имя и фамилию (или "—" чтобы пропустить):',
+  },
+  coordInvalidTgId: {
+    uz: '⚠️ Telegram ID faqat raqamlardan iborat bo\'lishi kerak.',
+    ru: '⚠️ Telegram ID должен состоять только из цифр.',
+  },
+  coordDuplicate: {
+    uz: '⚠️ Bu Telegram ID allaqachon koordinator sifatida ro\'yxatdan o\'tgan.',
+    ru: '⚠️ Этот Telegram ID уже зарегистрирован как координатор.',
+  },
+  coordAdded: { uz: '✅ Koordinator qo\'shildi.', ru: '✅ Координатор добавлен.' },
+  coordDeleted: { uz: '🗑 Koordinator o\'chirildi.', ru: '🗑 Координатор удалён.' },
+
+  // Koordinator portali (panel)
+  coordPortalTitle: {
+    uz: '🧭 <b>Koordinator paneli</b>\n\nKerakli bo\'limni tanlang:',
+    ru: '🧭 <b>Панель координатора</b>\n\nВыберите раздел:',
+  },
+  coordGreeting: {
+    uz: '👋 Salom, <b>{name}</b>!\n\nSiz koordinator sifatida ro\'yxatdan o\'tgansiz.',
+    ru: '👋 Здравствуйте, <b>{name}</b>!\n\nВы зарегистрированы как координатор.',
+  },
+  coordMenu: {
+    staff: { uz: '👥 Xodimlar', ru: '👥 Сотрудники' },
+    pending: { uz: '⏳ Tekshiruvlar', ru: '⏳ Проверки' },
+    attendance: { uz: '📅 Davomat', ru: '📅 Посещаемость' },
+    exit: { uz: '🚪 Chiqish', ru: '🚪 Выход' },
+  },
+  coordExited: {
+    uz: '🚪 Koordinator panelidan chiqdingiz. Qayta kirish: /coordinator',
+    ru: '🚪 Вы вышли из панели координатора. Повторно: /coordinator',
+  },
+
+  // Tekshiruv (review) — koordinatorga keladigan xabar
+  coordReviewNew: {
+    uz: '🔔 <b>Yangi cheklist tekshiruvi!</b>\n\n👤 Xodim: <b>{name}</b>\n💼 Lavozim: <i>{position}</i>\n📋 Cheklist: <b>{title}</b>\n📊 Bajarilgan: <b>{done}/{total}</b>\n📅 Sana: {date}',
+    ru: '🔔 <b>Новая проверка чек-листа!</b>\n\n👤 Сотрудник: <b>{name}</b>\n💼 Должность: <i>{position}</i>\n📋 Чек-лист: <b>{title}</b>\n📊 Выполнено: <b>{done}/{total}</b>\n📅 Дата: {date}',
+  },
+  coordReviewItemsHeader: {
+    uz: '\n\n<b>Punktlar:</b>',
+    ru: '\n\n<b>Пункты:</b>',
+  },
+  coordApproveBtn: { uz: '✅ To\'g\'ri', ru: '✅ Верно' },
+  coordRejectBtn: { uz: '❌ Noto\'g\'ri', ru: '❌ Неверно' },
+  coordReviewApproved: {
+    uz: '✅ Tekshirildi va tasdiqlandi. Xodimga xabar yuborildi.',
+    ru: '✅ Проверено и подтверждено. Сотруднику отправлено уведомление.',
+  },
+  coordReviewRejected: {
+    uz: '❌ Tekshirildi va rad etildi. Xodimga qaytadan to\'ldirish kerakligi haqida xabar yuborildi.',
+    ru: '❌ Проверено и отклонено. Сотруднику отправлено уведомление о повторной проверке.',
+  },
+  coordReviewAlreadyDone: {
+    uz: '⚠️ Bu tekshiruv allaqachon ko\'rib chiqilgan.',
+    ru: '⚠️ Эта проверка уже рассмотрена.',
+  },
+
+  // Xodimga xabar (tasdiq / rad)
+  staffDayClosed: {
+    uz: '🎉 <b>Bugungi kun yopildi!</b>\n\nKoordinator cheklistingizni to\'g\'ri to\'ldirilgan deb tasdiqladi. Yaxshi ish! 💪\n\n<i>Cheklist:</i> {title}',
+    ru: '🎉 <b>Сегодняшний день закрыт!</b>\n\nКоординатор подтвердил, что ваш чек-лист заполнен правильно. Хорошая работа! 💪\n\n<i>Чек-лист:</i> {title}',
+  },
+  staffChecklistRejected: {
+    uz: '⚠️ <b>Cheklist noto\'g\'ri to\'ldirilgan</b>\n\nKoordinator sizning cheklistingizni qaytadan tekshirishingizni so\'radi.\n\n<i>Cheklist:</i> {title}\n\nIltimos, har bir punktni qayta ko\'rib chiqing va to\'g\'ri belgilang.',
+    ru: '⚠️ <b>Чек-лист заполнен неверно</b>\n\nКоординатор просит вас повторно проверить чек-лист.\n\n<i>Чек-лист:</i> {title}\n\nПожалуйста, перепроверьте каждый пункт и отметьте корректно.',
+  },
+  chkSentForReviewBadge: {
+    uz: '\n\n⏳ <i>Tekshirish uchun koordinatorga yuborildi.</i>',
+    ru: '\n\n⏳ <i>Отправлено координатору на проверку.</i>',
+  },
+  chkApprovedBadge: {
+    uz: '\n\n✅ <i>Koordinator tomonidan tasdiqlangan.</i>',
+    ru: '\n\n✅ <i>Подтверждено координатором.</i>',
+  },
+  chkRejectedBadge: {
+    uz: '\n\n❌ <i>Koordinator qaytadan to\'ldirishni so\'radi.</i>',
+    ru: '\n\n❌ <i>Координатор просит перепроверить.</i>',
+  },
+
+  // Koordinator: pending tekshiruvlar ro'yxati
+  coordPendingTitle: {
+    uz: '⏳ <b>Tekshirilmagan cheklistlar</b>',
+    ru: '⏳ <b>Непроверенные чек-листы</b>',
+  },
+  coordPendingEmpty: {
+    uz: '✨ Hozircha tekshirilishi kerak bo\'lgan cheklist yo\'q.',
+    ru: '✨ Сейчас нет чек-листов, требующих проверки.',
+  },
+
+  // Koordinator: davomat
+  coordAttendanceTitle: {
+    uz: '📅 <b>Bugungi davomat</b>',
+    ru: '📅 <b>Посещаемость на сегодня</b>',
+  },
+  coordAttendanceEmpty: {
+    uz: 'Bugun hech kim ish kunini boshlamagan.',
+    ru: 'Сегодня никто не начал рабочий день.',
+  },
+  coordAttendanceCame: { uz: '🟢 Keldi', ru: '🟢 Пришёл' },
+  coordAttendanceMissing: { uz: '⚪ Yo\'q', ru: '⚪ Нет' },
 };
 
 export function tr(key: keyof typeof t, lang: Lang): string {
