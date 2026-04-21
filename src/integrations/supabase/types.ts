@@ -38,6 +38,50 @@ export type Database = {
         }
         Relationships: []
       }
+      appointments: {
+        Row: {
+          admin_note: string | null
+          created_at: string
+          full_name: string
+          id: string
+          notes: string | null
+          patient_id: string | null
+          phone: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          phone: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          phone?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_info: {
         Row: {
           about_ru: string
