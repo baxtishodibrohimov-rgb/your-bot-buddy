@@ -410,9 +410,10 @@ export async function showChecklistForStaff(
   for (const it of items as ChecklistItem[]) {
     const s = status.get(it.id);
     const label = it.text.length > 28 ? it.text.slice(0, 28) + '…' : it.text;
+    // callback_data 64 byte limit — faqat itemId va 0/1 saqlaymiz
     buttons.push([
-      { text: `${s === true ? '✅' : '☑️'} ${label}`, callback_data: `chk:m:${checklistId}:${it.id}:1` },
-      { text: `${s === false ? '❌' : '✖️'}`, callback_data: `chk:m:${checklistId}:${it.id}:0` },
+      { text: `${s === true ? '✅' : '☑️'} ${label}`, callback_data: `cm:${it.id}:1` },
+      { text: `${s === false ? '❌' : '✖️'}`, callback_data: `cm:${it.id}:0` },
     ]);
   }
   buttons.push([{ text: t.chkRefreshBtn[lang], callback_data: `chk:open:${checklistId}` }]);
@@ -432,7 +433,6 @@ export async function markChecklistItem(
   supabase: any,
   patient: Patient,
   chatId: number,
-  checklistId: string,
   itemId: string,
   isDone: boolean,
   lovableKey: string,
@@ -442,18 +442,25 @@ export async function markChecklistItem(
   if (!staff) return;
 
   const date = todayDate();
-  // Verify item belongs to the checklist (and to this staff)
+  // Item -> checklist_id, keyin checklist staff_id ga tegishli ekanini tekshiramiz
+  const { data: item } = await supabase
+    .from('checklist_items')
+    .select('id, checklist_id')
+    .eq('id', itemId)
+    .maybeSingle();
+  if (!item) return;
+
   const { data: cl } = await supabase
     .from('staff_checklists')
     .select('id, staff_id')
-    .eq('id', checklistId)
+    .eq('id', item.checklist_id)
     .maybeSingle();
   if (!cl || cl.staff_id !== staff.id) return;
 
   await supabase.from('checklist_completions').upsert(
     {
       staff_id: staff.id,
-      checklist_id: checklistId,
+      checklist_id: cl.id,
       item_id: itemId,
       completion_date: date,
       is_done: isDone,
@@ -462,7 +469,7 @@ export async function markChecklistItem(
     { onConflict: 'staff_id,item_id,completion_date' },
   );
 
-  await showChecklistForStaff(supabase, patient, chatId, checklistId, lovableKey, telegramKey);
+  await showChecklistForStaff(supabase, patient, chatId, cl.id, lovableKey, telegramKey);
 }
 
 // "Ishni boshlash" — majburiy cheklistni avto chiqarish
@@ -675,14 +682,25 @@ export async function handleChecklistCallback(
     await showChecklistForStaff(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
   }
+  if (data.startsWith('cm:')) {
+    // cm:<itemId>:<0|1> — qisqa format (Telegram callback_data 64 bayt limiti)
+    const rest = data.slice('cm:'.length);
+    const parts = rest.split(':');
+    if (parts.length === 2) {
+      const [itemId, val] = parts;
+      await answerCb(val === '1' ? '✅' : '❌');
+      await markChecklistItem(supabase, patient, chatId, itemId, val === '1', lovableKey, telegramKey);
+      return true;
+    }
+  }
   if (data.startsWith('chk:m:')) {
-    // chk:m:<checklistId>:<itemId>:<0|1>
+    // Eski format — orqaga moslik uchun
     const rest = data.slice('chk:m:'.length);
     const parts = rest.split(':');
     if (parts.length === 3) {
-      const [checklistId, itemId, val] = parts;
+      const [, itemId, val] = parts;
       await answerCb(val === '1' ? '✅' : '❌');
-      await markChecklistItem(supabase, patient, chatId, checklistId, itemId, val === '1', lovableKey, telegramKey);
+      await markChecklistItem(supabase, patient, chatId, itemId, val === '1', lovableKey, telegramKey);
       return true;
     }
   }
