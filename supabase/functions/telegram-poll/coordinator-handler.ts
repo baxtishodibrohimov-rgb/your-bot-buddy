@@ -1,5 +1,5 @@
 // Koordinator tizimi:
-// 1) Admin koordinatorlarni qo'shadi/o'chiradi
+// 1) Koordinator = staff jadvalida position='koordinator' bo'lgan xodim (alohida jadval YO'Q)
 // 2) Koordinator /coordinator buyrug'i orqali panelga kiradi
 // 3) Xodim cheklistni tugatganda koordinatorlarga avto xabar boradi
 // 4) Koordinator ✅/❌ orqali tasdiqlaydi yoki rad etadi
@@ -19,11 +19,20 @@ async function setState(supabase: any, patientId: string, state: string | null, 
   await supabase.from('patients').update({ state, state_data: stateData }).eq('id', patientId);
 }
 
-export async function isCoordinator(supabase: any, telegramId: number): Promise<{ id: string; full_name: string | null } | null> {
+/**
+ * Koordinator = staff jadvalida position='koordinator' va is_active=true bo'lgan xodim.
+ * Qaytadi: { id (staff.id), full_name } yoki null.
+ */
+export async function isCoordinator(
+  supabase: any,
+  telegramId: number,
+): Promise<{ id: string; full_name: string | null } | null> {
   const { data } = await supabase
-    .from('coordinators')
+    .from('staff')
     .select('id, full_name')
     .eq('telegram_id', telegramId)
+    .eq('position', 'koordinator')
+    .eq('is_active', true)
     .maybeSingle();
   return data ?? null;
 }
@@ -38,122 +47,6 @@ function todayDateLabel(lang: Lang): string {
   return d.toLocaleDateString(lang === 'uz' ? 'uz-UZ' : 'ru-RU', {
     day: '2-digit', month: '2-digit', year: 'numeric',
   });
-}
-
-// ============= ADMIN: koordinatorlar ro'yxati =============
-
-export async function showCoordinatorsAdmin(
-  supabase: any,
-  patient: Patient,
-  chatId: number,
-  lovableKey: string,
-  telegramKey: string,
-) {
-  const lang = patient.language;
-  const { data: list } = await supabase
-    .from('coordinators')
-    .select('id, telegram_id, full_name')
-    .order('created_at');
-
-  let text = t.coordTitle[lang] + '\n\n';
-  if (!list || list.length === 0) {
-    text += t.coordEmpty[lang];
-  } else {
-    for (const c of list) {
-      text += `🧭 <code>${c.telegram_id}</code>${c.full_name ? ' — ' + escapeHtml(c.full_name) : ''}\n`;
-    }
-  }
-
-  const buttons: InlineKeyboard = [
-    [{ text: t.coordAddBtn[lang], callback_data: 'crd:add' }],
-  ];
-  if (list) {
-    for (const c of list) {
-      const label = c.full_name ?? String(c.telegram_id);
-      buttons.push([{ text: `🗑 ${label.slice(0, 25)}`, callback_data: `crd:del:${c.id}` }]);
-    }
-  }
-
-  await setState(supabase, patient.id, 'admin:coord', null);
-  await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
-}
-
-export async function startAddCoordinator(
-  supabase: any,
-  patient: Patient,
-  chatId: number,
-  lovableKey: string,
-  telegramKey: string,
-) {
-  await setState(supabase, patient.id, 'admin:crd:tg_id', {});
-  await sendMessage(chatId, t.coordAskTgId[patient.language], { removeKeyboard: true }, lovableKey, telegramKey);
-}
-
-export async function handleCoordinatorStep(
-  supabase: any,
-  patient: Patient,
-  chatId: number,
-  text: string,
-  lovableKey: string,
-  telegramKey: string,
-): Promise<boolean> {
-  const lang = patient.language;
-  const state = patient.state ?? '';
-  const data = (patient.state_data as Record<string, any>) ?? {};
-
-  if (state === 'admin:crd:tg_id') {
-    const trimmed = text.trim().replace(/^@/, '');
-    if (!/^\d+$/.test(trimmed)) {
-      await sendMessage(chatId, t.coordInvalidTgId[lang], {}, lovableKey, telegramKey);
-      return true;
-    }
-    const tgId = Number(trimmed);
-    const { data: existing } = await supabase
-      .from('coordinators')
-      .select('id')
-      .eq('telegram_id', tgId)
-      .maybeSingle();
-    if (existing) {
-      await sendMessage(chatId, t.coordDuplicate[lang], {}, lovableKey, telegramKey);
-      return true;
-    }
-    data.telegram_id = tgId;
-    await setState(supabase, patient.id, 'admin:crd:name', data);
-    await sendMessage(chatId, t.coordAskName[lang], {}, lovableKey, telegramKey);
-    return true;
-  }
-
-  if (state === 'admin:crd:name') {
-    const skip = text.trim() === '—' || text.trim() === '-';
-    const fullName = skip ? null : text.trim().slice(0, 200);
-    const { error } = await supabase.from('coordinators').insert({
-      telegram_id: data.telegram_id,
-      full_name: fullName,
-    });
-    if (error) {
-      await sendMessage(chatId, `⚠️ ${error.message}`, {}, lovableKey, telegramKey);
-      return true;
-    }
-    await setState(supabase, patient.id, 'admin:coord', null);
-    await sendMessage(chatId, t.coordAdded[lang], {}, lovableKey, telegramKey);
-    await showCoordinatorsAdmin(supabase, patient, chatId, lovableKey, telegramKey);
-    return true;
-  }
-
-  return false;
-}
-
-export async function deleteCoordinator(
-  supabase: any,
-  patient: Patient,
-  chatId: number,
-  id: string,
-  lovableKey: string,
-  telegramKey: string,
-) {
-  await supabase.from('coordinators').delete().eq('id', id);
-  await sendMessage(chatId, t.coordDeleted[patient.language], {}, lovableKey, telegramKey);
-  await showCoordinatorsAdmin(supabase, patient, chatId, lovableKey, telegramKey);
 }
 
 // ============= /coordinator buyrug'i (koordinator panel) =============
@@ -179,8 +72,8 @@ export async function handleCoordinatorCommand(
     await sendMessage(
       chatId,
       lang === 'uz'
-        ? '⛔️ Siz koordinatorlar ro\'yxatida yo\'qsiz.'
-        : '⛔️ Вы не в списке координаторов.',
+        ? '⛔️ Siz koordinator emassiz. Admin sizni xodimlar bo\'limiga "Koordinator" lavozimida qo\'shishi kerak.'
+        : '⛔️ Вы не координатор. Администратор должен добавить вас как сотрудника с должностью «Координатор».',
       {},
       lovableKey,
       telegramKey,
@@ -245,7 +138,7 @@ async function showPendingReviews(
   const lang = patient.language;
   const { data: pending } = await supabase
     .from('checklist_reviews')
-    .select('id, staff_id, checklist_id, review_date, staff:staff_id(full_name, position), checklist:checklist_id(title)')
+    .select('id, staff_id, checklist_id, review_date')
     .eq('status', 'pending')
     .order('created_at', { ascending: false })
     .limit(20);
@@ -364,8 +257,12 @@ export async function notifyCoordinatorsForReview(
     reviewId = created.id;
   }
 
-  // Barcha koordinatorlarga yuborish
-  const { data: coords } = await supabase.from('coordinators').select('telegram_id');
+  // Barcha aktiv koordinatorlarga (staff.position='koordinator') yuborish
+  const { data: coords } = await supabase
+    .from('staff')
+    .select('telegram_id')
+    .eq('position', 'koordinator')
+    .eq('is_active', true);
   if (!coords || coords.length === 0) return;
 
   for (const c of coords) {
@@ -539,19 +436,6 @@ export async function handleCoordinatorCallback(
   lovableKey: string,
   telegramKey: string,
 ): Promise<boolean> {
-  // Admin: koordinator boshqaruv
-  if (data === 'crd:add') {
-    await answerCb();
-    await startAddCoordinator(supabase, patient, chatId, lovableKey, telegramKey);
-    return true;
-  }
-  if (data.startsWith('crd:del:')) {
-    const id = data.slice('crd:del:'.length);
-    await answerCb('🗑');
-    await deleteCoordinator(supabase, patient, chatId, id, lovableKey, telegramKey);
-    return true;
-  }
-
   // Tekshiruv qarori (faqat koordinatorga)
   if (data.startsWith('crv:')) {
     const parts = data.split(':');
