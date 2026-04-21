@@ -705,6 +705,8 @@ export async function handleUpdate(
     await handleStaffComplaint(supabase, patient, chatId, text, lovableKey, telegramKey);
     return;
   }
+  // Cheklist admin step (title yoki itemlar) — adminMessage handler ishlatiladi pastda
+
 
   // Admin (/admin buyrug'i va admin state/menu xabarlari)
   const isAdminCmd = text === '/admin';
