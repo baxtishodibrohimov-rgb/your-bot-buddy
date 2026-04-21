@@ -9,6 +9,11 @@ import {
   handleStaffStep,
   handleStaffCallback,
 } from './staff-handler.ts';
+import {
+  showAdminLabHome,
+  handleAdminLabMessage,
+  handleAdminLabCallback,
+} from './lab-handler.ts';
 
 type Admin = {
   id: string;
@@ -41,6 +46,7 @@ export function adminMainKeyboard(lang: Lang, isSuper: boolean): ReplyKeyboard {
     [{ text: t.adminMenu.doctors[lang] }, { text: t.adminMenu.patients[lang] }],
     [{ text: t.adminMenuMedia[lang] }, { text: t.adminMenuBroadcast[lang] }],
     [{ text: t.adminMenu.stats[lang] }, { text: t.adminMenuResidency[lang] }],
+    [{ text: t.adminMenuLab[lang] }],
   ];
   if (isSuper) rows.push([{ text: t.adminMenu.admins[lang] }]);
   rows.push([{ text: t.adminMenu.exit[lang] }]);
@@ -1376,6 +1382,11 @@ export async function handleAdminMessage(
     const handled = await handleAdminResidentMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
     if (handled) return true;
   }
+  // Laboratoriya admin state'lari
+  if (state.startsWith('admin:lab:')) {
+    const handled = await handleAdminLabMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handled) return true;
+  }
 
   // Admin menyu tugmalari
   if (!state.startsWith('admin:')) return false;
@@ -1424,6 +1435,10 @@ export async function handleAdminMessage(
   if (text === t.adminMenuResidency.uz || text === t.adminMenuResidency.ru) {
     const { showAdminResidentMenu } = await import('./resident-handler.ts');
     await showAdminResidentMenu(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (text === t.adminMenuLab.uz || text === t.adminMenuLab.ru) {
+    await showAdminLabHome(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
   if (m('admins') && admin.is_super_admin) {
@@ -1499,6 +1514,16 @@ export async function handleAdminCallback(
   if (data.startsWith('ares:')) {
     const { handleAdminResidentCallback } = await import('./resident-handler.ts');
     const handled = await handleAdminResidentCallback(
+      supabase, patient, chatId, data,
+      async (txt?: string) => { await answerCallbackQuery(callbackId, txt, lovableKey, telegramKey); },
+      lovableKey, telegramKey,
+    );
+    if (handled) return true;
+  }
+
+  // Laboratoriya admin callbacks
+  if (data.startsWith('alab:')) {
+    const handled = await handleAdminLabCallback(
       supabase, patient, chatId, data,
       async (txt?: string) => { await answerCallbackQuery(callbackId, txt, lovableKey, telegramKey); },
       lovableKey, telegramKey,

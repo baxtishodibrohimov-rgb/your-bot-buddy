@@ -227,9 +227,9 @@ function staffMenuKeyboard(lang: Lang, isCoord: boolean = false): ReplyKeyboard 
     [{ text: t.staffMenu.startDay[lang] }],
   ];
   if (isCoord) {
-    // Koordinator uchun qo'shimcha bo'lim: xodimlar boshqaruvi, statistika va tekshiruvlar
+    // Koordinator uchun qo'shimcha bo'lim: xodimlar boshqaruvi, statistika, tekshiruvlar va laboratoriya
     rows.push([{ text: t.coordExtraStaff[lang] }, { text: t.coordExtraStats[lang] }]);
-    rows.push([{ text: t.coordMenu.pending[lang] }]);
+    rows.push([{ text: t.coordExtraLab[lang] }, { text: t.coordMenu.pending[lang] }]);
   }
   rows.push([{ text: t.staffMenu.complaint[lang] }]);
   rows.push([{ text: t.staffMenu.exit[lang] }]);
@@ -341,6 +341,12 @@ export async function handleStaffPortalMessage(
     if (text === t.coordMenu.pending.uz || text === t.coordMenu.pending.ru) {
       const { showPendingReviewsForStaff } = await import('./coordinator-handler.ts');
       await showPendingReviewsForStaff(supabase, chatId, lang, lovableKey, telegramKey);
+      return true;
+    }
+    // 🦷 Laboratoriya — koordinator lab menyusi
+    if (text === t.coordExtraLab.uz || text === t.coordExtraLab.ru) {
+      const { showCoordLabMenu } = await import('./lab-handler.ts');
+      await showCoordLabMenu(supabase, patient, chatId, lovableKey, telegramKey);
       return true;
     }
   }

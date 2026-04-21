@@ -13,6 +13,16 @@ import {
   handleResidentCallback,
   handleAdminResidentMediaUpload,
 } from './resident-handler.ts';
+import {
+  isLabWorker,
+  handleLaboratoryCommand,
+  handleLabPortalMessage,
+  handleLabCallback,
+  handleLabRejectReason,
+  handleCoordLabStep,
+  handleCoordLabCallback,
+  handleCoordLabMedia,
+} from './lab-handler.ts';
 
 type Patient = {
   id: string;
@@ -661,6 +671,26 @@ export async function handleUpdate(
       if (handledRes) return;
     }
 
+    // Lab xodim callbacks (lab:o:, lab:acc:, lab:rej:, lab:rdy:)
+    if (data.startsWith('lab:')) {
+      const handledLab = await handleLabCallback(
+        supabase, patient, chatId, data,
+        async (txt?: string) => { await answerCallbackQuery(cq.id, txt, lovableKey, telegramKey); },
+        lovableKey, telegramKey,
+      );
+      if (handledLab) return;
+    }
+
+    // Koordinator lab callbacks (clab:add, clab:ready, clab:app:, clab:doc:)
+    if (data.startsWith('clab:')) {
+      const handledCLab = await handleCoordLabCallback(
+        supabase, patient, chatId, data,
+        async (txt?: string) => { await answerCallbackQuery(cq.id, txt, lovableKey, telegramKey); },
+        lovableKey, telegramKey,
+      );
+      if (handledCLab) return;
+    }
+
     // Admin callbacks
     const handled = await handleAdminCallback(supabase, patient, chatId, data, cq.id, lovableKey, telegramKey);
     if (handled) return;
@@ -683,6 +713,13 @@ export async function handleUpdate(
   const hasMedia = msg.photo || msg.video || msg.document || msg.audio || msg.voice || msg.animation;
   if (hasMedia) {
     const admin = await isAdmin(supabase, patient.telegram_id);
+
+    // Koordinator lab media (xray/scanner/note bosqichlari) — admin emas ham bo'lishi mumkin
+    if (patient.state?.startsWith('clab:add:')) {
+      const handledLabMedia = await handleCoordLabMedia(supabase, patient, admin, chatId, msg, lovableKey, telegramKey);
+      if (handledLabMedia) return;
+    }
+
     if (admin) {
       // Rezidentura bo'limiga media yuklash
       if (patient.state === 'admin:res:addmed') {
@@ -748,6 +785,30 @@ export async function handleUpdate(
     }
     await showResidentHome(supabase, patient, chatId, lovableKey, telegramKey);
     return;
+  }
+
+  // /laboratoriya — lab xodimlari uchun
+  if (text === '/laboratoriya' || text === '/laboratory' || text === '/lab') {
+    await handleLaboratoryCommand(supabase, patient, chatId, lovableKey, telegramKey);
+    return;
+  }
+
+  // Lab xodim portali state'lari
+  if (patient.state === 'lab:menu') {
+    const handledLab = await handleLabPortalMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handledLab) return;
+    await handleLaboratoryCommand(supabase, patient, chatId, lovableKey, telegramKey);
+    return;
+  }
+  if (patient.state === 'lab:rej:reason') {
+    await handleLabRejectReason(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return;
+  }
+
+  // Koordinator lab qo'shish state'lari (matn qadamlari)
+  if (patient.state?.startsWith('clab:add:')) {
+    const handledCLab = await handleCoordLabStep(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handledCLab) return;
   }
 
   // Rezident menyusi state'i
