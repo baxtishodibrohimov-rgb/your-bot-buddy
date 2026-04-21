@@ -40,7 +40,7 @@ export function adminMainKeyboard(lang: Lang, isSuper: boolean): ReplyKeyboard {
     [{ text: t.adminMenu.clinic[lang] }, { text: t.adminMenu.services[lang] }],
     [{ text: t.adminMenu.doctors[lang] }, { text: t.adminMenu.patients[lang] }],
     [{ text: t.adminMenuMedia[lang] }, { text: t.adminMenuBroadcast[lang] }],
-    [{ text: t.adminMenu.stats[lang] }],
+    [{ text: t.adminMenu.stats[lang] }, { text: t.coordMenuBtn[lang] }],
   ];
   if (isSuper) rows.push([{ text: t.adminMenu.admins[lang] }]);
   rows.push([{ text: t.adminMenu.exit[lang] }]);
@@ -1323,6 +1323,11 @@ export async function handleAdminMessage(
     await handleStaffStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
   }
+  if (state.startsWith('admin:crd:')) {
+    const { handleCoordinatorStep } = await import('./coordinator-handler.ts');
+    const handled = await handleCoordinatorStep(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handled) return true;
+  }
   if (state.startsWith('admin:chk:')) {
     const { handleChecklistStep } = await import('./checklist-handler.ts');
     const handled = await handleChecklistStep(supabase, patient, chatId, text, lovableKey, telegramKey);
@@ -1394,6 +1399,11 @@ export async function handleAdminMessage(
   }
   if (m('stats')) {
     await showStatsMenu(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (text === t.coordMenuBtn.uz || text === t.coordMenuBtn.ru) {
+    const { showCoordinatorsAdmin } = await import('./coordinator-handler.ts');
+    await showCoordinatorsAdmin(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
   if (m('admins') && admin.is_super_admin) {
@@ -1503,6 +1513,16 @@ export async function handleAdminCallback(
   if (data.startsWith('chk:')) {
     const { handleChecklistCallback } = await import('./checklist-handler.ts');
     const handled = await handleChecklistCallback(
+      supabase, patient, chatId, data,
+      async (txt?: string) => { await answerCallbackQuery(callbackId, txt, lovableKey, telegramKey); },
+      lovableKey, telegramKey,
+    );
+    if (handled) return true;
+  }
+  // Koordinator (admin: crd:add/del, koordinator: crv:a/r)
+  if (data.startsWith('crd:') || data.startsWith('crv:')) {
+    const { handleCoordinatorCallback } = await import('./coordinator-handler.ts');
+    const handled = await handleCoordinatorCallback(
       supabase, patient, chatId, data,
       async (txt?: string) => { await answerCallbackQuery(callbackId, txt, lovableKey, telegramKey); },
       lovableKey, telegramKey,

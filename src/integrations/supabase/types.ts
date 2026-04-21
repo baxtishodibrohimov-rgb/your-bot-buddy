@@ -222,6 +222,67 @@ export type Database = {
           },
         ]
       }
+      checklist_reviews: {
+        Row: {
+          checklist_id: string
+          created_at: string
+          id: string
+          reject_reason: string | null
+          review_date: string
+          reviewed_at: string | null
+          reviewed_by_coordinator_id: string | null
+          staff_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          checklist_id: string
+          created_at?: string
+          id?: string
+          reject_reason?: string | null
+          review_date?: string
+          reviewed_at?: string | null
+          reviewed_by_coordinator_id?: string | null
+          staff_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          checklist_id?: string
+          created_at?: string
+          id?: string
+          reject_reason?: string | null
+          review_date?: string
+          reviewed_at?: string | null
+          reviewed_by_coordinator_id?: string | null
+          staff_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_reviews_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "staff_checklists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_reviews_reviewed_by_coordinator_id_fkey"
+            columns: ["reviewed_by_coordinator_id"]
+            isOneToOne: false
+            referencedRelation: "coordinators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_reviews_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_info: {
         Row: {
           about_ru: string
@@ -313,6 +374,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      coordinators: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          telegram_id: number
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          telegram_id: number
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          telegram_id?: number
+        }
+        Relationships: []
       }
       media_attachments: {
         Row: {
