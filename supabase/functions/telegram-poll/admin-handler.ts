@@ -1521,6 +1521,16 @@ export async function handleAdminCallback(
     if (handled) return true;
   }
 
+  // Laboratoriya admin callbacks
+  if (data.startsWith('alab:')) {
+    const handled = await handleAdminLabCallback(
+      supabase, patient, chatId, data,
+      async (txt?: string) => { await answerCallbackQuery(callbackId, txt, lovableKey, telegramKey); },
+      lovableKey, telegramKey,
+    );
+    if (handled) return true;
+  }
+
   // Klinika sehrgari (wizard)
   if (data === 'cli:wiz:start') {
     await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
