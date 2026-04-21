@@ -668,8 +668,16 @@ export async function handleUpdate(
   }
 
   // State'da turgan bo'lsa
+  if (patient.state === 'mc:edit') {
+    await saveMcEdit(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return;
+  }
   if (patient.state?.startsWith('mc:')) {
     await handleMedicalCardStep(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return;
+  }
+  if (patient.state?.startsWith('appt:')) {
+    await handleAppointmentStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     return;
   }
   if (patient.state === 'complaint:wait') {
@@ -691,6 +699,8 @@ export async function handleUpdate(
     await showAddress(supabase, chatId, lang, lovableKey, telegramKey);
   } else if (matches('contact')) {
     await showContact(supabase, chatId, lang, lovableKey, telegramKey);
+  } else if (matches('appointment')) {
+    await startAppointment(supabase, patient, chatId, lovableKey, telegramKey);
   } else if (matches('medicalCard')) {
     await showOrStartMedicalCard(supabase, patient, chatId, lovableKey, telegramKey);
   } else if (matches('complaint')) {
