@@ -787,6 +787,30 @@ export async function handleUpdate(
     return;
   }
 
+  // /laboratoriya — lab xodimlari uchun
+  if (text === '/laboratoriya' || text === '/laboratory' || text === '/lab') {
+    await handleLaboratoryCommand(supabase, patient, chatId, lovableKey, telegramKey);
+    return;
+  }
+
+  // Lab xodim portali state'lari
+  if (patient.state === 'lab:menu') {
+    const handledLab = await handleLabPortalMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handledLab) return;
+    await handleLaboratoryCommand(supabase, patient, chatId, lovableKey, telegramKey);
+    return;
+  }
+  if (patient.state === 'lab:rej:reason') {
+    await handleLabRejectReason(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return;
+  }
+
+  // Koordinator lab qo'shish state'lari (matn qadamlari)
+  if (patient.state?.startsWith('clab:add:')) {
+    const handledCLab = await handleCoordLabStep(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handledCLab) return;
+  }
+
   // Rezident menyusi state'i
   if (patient.state === 'res:home' || patient.state?.startsWith('res:t:')) {
     const handled = await handleResidentMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
