@@ -138,6 +138,90 @@ export type Database = {
           },
         ]
       }
+      checklist_completions: {
+        Row: {
+          checklist_id: string
+          completion_date: string
+          id: string
+          is_done: boolean
+          item_id: string
+          marked_at: string
+          staff_id: string
+        }
+        Insert: {
+          checklist_id: string
+          completion_date?: string
+          id?: string
+          is_done?: boolean
+          item_id: string
+          marked_at?: string
+          staff_id: string
+        }
+        Update: {
+          checklist_id?: string
+          completion_date?: string
+          id?: string
+          is_done?: boolean
+          item_id?: string
+          marked_at?: string
+          staff_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_completions_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "staff_checklists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_completions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_completions_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_items: {
+        Row: {
+          checklist_id: string
+          created_at: string
+          id: string
+          sort_order: number
+          text: string
+        }
+        Insert: {
+          checklist_id: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          text: string
+        }
+        Update: {
+          checklist_id?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_items_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "staff_checklists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_info: {
         Row: {
           about_ru: string
@@ -523,6 +607,73 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      staff_checklists: {
+        Row: {
+          created_at: string
+          id: string
+          is_daily_required: boolean
+          sort_order: number
+          staff_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_daily_required?: boolean
+          sort_order?: number
+          staff_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_daily_required?: boolean
+          sort_order?: number
+          staff_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_checklists_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_day_starts: {
+        Row: {
+          id: string
+          staff_id: string
+          start_date: string
+          started_at: string
+        }
+        Insert: {
+          id?: string
+          staff_id: string
+          start_date?: string
+          started_at?: string
+        }
+        Update: {
+          id?: string
+          staff_id?: string
+          start_date?: string
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_day_starts_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       telegram_bot_state: {
         Row: {

@@ -658,6 +658,103 @@ export const t = {
   },
   apptTimeSaved: { uz: '✅ Vaqt belgilandi.', ru: '✅ Время назначено.' },
   apptTimeLabel: { uz: '🕐 Vaqt', ru: '🕐 Время' },
+
+  // ========== CHEKLIST (XODIM) ==========
+  // Xodim portali tugmasi
+  staffMenuChecklists: { uz: '📋 Cheklistlar', ru: '📋 Чек-листы' },
+
+  // Xodim ko'rinishi
+  chkUserTitle: {
+    uz: '📋 <b>Sizning cheklistlaringiz</b>\n\nKerakli cheklistni tanlang:',
+    ru: '📋 <b>Ваши чек-листы</b>\n\nВыберите чек-лист:',
+  },
+  chkUserEmpty: {
+    uz: '📋 Sizga hali cheklist biriktirilmagan.\n\nAdministrator yaqin orada qo\'shadi.',
+    ru: '📋 Для вас ещё не созданы чек-листы.\n\nАдминистратор скоро добавит.',
+  },
+  chkDailyBadge: { uz: '⭐ Majburiy', ru: '⭐ Обязательный' },
+  chkExtraBadge: { uz: '📌 Qo\'shimcha', ru: '📌 Дополнительный' },
+  chkTodayHeader: {
+    uz: '🌅 <b>Bugungi cheklistingiz</b>\n\nIsh kuni boshlanishi bilan quyidagi punktlarni bajaring va ✅/❌ tugmalari orqali belgilang:',
+    ru: '🌅 <b>Ваш чек-лист на сегодня</b>\n\nС началом рабочего дня выполняйте пункты и отмечайте через ✅/❌:',
+  },
+  chkNoItems: {
+    uz: '⚠️ Bu cheklistda hali punktlar yo\'q.',
+    ru: '⚠️ В этом чек-листе ещё нет пунктов.',
+  },
+  chkItemDone: { uz: '✅ Bajarildi', ru: '✅ Выполнено' },
+  chkItemPending: { uz: '⏳ Kutilmoqda', ru: '⏳ Ожидает' },
+  chkItemFailed: { uz: '❌ Bajarilmadi', ru: '❌ Не выполнено' },
+  chkAllDone: {
+    uz: '🎉 <b>Barakalla!</b> Bugungi majburiy cheklist to\'liq bajarildi.',
+    ru: '🎉 <b>Молодец!</b> Сегодняшний обязательный чек-лист полностью выполнен.',
+  },
+  chkProgress: { uz: 'Bajarildi', ru: 'Выполнено' },
+  chkRefreshBtn: { uz: '🔄 Yangilash', ru: '🔄 Обновить' },
+  chkBackToList: { uz: '⬅️ Cheklistlar', ru: '⬅️ Чек-листы' },
+  chkNoDailyOnStart: {
+    uz: '💡 Sizga hali majburiy kunlik cheklist tayinlanmagan.',
+    ru: '💡 Вам ещё не назначен обязательный ежедневный чек-лист.',
+  },
+
+  // Admin: cheklist boshqaruv
+  chkAdminTitle: {
+    uz: '📋 <b>Cheklistlar</b>\n\nXodim: <b>{name}</b>\nLavozim: <i>{position}</i>',
+    ru: '📋 <b>Чек-листы</b>\n\nСотрудник: <b>{name}</b>\nДолжность: <i>{position}</i>',
+  },
+  chkAdminEmpty: { uz: 'Cheklistlar yo\'q.', ru: 'Чек-листов нет.' },
+  chkAdminBtn: { uz: '📋 Cheklistlar', ru: '📋 Чек-листы' },
+  chkAddDailyBtn: { uz: '➕ Majburiy kunlik', ru: '➕ Обязательный ежедневный' },
+  chkAddExtraBtn: { uz: '➕ Qo\'shimcha cheklist', ru: '➕ Дополнительный' },
+  chkAlreadyHasDaily: {
+    uz: '⚠️ Bu xodimda allaqachon majburiy kunlik cheklist mavjud.',
+    ru: '⚠️ У сотрудника уже есть обязательный ежедневный чек-лист.',
+  },
+  chkAskTitle: {
+    uz: '📝 Cheklist nomini kiriting (masalan: <i>Ertalabki tayyorgarlik</i>):\n\n/cancel — bekor qilish',
+    ru: '📝 Введите название чек-листа (например: <i>Утренняя подготовка</i>):\n\n/cancel — отменить',
+  },
+  chkTitleSaved: {
+    uz: '✅ Cheklist yaratildi.\n\nEndi <b>punktlarni ketma-ket</b> kiriting (har bir punkt — alohida xabar).\n\nTugatish uchun <b>/done</b> yuboring.\nBekor qilish uchun /cancel.',
+    ru: '✅ Чек-лист создан.\n\nТеперь вводите <b>пункты по очереди</b> (каждый пункт — отдельным сообщением).\n\nЗакончить — <b>/done</b>.\nОтменить — /cancel.',
+  },
+  chkItemAdded: { uz: '✅ Punkt qo\'shildi (', ru: '✅ Пункт добавлен (' },
+  chkItemsDone: {
+    uz: '✅ <b>Cheklist tayyor!</b>\n\nJami punktlar: <b>{n}</b>',
+    ru: '✅ <b>Чек-лист готов!</b>\n\nВсего пунктов: <b>{n}</b>',
+  },
+  chkNeedAtLeastOne: {
+    uz: '⚠️ Kamida 1 ta punkt qo\'shing yoki /cancel yuboring.',
+    ru: '⚠️ Добавьте хотя бы 1 пункт или отправьте /cancel.',
+  },
+  chkDeleteBtn: { uz: '🗑 O\'chirish', ru: '🗑 Удалить' },
+  chkAddItemsBtn: { uz: '➕ Punkt qo\'shish', ru: '➕ Добавить пункт' },
+  chkDeleted: { uz: '🗑 Cheklist o\'chirildi.', ru: '🗑 Чек-лист удалён.' },
+  chkOneChecklist: {
+    uz: '📋 <b>{title}</b>\n\nPunktlar:\n{items}',
+    ru: '📋 <b>{title}</b>\n\nПункты:\n{items}',
+  },
+
+  // Admin: xodim statistikasi
+  chkStatsBtn: { uz: '📊 Statistika', ru: '📊 Статистика' },
+  chkStatsTitle: {
+    uz: '📊 <b>Xodim statistikasi</b>\n\n<b>{name}</b> — <i>{position}</i>\nDavr: {period}',
+    ru: '📊 <b>Статистика сотрудника</b>\n\n<b>{name}</b> — <i>{position}</i>\nПериод: {period}',
+  },
+  chkStatsDays: { uz: 'Ish kuni boshlangan', ru: 'Дней начато' },
+  chkStatsItemsDone: { uz: 'Bajarilgan punktlar', ru: 'Выполнено пунктов' },
+  chkStatsItemsTotal: { uz: 'Jami belgilangan', ru: 'Всего отмечено' },
+  chkStatsRate: { uz: 'Bajarilish darajasi', ru: 'Уровень выполнения' },
+  chkStatsRecent: { uz: '🗓 Oxirgi kunlar', ru: '🗓 Последние дни' },
+  chkStatsNoData: { uz: 'Bu davrda ma\'lumot yo\'q.', ru: 'За этот период данных нет.' },
+  chkStartDayDone: {
+    uz: '🌅 <b>Ish kuni boshlandi!</b>\n\nVaqt: {time}',
+    ru: '🌅 <b>Рабочий день начат!</b>\n\nВремя: {time}',
+  },
+  chkStartDayAlready: {
+    uz: '✅ Bugungi ish kuningiz allaqachon boshlangan ({time}).',
+    ru: '✅ Ваш рабочий день уже начат сегодня ({time}).',
+  },
 };
 
 export function tr(key: keyof typeof t, lang: Lang): string {

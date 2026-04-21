@@ -1323,6 +1323,11 @@ export async function handleAdminMessage(
     await handleStaffStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
   }
+  if (state.startsWith('admin:chk:')) {
+    const { handleChecklistStep } = await import('./checklist-handler.ts');
+    const handled = await handleChecklistStep(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handled) return true;
+  }
   if (state === 'admin:cmp:reply') {
     await saveComplaintReply(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
@@ -1492,6 +1497,28 @@ export async function handleAdminCallback(
     await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
     await showServiceEditMenu(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
+  }
+
+  // Cheklistlar
+  if (data.startsWith('chk:')) {
+    const { handleChecklistCallback } = await import('./checklist-handler.ts');
+    const handled = await handleChecklistCallback(
+      supabase, patient, chatId, data,
+      async (txt?: string) => { await answerCallbackQuery(callbackId, txt, lovableKey, telegramKey); },
+      lovableKey, telegramKey,
+    );
+    if (handled) return true;
+  }
+  // stf:back:<staffId> — orqaga xodim ekraniga
+  if (data.startsWith('stf:back:')) {
+    const staffId = data.slice('stf:back:'.length);
+    const { data: s } = await supabase.from('staff').select('position').eq('id', staffId).maybeSingle();
+    if (s?.position) {
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+      const { showStaffByPosition } = await import('./staff-handler.ts');
+      await showStaffByPosition(supabase, patient, chatId, s.position, lovableKey, telegramKey);
+      return true;
+    }
   }
 
   // Xodimlar (staff)

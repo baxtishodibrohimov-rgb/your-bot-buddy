@@ -98,7 +98,8 @@ export async function showStaffByPosition(
   if (list) {
     for (const s of list) {
       buttons.push([
-        { text: `🖼 ${s.full_name.slice(0, 20)}`, callback_data: `ent:med:staff:${s.id}` },
+        { text: `🖼 ${s.full_name.slice(0, 14)}`, callback_data: `ent:med:staff:${s.id}` },
+        { text: `📋`, callback_data: `chk:s:${s.id}` },
         { text: `🗑`, callback_data: `stf:del:${s.id}` },
       ]);
     }
@@ -221,7 +222,7 @@ export async function deleteStaffMember(
 
 function staffMenuKeyboard(lang: Lang): ReplyKeyboard {
   return [
-    [{ text: t.staffMenu.instruction[lang] }, { text: t.staffMenu.checklist[lang] }],
+    [{ text: t.staffMenu.instruction[lang] }, { text: t.staffMenuChecklists[lang] }],
     [{ text: t.staffMenu.startDay[lang] }],
     [{ text: t.staffMenu.complaint[lang] }],
     [{ text: t.staffMenu.exit[lang] }],
@@ -292,15 +293,14 @@ export async function handleStaffPortalMessage(
     await sendStaffInstruction(supabase, chatId, staff, lang, lovableKey, telegramKey);
     return true;
   }
-  if (matches('checklist')) {
-    await sendMessage(chatId, t.staffChecklistMsg[lang], {}, lovableKey, telegramKey);
+  if (text === t.staffMenuChecklists.uz || text === t.staffMenuChecklists.ru) {
+    const { showStaffChecklistsList } = await import('./checklist-handler.ts');
+    await showStaffChecklistsList(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
   if (matches('startDay')) {
-    const time = new Date().toLocaleString(lang === 'uz' ? 'uz-UZ' : 'ru-RU', {
-      hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric',
-    });
-    await sendMessage(chatId, t.staffStartDayMsg[lang].replace('{time}', escapeHtml(time)), {}, lovableKey, telegramKey);
+    const { startWorkDay } = await import('./checklist-handler.ts');
+    await startWorkDay(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
   if (matches('complaint')) {
