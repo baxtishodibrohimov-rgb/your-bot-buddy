@@ -104,6 +104,7 @@ async function showClinicInfo(
 
   const buttons: InlineKeyboard = [
     [{ text: t.clinicWizardBtn[lang], callback_data: 'cli:wiz:start' }],
+    [{ text: t.entityMediaBtn[lang], callback_data: 'ent:med:clinic:-' }],
   ];
   // 2 tadan tugma joylash
   for (let i = 0; i < CLINIC_FIELDS.length; i += 2) {
