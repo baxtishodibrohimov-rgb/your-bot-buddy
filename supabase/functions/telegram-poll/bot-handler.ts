@@ -1,7 +1,8 @@
 // Bot xabarlarini qayta ishlash
 import { sendMessage, answerCallbackQuery, escapeHtml, type ReplyKeyboard, type InlineKeyboard } from './telegram-api.ts';
 import { t, tr, type Lang } from './i18n.ts';
-import { handleAdminMessage, handleAdminCallback } from './admin-handler.ts';
+import { handleAdminMessage, handleAdminCallback, isAdmin } from './admin-handler.ts';
+import { handleAdminMediaUpload, sendEntityMediaToUser } from './media-handler.ts';
 
 type Patient = {
   id: string;
@@ -125,11 +126,11 @@ async function showServices(supabase: any, chatId: number, lang: Lang, lovableKe
     return;
   }
 
-  let text = t.servicesTitle[lang];
+  await sendMessage(chatId, t.servicesTitle[lang], {}, lovableKey, telegramKey);
   for (const s of data) {
     const name = lang === 'uz' ? s.name_uz : s.name_ru;
     const desc = lang === 'uz' ? s.description_uz : s.description_ru;
-    text += `\n🔹 <b>${escapeHtml(name)}</b>\n`;
+    let text = `🔹 <b>${escapeHtml(name)}</b>\n`;
     if (desc) text += `${escapeHtml(desc)}\n`;
     if (s.price_from) {
       const priceText = s.price_to
@@ -137,9 +138,9 @@ async function showServices(supabase: any, chatId: number, lang: Lang, lovableKe
         : `${s.price_from.toLocaleString()}+`;
       text += `💰 ${priceText} ${t.sum[lang]}\n`;
     }
+    await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+    await sendEntityMediaToUser(supabase, chatId, 'service', s.id, lovableKey, telegramKey);
   }
-
-  await sendMessage(chatId, text, {}, lovableKey, telegramKey);
 }
 
 async function showDoctors(supabase: any, chatId: number, lang: Lang, lovableKey: string, telegramKey: string) {
@@ -154,16 +155,16 @@ async function showDoctors(supabase: any, chatId: number, lang: Lang, lovableKey
     return;
   }
 
-  let text = t.doctorsTitle[lang];
+  await sendMessage(chatId, t.doctorsTitle[lang], {}, lovableKey, telegramKey);
   for (const d of data) {
     const spec = lang === 'uz' ? d.specialty_uz : d.specialty_ru;
     const bio = lang === 'uz' ? d.bio_uz : d.bio_ru;
-    text += `\n👨‍⚕️ <b>${escapeHtml(d.full_name)}</b>\n${escapeHtml(spec)}\n`;
+    let text = `👨‍⚕️ <b>${escapeHtml(d.full_name)}</b>\n${escapeHtml(spec)}\n`;
     if (d.experience_years) text += `📅 ${d.experience_years} ${t.yearsExperience[lang]}\n`;
     if (bio) text += `${escapeHtml(bio)}\n`;
+    await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+    await sendEntityMediaToUser(supabase, chatId, 'doctor', d.id, lovableKey, telegramKey);
   }
-
-  await sendMessage(chatId, text, {}, lovableKey, telegramKey);
 }
 
 async function showAddress(supabase: any, chatId: number, lang: Lang, lovableKey: string, telegramKey: string) {
@@ -626,6 +627,16 @@ export async function handleUpdate(
 
   const patient = await getOrCreatePatient(supabase, msg.from);
   const lang = patient.language;
+
+  // Admin media yuklash (rasm/video/hujjat) — faqat admin uchun
+  const hasMedia = msg.photo || msg.video || msg.document || msg.audio || msg.voice || msg.animation;
+  if (hasMedia) {
+    const admin = await isAdmin(supabase, patient.telegram_id);
+    if (admin) {
+      await handleAdminMediaUpload(supabase, patient, admin, chatId, msg, lovableKey, telegramKey);
+      return;
+    }
+  }
 
   // /start
   if (text === '/start') {

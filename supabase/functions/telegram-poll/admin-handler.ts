@@ -1,6 +1,7 @@
 // Admin panel - Telegram bot ichida
 import { sendMessage, answerCallbackQuery, escapeHtml, type ReplyKeyboard, type InlineKeyboard } from './telegram-api.ts';
 import { t, type Lang } from './i18n.ts';
+import { showMediaLibrary, showEntityMedia, handleMediaCallback } from './media-handler.ts';
 
 type Admin = {
   id: string;
@@ -31,9 +32,8 @@ export function adminMainKeyboard(lang: Lang, isSuper: boolean): ReplyKeyboard {
     [{ text: t.adminMenuAppointments[lang] }, { text: t.adminMenu.complaints[lang] }],
     [{ text: t.adminMenu.clinic[lang] }, { text: t.adminMenu.services[lang] }],
     [{ text: t.adminMenu.doctors[lang] }, { text: t.adminMenu.patients[lang] }],
-    [{ text: t.adminMenu.stats[lang] }],
+    [{ text: t.adminMenuMedia[lang] }, { text: t.adminMenu.stats[lang] }],
   ];
-  // (Appointments tugmasi yuqorida)
   if (isSuper) rows.push([{ text: t.adminMenu.admins[lang] }]);
   rows.push([{ text: t.adminMenu.exit[lang] }]);
   return rows;
@@ -104,6 +104,7 @@ async function showClinicInfo(
 
   const buttons: InlineKeyboard = [
     [{ text: t.clinicWizardBtn[lang], callback_data: 'cli:wiz:start' }],
+    [{ text: t.entityMediaBtn[lang], callback_data: 'ent:med:clinic:-' }],
   ];
   // 2 tadan tugma joylash
   for (let i = 0; i < CLINIC_FIELDS.length; i += 2) {
@@ -378,6 +379,7 @@ async function showServiceEditMenu(
     }
     buttons.push(row);
   }
+  buttons.push([{ text: t.entityMediaBtn[lang], callback_data: `ent:med:service:${serviceId}` }]);
   await setState(supabase, patient.id, 'admin:services', null);
   await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
 }
@@ -607,6 +609,7 @@ async function showDoctorEditMenu(
     }
     buttons.push(row);
   }
+  buttons.push([{ text: t.entityMediaBtn[lang], callback_data: `ent:med:doctor:${doctorId}` }]);
   await setState(supabase, patient.id, 'admin:doctors', null);
   await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
 }
@@ -1340,6 +1343,10 @@ export async function handleAdminMessage(
     await listPatients(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
+  if (text === t.adminMenuMedia.uz || text === t.adminMenuMedia.ru) {
+    await showMediaLibrary(supabase, patient, chatId, 'all', 0, lovableKey, telegramKey);
+    return true;
+  }
   if (m('complaints')) {
     await listComplaints(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
@@ -1377,6 +1384,11 @@ export async function handleAdminCallback(
 ): Promise<boolean> {
   const admin = await isAdmin(supabase, patient.telegram_id);
   if (!admin) return false;
+
+  // Media callbacks (kutubxona, biriktirish, ko'rish)
+  if (data.startsWith('med:') || data.startsWith('ent:med:')) {
+    return await handleMediaCallback(supabase, patient, chatId, data, callbackId, lovableKey, telegramKey);
+  }
 
   // Klinika sehrgari (wizard)
   if (data === 'cli:wiz:start') {

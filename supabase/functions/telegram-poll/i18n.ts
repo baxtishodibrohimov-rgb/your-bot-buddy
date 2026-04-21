@@ -386,6 +386,66 @@ export const t = {
   patientsSearchEmpty: { uz: 'Hech narsa topilmadi.', ru: 'Ничего не найдено.' },
   patientsSearchTitle: { uz: '🔍 <b>Topildi:</b>\n\n', ru: '🔍 <b>Найдено:</b>\n\n' },
   patientsSearchTooShort: { uz: '⚠️ Kamida 2 belgi kiriting.', ru: '⚠️ Введите минимум 2 символа.' },
+
+  // ========== MEDIA ==========
+  adminMenuMedia: { uz: '🖼 Media kutubxona', ru: '🖼 Медиа библиотека' },
+  mediaTitle: { uz: '🖼 <b>Media kutubxona</b>\n\n', ru: '🖼 <b>Медиа библиотека</b>\n\n' },
+  mediaEmpty: {
+    uz: 'Hech qanday media yo\'q.\n\nBotga rasm, video yoki fayl yuboring — u avtomatik kutubxonaga qo\'shiladi.',
+    ru: 'Медиа нет.\n\nОтправьте боту фото, видео или файл — оно автоматически добавится в библиотеку.',
+  },
+  mediaUploaded: {
+    uz: '✅ <b>Media kutubxonaga qo\'shildi!</b>\n\nEndi uni shifokor, xizmat yoki klinika ma\'lumotlariga biriktirishingiz mumkin.',
+    ru: '✅ <b>Медиа добавлено в библиотеку!</b>\n\nТеперь его можно прикрепить к врачу, услуге или информации о клинике.',
+  },
+  mediaUploadedShort: { uz: '✅ Saqlandi (ID: ', ru: '✅ Сохранено (ID: ' },
+  mediaTypePhoto: { uz: '🖼 Rasm', ru: '🖼 Фото' },
+  mediaTypeVideo: { uz: '🎬 Video', ru: '🎬 Видео' },
+  mediaTypeDocument: { uz: '📎 Hujjat', ru: '📎 Документ' },
+  mediaTypeAudio: { uz: '🎵 Audio', ru: '🎵 Аудио' },
+  mediaTypeVoice: { uz: '🎙 Ovozli', ru: '🎙 Голосовое' },
+  mediaTypeAnimation: { uz: '🎞 GIF', ru: '🎞 GIF' },
+  mediaShowAll: { uz: '📂 Hammasini ko\'rsatish', ru: '📂 Показать все' },
+  mediaFilterPhotos: { uz: '🖼 Rasmlar', ru: '🖼 Фото' },
+  mediaFilterVideos: { uz: '🎬 Videolar', ru: '🎬 Видео' },
+  mediaFilterDocs: { uz: '📎 Hujjatlar', ru: '📎 Документы' },
+  mediaItem: { uz: 'Media', ru: 'Медиа' },
+  mediaSize: { uz: 'Hajm', ru: 'Размер' },
+  mediaUploaded2: { uz: 'Yuklangan', ru: 'Загружено' },
+  mediaAttachedTo: { uz: 'Biriktirilgan', ru: 'Прикреплено' },
+  mediaNotAttached: { uz: 'Hech qayerga biriktirilmagan', ru: 'Никуда не прикреплено' },
+  mediaDelete: { uz: '🗑 Kutubxonadan o\'chirish', ru: '🗑 Удалить из библиотеки' },
+  mediaDeleteConfirm: {
+    uz: '⚠️ Ushbu media va uning barcha biriktirmalari o\'chiriladi. Davom etamizmi?',
+    ru: '⚠️ Это медиа и все его привязки будут удалены. Продолжить?',
+  },
+  mediaDeleted: { uz: '🗑 Media o\'chirildi.', ru: '🗑 Медиа удалено.' },
+  mediaAttach: { uz: '📌 Biriktirish', ru: '📌 Прикрепить' },
+  mediaPickEntity: {
+    uz: 'Qayerga biriktiramiz?',
+    ru: 'Куда прикрепить?',
+  },
+  mediaEntityDoctor: { uz: '👨‍⚕️ Shifokor', ru: '👨‍⚕️ Врач' },
+  mediaEntityService: { uz: '🦷 Xizmat', ru: '🦷 Услуга' },
+  mediaEntityClinic: { uz: '🏥 Klinika', ru: '🏥 Клиника' },
+  mediaPickDoctor: { uz: 'Qaysi shifokorga?', ru: 'К какому врачу?' },
+  mediaPickService: { uz: 'Qaysi xizmatga?', ru: 'К какой услуге?' },
+  mediaAttached: { uz: '✅ Biriktirildi.', ru: '✅ Прикреплено.' },
+  mediaAlreadyAttached: { uz: '⚠️ Bu media allaqachon biriktirilgan.', ru: '⚠️ Это медиа уже прикреплено.' },
+  mediaUnattach: { uz: '➖ Biriktirmani olib tashlash', ru: '➖ Открепить' },
+  mediaUnattached: { uz: '✅ Olib tashlandi.', ru: '✅ Откреплено.' },
+
+  // Entity tahrirlashda "Media" tugmasi
+  entityMediaBtn: { uz: '🖼 Media', ru: '🖼 Медиа' },
+  entityMediaTitle: { uz: '🖼 <b>Biriktirilgan media</b>\n\n', ru: '🖼 <b>Прикреплённое медиа</b>\n\n' },
+  entityMediaEmpty: {
+    uz: 'Bu yerga hech qanday media biriktirilmagan.\n\n💡 <b>Qo\'shish uchun</b>: Media kutubxonaga o\'ting, mediani tanlang va "📌 Biriktirish" tugmasini bosing.',
+    ru: 'Сюда не прикреплено медиа.\n\n💡 <b>Чтобы добавить</b>: перейдите в Медиа библиотеку, выберите медиа и нажмите "📌 Прикрепить".',
+  },
+  entityMediaGoLib: { uz: '📂 Kutubxonaga o\'tish', ru: '📂 Перейти в библиотеку' },
+
+  // Stats
+  statsMedia: { uz: 'Media fayllar', ru: 'Медиа файлы' },
 };
 
 export function tr(key: keyof typeof t, lang: Lang): string {
