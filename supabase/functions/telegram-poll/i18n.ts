@@ -16,6 +16,7 @@ export const t = {
     doctors: { uz: '👨‍⚕️ Shifokorlar', ru: '👨‍⚕️ Врачи' },
     address: { uz: '📍 Manzil', ru: '📍 Адрес' },
     contact: { uz: '📞 Bog\'lanish', ru: '📞 Связаться' },
+    appointment: { uz: '📅 Qabulga yozilish', ru: '📅 Записаться на приём' },
     medicalCard: { uz: '📋 Mening tibbiy kartam', ru: '📋 Моя медицинская карта' },
     complaint: { uz: '✍️ Shikoyat / Taklif', ru: '✍️ Жалоба / Предложение' },
     changeLang: { uz: '🌐 Tilni o\'zgartirish', ru: '🌐 Сменить язык' },
@@ -283,6 +284,72 @@ export const t = {
   statsComplaintsNew: { uz: 'Yangi shikoyatlar', ru: 'Новые жалобы' },
   statsComplaintsTotal: { uz: 'Jami shikoyatlar', ru: 'Всего жалоб' },
   statsToday: { uz: 'Bugungi yangi bemorlar', ru: 'Новые пациенты сегодня' },
+  statsAppointmentsNew: { uz: 'Yangi qabul so\'rovlari', ru: 'Новые записи' },
+
+  // ========== QABULGA YOZILISH (BEMOR) ==========
+  apptStart: {
+    uz: '📅 <b>Qabulga yozilish</b>\n\nBiz sizdan 3 ta savol so\'raymiz, so\'ng klinika xodimi qo\'ng\'iroq qilib, sizga qulay vaqtni kelishadi.\n\n1️⃣ <b>To\'liq ism-sharifingiz?</b>\n\n/cancel — bekor qilish',
+    ru: '📅 <b>Запись на приём</b>\n\nМы зададим 3 вопроса, затем сотрудник клиники позвонит и согласует удобное время.\n\n1️⃣ <b>Ваше полное имя?</b>\n\n/cancel — отменить',
+  },
+  apptAskPhone: {
+    uz: '2️⃣ <b>Telefon raqamingiz?</b>\n\nMasalan: <code>+998 90 123 45 67</code> yoki <code>998901234567</code>',
+    ru: '2️⃣ <b>Ваш номер телефона?</b>\n\nПример: <code>+998 90 123 45 67</code> или <code>998901234567</code>',
+  },
+  apptAskNotes: {
+    uz: '3️⃣ <b>Qisqacha izoh</b> (qaysi xizmat, shoshilinchmi va h.k.) yoki <code>—</code> o\'tkazib yuborish.',
+    ru: '3️⃣ <b>Краткий комментарий</b> (какая услуга, срочность и т.п.) или <code>—</code> чтобы пропустить.',
+  },
+  apptInvalidPhone: {
+    uz: '⚠️ Telefon raqami noto\'g\'ri. Iltimos, raqamni kiriting (masalan: +998901234567).',
+    ru: '⚠️ Неверный номер телефона. Пожалуйста, введите номер (например: +998901234567).',
+  },
+  apptReview: {
+    uz: '📋 <b>Ko\'rib chiqing:</b>\n\n👤 <b>Ism:</b> ',
+    ru: '📋 <b>Проверьте:</b>\n\n👤 <b>Имя:</b> ',
+  },
+  apptReviewPhone: { uz: '\n📞 <b>Telefon:</b> ', ru: '\n📞 <b>Телефон:</b> ' },
+  apptReviewNotes: { uz: '\n📝 <b>Izoh:</b> ', ru: '\n📝 <b>Комментарий:</b> ' },
+  apptConfirmBtn: { uz: '✅ Yuborish', ru: '✅ Отправить' },
+  apptRestartBtn: { uz: '🔄 Qaytadan', ru: '🔄 Заново' },
+  apptCancelBtn: { uz: '❌ Bekor qilish', ru: '❌ Отменить' },
+  apptDone: {
+    uz: '✅ <b>Rahmat! So\'rovingiz qabul qilindi.</b>\n\nKlinika xodimi tez orada siz bilan bog\'lanadi va qulay vaqtni kelishadi. 🙏',
+    ru: '✅ <b>Спасибо! Ваша заявка принята.</b>\n\nСотрудник клиники скоро свяжется с вами и согласует удобное время. 🙏',
+  },
+
+  // ========== QABULGA YOZILISH (ADMIN) ==========
+  adminMenuAppointments: { uz: '📞 Qo\'ng\'iroq so\'rovlari', ru: '📞 Запросы на звонок' },
+  apptListTitle: { uz: '📞 <b>Qabul so\'rovlari</b>\n\n', ru: '📞 <b>Запросы на запись</b>\n\n' },
+  apptListEmpty: { uz: 'So\'rovlar yo\'q.', ru: 'Запросов нет.' },
+  apptStatus: {
+    new: { uz: '🆕 Yangi', ru: '🆕 Новая' },
+    called: { uz: '📞 Qo\'ng\'iroq qilindi', ru: '📞 Позвонили' },
+    done: { uz: '✅ Bajarildi', ru: '✅ Выполнено' },
+    cancelled: { uz: '❌ Bekor', ru: '❌ Отменено' },
+  },
+  apptMarkCalled: { uz: '📞 Qo\'ng\'iroq qilindi', ru: '📞 Позвонили' },
+  apptMarkDone: { uz: '✅ Bajarildi', ru: '✅ Выполнено' },
+  apptMarkCancelled: { uz: '❌ Bekor qilish', ru: '❌ Отменить' },
+  apptNotifyAdmin: {
+    uz: '🔔 <b>Yangi qabul so\'rovi!</b>\n\n',
+    ru: '🔔 <b>Новый запрос на запись!</b>\n\n',
+  },
+
+  // ========== TIBBIY KARTA TAHRIRLASH ==========
+  mcEditField: { uz: '✏️ Tahrirlash', ru: '✏️ Редактировать' },
+  mcFields: {
+    full_name: { uz: 'F.I.SH', ru: 'Ф.И.О.' },
+    birth_date: { uz: 'Tug\'ilgan sana', ru: 'Дата рождения' },
+    gender: { uz: 'Jinsi', ru: 'Пол' },
+    address: { uz: 'Manzil', ru: 'Адрес' },
+    allergies: { uz: 'Allergiya', ru: 'Аллергии' },
+    chronic_diseases: { uz: 'Surunkali kasalliklar', ru: 'Хронические заболевания' },
+    current_medications: { uz: 'Dorilar', ru: 'Лекарства' },
+    previous_treatments: { uz: 'Avvalgi davolanishlar', ru: 'Предыдущие лечения' },
+  },
+  mcEnterNew: { uz: 'Yangi qiymatni kiriting:', ru: 'Введите новое значение:' },
+  mcFieldSaved: { uz: '✅ Yangilandi', ru: '✅ Обновлено' },
+  mcRedoAll: { uz: '🔄 Hammasini qayta to\'ldirish', ru: '🔄 Заполнить заново' },
 };
 
 export function tr(key: keyof typeof t, lang: Lang): string {
