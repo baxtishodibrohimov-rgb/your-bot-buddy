@@ -550,13 +550,20 @@ async function handleComplaintStep(
   telegramKey: string,
 ) {
   const lang = patient.language;
-  await supabase.from('complaints').insert({
+  const { data: created } = await supabase.from('complaints').insert({
     patient_id: patient.id,
     type: 'complaint',
     message: text,
-  });
+  }).select('*').single();
   await setState(supabase, patient.id, null, null);
   await sendMessage(chatId, t.complaintSaved[lang], { replyKeyboard: mainKeyboard(lang) }, lovableKey, telegramKey);
+
+  // Adminlarga bildirishnoma (asinxron)
+  if (created) {
+    notifyAdminsAboutComplaint(supabase, created, lovableKey, telegramKey).catch((e) =>
+      console.error('Notify admins about complaint failed:', e),
+    );
+  }
 }
 
 export async function handleUpdate(
