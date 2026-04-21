@@ -40,7 +40,7 @@ export function adminMainKeyboard(lang: Lang, isSuper: boolean): ReplyKeyboard {
     [{ text: t.adminMenu.clinic[lang] }, { text: t.adminMenu.services[lang] }],
     [{ text: t.adminMenu.doctors[lang] }, { text: t.adminMenu.patients[lang] }],
     [{ text: t.adminMenuMedia[lang] }, { text: t.adminMenuBroadcast[lang] }],
-    [{ text: t.adminMenu.stats[lang] }],
+    [{ text: t.adminMenu.stats[lang] }, { text: t.adminMenuResidency[lang] }],
   ];
   if (isSuper) rows.push([{ text: t.adminMenu.admins[lang] }]);
   rows.push([{ text: t.adminMenu.exit[lang] }]);
@@ -1370,6 +1370,12 @@ export async function handleAdminMessage(
     }, lovableKey, telegramKey);
     return true;
   }
+  // Rezidentura admin state'lari
+  if (state.startsWith('admin:res:')) {
+    const { handleAdminResidentMessage } = await import('./resident-handler.ts');
+    const handled = await handleAdminResidentMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handled) return true;
+  }
 
   // Admin menyu tugmalari
   if (!state.startsWith('admin:')) return false;
@@ -1413,6 +1419,11 @@ export async function handleAdminMessage(
   }
   if (m('stats')) {
     await showStatsMenu(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (text === t.adminMenuResidency.uz || text === t.adminMenuResidency.ru) {
+    const { showAdminResidentMenu } = await import('./resident-handler.ts');
+    await showAdminResidentMenu(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
   if (m('admins') && admin.is_super_admin) {
@@ -1482,6 +1493,17 @@ export async function handleAdminCallback(
   // Media callbacks (kutubxona, biriktirish, ko'rish)
   if (data.startsWith('med:') || data.startsWith('ent:med:')) {
     return await handleMediaCallback(supabase, patient, chatId, data, callbackId, lovableKey, telegramKey);
+  }
+
+  // Rezidentura admin callbacks
+  if (data.startsWith('ares:')) {
+    const { handleAdminResidentCallback } = await import('./resident-handler.ts');
+    const handled = await handleAdminResidentCallback(
+      supabase, patient, chatId, data,
+      async (txt?: string) => { await answerCallbackQuery(callbackId, txt, lovableKey, telegramKey); },
+      lovableKey, telegramKey,
+    );
+    if (handled) return true;
   }
 
   // Klinika sehrgari (wizard)

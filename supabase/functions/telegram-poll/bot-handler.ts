@@ -6,6 +6,13 @@ import { handleAdminMediaUpload, sendEntityMediaToUser } from './media-handler.t
 import { saveAdminMedia } from './media-handler.ts';
 import { bcAddMedia } from './admin-handler.ts';
 import { notifyAdminsAboutComplaint } from './notifications.ts';
+import {
+  isResident,
+  showResidentHome,
+  handleResidentMessage,
+  handleResidentCallback,
+  handleAdminResidentMediaUpload,
+} from './resident-handler.ts';
 
 type Patient = {
   id: string;
@@ -644,6 +651,16 @@ export async function handleUpdate(
       if (handled) return;
     }
 
+    // Rezident callbacks (foydalanuvchi tomon)
+    if (data.startsWith('res:')) {
+      const handledRes = await handleResidentCallback(
+        supabase, patient, chatId, data,
+        async (txt?: string) => { await answerCallbackQuery(cq.id, txt, lovableKey, telegramKey); },
+        lovableKey, telegramKey,
+      );
+      if (handledRes) return;
+    }
+
     // Admin callbacks
     const handled = await handleAdminCallback(supabase, patient, chatId, data, cq.id, lovableKey, telegramKey);
     if (handled) return;
@@ -667,6 +684,11 @@ export async function handleUpdate(
   if (hasMedia) {
     const admin = await isAdmin(supabase, patient.telegram_id);
     if (admin) {
+      // Rezidentura bo'limiga media yuklash
+      if (patient.state === 'admin:res:addmed') {
+        const handled = await handleAdminResidentMediaUpload(supabase, patient, admin, chatId, msg, lovableKey, telegramKey);
+        if (handled) return;
+      }
       // Agar broadcast oqimida media kutilmoqda bo'lsa — to'g'ridan-to'g'ri broadcastga qo'shamiz
       if (patient.state === 'admin:bc:media') {
         const saved = await saveAdminMedia(supabase, admin, msg);
@@ -715,6 +737,23 @@ export async function handleUpdate(
     const { handleStaffCommand } = await import('./staff-handler.ts');
     await handleStaffCommand(supabase, patient, chatId, lovableKey, telegramKey);
     return;
+  }
+
+  // /rezidentura — rezidentlar uchun
+  if (text === '/rezidentura' || text === '/residency' || text === '/rezident') {
+    const resident = await isResident(supabase, patient.telegram_id);
+    if (!resident) {
+      await sendMessage(chatId, t.residencyNotAuthorized[lang], {}, lovableKey, telegramKey);
+      return;
+    }
+    await showResidentHome(supabase, patient, chatId, lovableKey, telegramKey);
+    return;
+  }
+
+  // Rezident menyusi state'i
+  if (patient.state === 'res:home' || patient.state?.startsWith('res:t:')) {
+    const handled = await handleResidentMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handled) return;
   }
 
   // Koordinator statistika menyusi state'i

@@ -911,6 +911,13 @@ export const t = {
     uz: 'Hali bemorlar ro\'yxatdan o\'tmagan.',
     ru: 'Пока пациенты не зарегистрированы.',
   },
+
+  // ========== REZIDENTURA (admin tugmasi) ==========
+  adminMenuResidency: { uz: '🎓 Rezidentura', ru: '🎓 Резидентура' },
+  residencyNotAuthorized: {
+    uz: '🚫 Sizga rezidentura bo\'limiga ruxsat berilmagan.\n\nAgar siz rezident bo\'lsangiz, admin sizni ro\'yxatga olishi kerak.',
+    ru: '🚫 У вас нет доступа к разделу резидентуры.\n\nЕсли вы резидент, администратор должен вас зарегистрировать.',
+  },
 };
 
 export function tr(key: keyof typeof t, lang: Lang): string {
