@@ -787,17 +787,93 @@ async function listPatients(
     .limit(20);
 
   let text = t.patientsTitle[lang];
+  const buttons: InlineKeyboard = [
+    [{ text: t.patientsSearchBtn[lang], callback_data: 'pat:search' }],
+  ];
+
   if (!data || data.length === 0) {
     text += t.patientsEmpty[lang];
-    await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+  } else {
+    for (const p of data) {
+      const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.telegram_username || `ID ${p.telegram_id}`;
+      text += `• <b>${escapeHtml(name)}</b>${p.phone ? ' — ' + escapeHtml(p.phone) : ''}\n`;
+      buttons.push([{ text: `📋 ${name.slice(0, 30)}`, callback_data: `pat:card:${p.id}` }]);
+    }
+  }
+  await setState(supabase, patient.id, 'admin:patients', null);
+  await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+}
+
+async function startPatientSearch(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  await setState(supabase, patient.id, 'admin:pat:search', null);
+  await sendMessage(
+    chatId,
+    t.patientsSearchAsk[lang],
+    { removeKeyboard: true },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function searchPatients(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  query: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const q = query.trim();
+  if (q.length < 2) {
+    await sendMessage(chatId, t.patientsSearchTooShort[lang], {}, lovableKey, telegramKey);
     return;
   }
 
-  const buttons: InlineKeyboard = [];
-  for (const p of data) {
-    const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.telegram_username || `ID ${p.telegram_id}`;
-    text += `• <b>${escapeHtml(name)}</b>${p.phone ? ' — ' + escapeHtml(p.phone) : ''}\n`;
-    buttons.push([{ text: `📋 ${name.slice(0, 30)}`, callback_data: `pat:card:${p.id}` }]);
+  // ilike uchun maxsus belgilarni escape qilamiz
+  const safe = q.replace(/[%_\\]/g, (m) => '\\' + m);
+  const like = `%${safe}%`;
+
+  // Telegram ID — agar son bo'lsa
+  const asNumber = /^\d+$/.test(q) ? Number(q) : null;
+
+  let queryBuilder = supabase
+    .from('patients')
+    .select('id, telegram_id, telegram_username, first_name, last_name, phone, created_at');
+
+  if (asNumber !== null) {
+    // Raqam — telegram_id bo'yicha aniq, yoki phone/username/name bo'yicha qisman
+    queryBuilder = queryBuilder.or(
+      `telegram_id.eq.${asNumber},phone.ilike.${like},telegram_username.ilike.${like},first_name.ilike.${like},last_name.ilike.${like}`,
+    );
+  } else {
+    queryBuilder = queryBuilder.or(
+      `phone.ilike.${like},telegram_username.ilike.${like},first_name.ilike.${like},last_name.ilike.${like}`,
+    );
+  }
+
+  const { data } = await queryBuilder.order('created_at', { ascending: false }).limit(20);
+
+  let text = t.patientsSearchTitle[lang];
+  const buttons: InlineKeyboard = [
+    [{ text: t.patientsSearchBtn[lang], callback_data: 'pat:search' }],
+  ];
+
+  if (!data || data.length === 0) {
+    text += t.patientsSearchEmpty[lang];
+  } else {
+    for (const p of data) {
+      const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.telegram_username || `ID ${p.telegram_id}`;
+      text += `• <b>${escapeHtml(name)}</b>${p.phone ? ' — ' + escapeHtml(p.phone) : ''}\n`;
+      buttons.push([{ text: `📋 ${name.slice(0, 30)}`, callback_data: `pat:card:${p.id}` }]);
+    }
   }
   await setState(supabase, patient.id, 'admin:patients', null);
   await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
