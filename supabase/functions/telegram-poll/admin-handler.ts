@@ -900,6 +900,10 @@ export async function handleAdminMessage(
   }
 
   // Admin state'lari (form to'ldirish)
+  if (state === 'admin:clinic:wiz:step') {
+    await clinicWizardHandleStep(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return true;
+  }
   if (state === 'admin:clinic:edit') {
     await clinicSaveField(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
