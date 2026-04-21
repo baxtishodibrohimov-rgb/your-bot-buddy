@@ -219,6 +219,106 @@ export type Database = {
         }
         Relationships: []
       }
+      media_attachments: {
+        Row: {
+          caption_override: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          media_id: string
+          sort_order: number
+        }
+        Insert: {
+          caption_override?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          media_id: string
+          sort_order?: number
+        }
+        Update: {
+          caption_override?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          media_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_attachments_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "media_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_library: {
+        Row: {
+          caption: string | null
+          created_at: string
+          duration: number | null
+          file_id: string
+          file_name: string | null
+          file_size: number | null
+          file_type: string
+          file_unique_id: string | null
+          height: number | null
+          id: string
+          mime_type: string | null
+          thumbnail_file_id: string | null
+          uploaded_by_admin_id: string | null
+          uploaded_by_telegram_id: number
+          width: number | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          duration?: number | null
+          file_id: string
+          file_name?: string | null
+          file_size?: number | null
+          file_type: string
+          file_unique_id?: string | null
+          height?: number | null
+          id?: string
+          mime_type?: string | null
+          thumbnail_file_id?: string | null
+          uploaded_by_admin_id?: string | null
+          uploaded_by_telegram_id: number
+          width?: number | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          duration?: number | null
+          file_id?: string
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string
+          file_unique_id?: string | null
+          height?: number | null
+          id?: string
+          mime_type?: string | null
+          thumbnail_file_id?: string | null
+          uploaded_by_admin_id?: string | null
+          uploaded_by_telegram_id?: number
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_library_uploaded_by_admin_id_fkey"
+            columns: ["uploaded_by_admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medical_cards: {
         Row: {
           address: string | null
