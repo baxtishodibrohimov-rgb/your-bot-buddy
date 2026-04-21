@@ -331,14 +331,127 @@ async function listServices(
   if (data && data.length > 0) {
     for (const s of data) {
       const name = lang === 'uz' ? s.name_uz : s.name_ru;
+      const toggleLabel = s.is_active ? t.toggleInactive[lang] : t.toggleActive[lang];
       buttons.push([
-        { text: `✏️ ${name.slice(0, 20)}`, callback_data: `svc:edit:${s.id}` },
+        { text: `✏️ ${name.slice(0, 18)}`, callback_data: `svc:edit:${s.id}` },
+        { text: toggleLabel, callback_data: `svc:tog:${s.id}` },
         { text: '🗑', callback_data: `svc:del:${s.id}` },
       ]);
     }
   }
   await setState(supabase, patient.id, 'admin:services', null);
   await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+}
+
+// Xizmatni tahrirlash menyusi (qaysi maydon)
+async function showServiceEditMenu(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  serviceId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const { data: s } = await supabase.from('services').select('*').eq('id', serviceId).maybeSingle();
+  if (!s) {
+    await sendMessage(chatId, '—', {}, lovableKey, telegramKey);
+    return;
+  }
+  const name = lang === 'uz' ? s.name_uz : s.name_ru;
+  let text = `✏️ <b>${escapeHtml(name)}</b>\n\n`;
+  const fields: Array<keyof typeof t.svcFields> = [
+    'name_uz', 'name_ru', 'description_uz', 'description_ru', 'price_from', 'price_to', 'sort_order',
+  ];
+  for (const f of fields) {
+    const label = t.svcFields[f][lang];
+    const val = s[f] ?? '—';
+    text += `<b>${escapeHtml(label)}:</b> ${escapeHtml(String(val))}\n`;
+  }
+  const buttons: InlineKeyboard = [];
+  for (let i = 0; i < fields.length; i += 2) {
+    const row = [
+      { text: '✏️ ' + t.svcFields[fields[i]][lang], callback_data: `svc:fld:${serviceId}:${fields[i]}` },
+    ];
+    if (i + 1 < fields.length) {
+      row.push({ text: '✏️ ' + t.svcFields[fields[i + 1]][lang], callback_data: `svc:fld:${serviceId}:${fields[i + 1]}` });
+    }
+    buttons.push(row);
+  }
+  await setState(supabase, patient.id, 'admin:services', null);
+  await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+}
+
+async function askServiceFieldValue(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  serviceId: string,
+  field: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const label = (t.svcFields as any)[field]?.[lang] ?? field;
+  await setState(supabase, patient.id, 'admin:svc:editfld', { serviceId, field });
+  await sendMessage(
+    chatId,
+    `<b>${escapeHtml(label)}</b>\n\n${t.editEnterValue[lang]}\n\n/cancel — ${t.adminCancel[lang]}`,
+    { removeKeyboard: true },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function saveServiceFieldValue(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? {};
+  const { serviceId, field } = data;
+  if (!serviceId || !field) return;
+
+  const trimmed = text.trim();
+  const skip = trimmed === '—' || trimmed === '-';
+  let value: any;
+
+  if (field === 'price_from' || field === 'price_to' || field === 'sort_order') {
+    if (skip) {
+      value = field === 'sort_order' ? 0 : null;
+    } else {
+      const n = Number(trimmed.replace(/\s/g, ''));
+      if (isNaN(n)) {
+        await sendMessage(chatId, t.editInvalidNumber[lang], {}, lovableKey, telegramKey);
+        return;
+      }
+      value = n;
+    }
+  } else {
+    value = skip ? null : trimmed;
+  }
+
+  await supabase.from('services').update({ [field]: value, updated_at: new Date().toISOString() }).eq('id', serviceId);
+  await sendMessage(chatId, t.editSaved[lang], {}, lovableKey, telegramKey);
+  await showServiceEditMenu(supabase, patient, chatId, serviceId, lovableKey, telegramKey);
+}
+
+async function toggleService(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  serviceId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const { data: s } = await supabase.from('services').select('is_active').eq('id', serviceId).maybeSingle();
+  if (!s) return;
+  await supabase.from('services').update({ is_active: !s.is_active, updated_at: new Date().toISOString() }).eq('id', serviceId);
+  await listServices(supabase, patient, chatId, lovableKey, telegramKey);
 }
 
 async function startNewService(
@@ -448,14 +561,132 @@ async function listDoctors(
   ];
   if (data && data.length > 0) {
     for (const d of data) {
+      const toggleLabel = d.is_active ? t.toggleInactive[lang] : t.toggleActive[lang];
       buttons.push([
-        { text: `✏️ ${d.full_name.slice(0, 20)}`, callback_data: `doc:edit:${d.id}` },
+        { text: `✏️ ${d.full_name.slice(0, 18)}`, callback_data: `doc:edit:${d.id}` },
+        { text: toggleLabel, callback_data: `doc:tog:${d.id}` },
         { text: '🗑', callback_data: `doc:del:${d.id}` },
       ]);
     }
   }
   await setState(supabase, patient.id, 'admin:doctors', null);
   await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+}
+
+// Shifokorni tahrirlash menyusi
+async function showDoctorEditMenu(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  doctorId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const { data: d } = await supabase.from('doctors').select('*').eq('id', doctorId).maybeSingle();
+  if (!d) {
+    await sendMessage(chatId, '—', {}, lovableKey, telegramKey);
+    return;
+  }
+  let text = `✏️ <b>${escapeHtml(d.full_name)}</b>\n\n`;
+  const fields: Array<keyof typeof t.docFields> = [
+    'full_name', 'specialty_uz', 'specialty_ru', 'experience_years', 'bio_uz', 'bio_ru', 'sort_order',
+  ];
+  for (const f of fields) {
+    const label = t.docFields[f][lang];
+    const val = d[f] ?? '—';
+    text += `<b>${escapeHtml(label)}:</b> ${escapeHtml(String(val))}\n`;
+  }
+  const buttons: InlineKeyboard = [];
+  for (let i = 0; i < fields.length; i += 2) {
+    const row = [
+      { text: '✏️ ' + t.docFields[fields[i]][lang], callback_data: `doc:fld:${doctorId}:${fields[i]}` },
+    ];
+    if (i + 1 < fields.length) {
+      row.push({ text: '✏️ ' + t.docFields[fields[i + 1]][lang], callback_data: `doc:fld:${doctorId}:${fields[i + 1]}` });
+    }
+    buttons.push(row);
+  }
+  await setState(supabase, patient.id, 'admin:doctors', null);
+  await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+}
+
+async function askDoctorFieldValue(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  doctorId: string,
+  field: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const label = (t.docFields as any)[field]?.[lang] ?? field;
+  await setState(supabase, patient.id, 'admin:doc:editfld', { doctorId, field });
+  await sendMessage(
+    chatId,
+    `<b>${escapeHtml(label)}</b>\n\n${t.editEnterValue[lang]}\n\n/cancel — ${t.adminCancel[lang]}`,
+    { removeKeyboard: true },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function saveDoctorFieldValue(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? {};
+  const { doctorId, field } = data;
+  if (!doctorId || !field) return;
+
+  const trimmed = text.trim();
+  const skip = trimmed === '—' || trimmed === '-';
+  let value: any;
+
+  if (field === 'experience_years' || field === 'sort_order') {
+    if (skip) {
+      value = field === 'sort_order' ? 0 : null;
+    } else {
+      const n = Number(trimmed.replace(/\s/g, ''));
+      if (isNaN(n)) {
+        await sendMessage(chatId, t.editInvalidNumber[lang], {}, lovableKey, telegramKey);
+        return;
+      }
+      value = n;
+    }
+  } else if (field === 'full_name') {
+    if (skip) {
+      await sendMessage(chatId, lang === 'uz' ? '⚠️ F.I.SH bo\'sh bo\'lmasin.' : '⚠️ Ф.И.О. не может быть пустым.', {}, lovableKey, telegramKey);
+      return;
+    }
+    value = trimmed;
+  } else {
+    value = skip ? null : trimmed;
+  }
+
+  await supabase.from('doctors').update({ [field]: value, updated_at: new Date().toISOString() }).eq('id', doctorId);
+  await sendMessage(chatId, t.editSaved[lang], {}, lovableKey, telegramKey);
+  await showDoctorEditMenu(supabase, patient, chatId, doctorId, lovableKey, telegramKey);
+}
+
+async function toggleDoctor(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  doctorId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const { data: d } = await supabase.from('doctors').select('is_active').eq('id', doctorId).maybeSingle();
+  if (!d) return;
+  await supabase.from('doctors').update({ is_active: !d.is_active, updated_at: new Date().toISOString() }).eq('id', doctorId);
+  await listDoctors(supabase, patient, chatId, lovableKey, telegramKey);
 }
 
 async function startNewDoctor(
@@ -556,17 +787,93 @@ async function listPatients(
     .limit(20);
 
   let text = t.patientsTitle[lang];
+  const buttons: InlineKeyboard = [
+    [{ text: t.patientsSearchBtn[lang], callback_data: 'pat:search' }],
+  ];
+
   if (!data || data.length === 0) {
     text += t.patientsEmpty[lang];
-    await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+  } else {
+    for (const p of data) {
+      const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.telegram_username || `ID ${p.telegram_id}`;
+      text += `• <b>${escapeHtml(name)}</b>${p.phone ? ' — ' + escapeHtml(p.phone) : ''}\n`;
+      buttons.push([{ text: `📋 ${name.slice(0, 30)}`, callback_data: `pat:card:${p.id}` }]);
+    }
+  }
+  await setState(supabase, patient.id, 'admin:patients', null);
+  await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+}
+
+async function startPatientSearch(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  await setState(supabase, patient.id, 'admin:pat:search', null);
+  await sendMessage(
+    chatId,
+    t.patientsSearchAsk[lang],
+    { removeKeyboard: true },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function searchPatients(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  query: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const q = query.trim();
+  if (q.length < 2) {
+    await sendMessage(chatId, t.patientsSearchTooShort[lang], {}, lovableKey, telegramKey);
     return;
   }
 
-  const buttons: InlineKeyboard = [];
-  for (const p of data) {
-    const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.telegram_username || `ID ${p.telegram_id}`;
-    text += `• <b>${escapeHtml(name)}</b>${p.phone ? ' — ' + escapeHtml(p.phone) : ''}\n`;
-    buttons.push([{ text: `📋 ${name.slice(0, 30)}`, callback_data: `pat:card:${p.id}` }]);
+  // ilike uchun maxsus belgilarni escape qilamiz
+  const safe = q.replace(/[%_\\]/g, (m) => '\\' + m);
+  const like = `%${safe}%`;
+
+  // Telegram ID — agar son bo'lsa
+  const asNumber = /^\d+$/.test(q) ? Number(q) : null;
+
+  let queryBuilder = supabase
+    .from('patients')
+    .select('id, telegram_id, telegram_username, first_name, last_name, phone, created_at');
+
+  if (asNumber !== null) {
+    // Raqam — telegram_id bo'yicha aniq, yoki phone/username/name bo'yicha qisman
+    queryBuilder = queryBuilder.or(
+      `telegram_id.eq.${asNumber},phone.ilike.${like},telegram_username.ilike.${like},first_name.ilike.${like},last_name.ilike.${like}`,
+    );
+  } else {
+    queryBuilder = queryBuilder.or(
+      `phone.ilike.${like},telegram_username.ilike.${like},first_name.ilike.${like},last_name.ilike.${like}`,
+    );
+  }
+
+  const { data } = await queryBuilder.order('created_at', { ascending: false }).limit(20);
+
+  let text = t.patientsSearchTitle[lang];
+  const buttons: InlineKeyboard = [
+    [{ text: t.patientsSearchBtn[lang], callback_data: 'pat:search' }],
+  ];
+
+  if (!data || data.length === 0) {
+    text += t.patientsSearchEmpty[lang];
+  } else {
+    for (const p of data) {
+      const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.telegram_username || `ID ${p.telegram_id}`;
+      text += `• <b>${escapeHtml(name)}</b>${p.phone ? ' — ' + escapeHtml(p.phone) : ''}\n`;
+      buttons.push([{ text: `📋 ${name.slice(0, 30)}`, callback_data: `pat:card:${p.id}` }]);
+    }
   }
   await setState(supabase, patient.id, 'admin:patients', null);
   await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
@@ -975,6 +1282,19 @@ export async function handleAdminMessage(
     await clinicSaveField(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
   }
+  // Maydon-maydon tahrirlash (yangi qiymat saqlash) — startsWith'dan oldin
+  if (state === 'admin:svc:editfld') {
+    await saveServiceFieldValue(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return true;
+  }
+  if (state === 'admin:doc:editfld') {
+    await saveDoctorFieldValue(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return true;
+  }
+  if (state === 'admin:pat:search') {
+    await searchPatients(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return true;
+  }
   if (state.startsWith('admin:svc:')) {
     await handleServiceStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
@@ -1100,9 +1420,29 @@ export async function handleAdminCallback(
     await deleteService(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
   }
+  if (data.startsWith('svc:tog:')) {
+    const id = data.slice('svc:tog:'.length);
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await toggleService(supabase, patient, chatId, id, lovableKey, telegramKey);
+    return true;
+  }
+  if (data.startsWith('svc:fld:')) {
+    const rest = data.slice('svc:fld:'.length);
+    const idx = rest.indexOf(':');
+    if (idx > 0) {
+      const id = rest.slice(0, idx);
+      const field = rest.slice(idx + 1);
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+      await askServiceFieldValue(supabase, patient, chatId, id, field, lovableKey, telegramKey);
+    } else {
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    }
+    return true;
+  }
   if (data.startsWith('svc:edit:')) {
-    // Edit = o'chirib qaytadan qo'shish (oddiyligi uchun)
-    await answerCallbackQuery(callbackId, 'O\'chirib, qaytadan qo\'shing', lovableKey, telegramKey);
+    const id = data.slice('svc:edit:'.length);
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await showServiceEditMenu(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
   }
 
@@ -1118,12 +1458,38 @@ export async function handleAdminCallback(
     await deleteDoctor(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
   }
+  if (data.startsWith('doc:tog:')) {
+    const id = data.slice('doc:tog:'.length);
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await toggleDoctor(supabase, patient, chatId, id, lovableKey, telegramKey);
+    return true;
+  }
+  if (data.startsWith('doc:fld:')) {
+    const rest = data.slice('doc:fld:'.length);
+    const idx = rest.indexOf(':');
+    if (idx > 0) {
+      const id = rest.slice(0, idx);
+      const field = rest.slice(idx + 1);
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+      await askDoctorFieldValue(supabase, patient, chatId, id, field, lovableKey, telegramKey);
+    } else {
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    }
+    return true;
+  }
   if (data.startsWith('doc:edit:')) {
-    await answerCallbackQuery(callbackId, 'O\'chirib, qaytadan qo\'shing', lovableKey, telegramKey);
+    const id = data.slice('doc:edit:'.length);
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await showDoctorEditMenu(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
   }
 
   // Bemorlar
+  if (data === 'pat:search') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await startPatientSearch(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
   if (data.startsWith('pat:card:')) {
     const id = data.slice('pat:card:'.length);
     await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
