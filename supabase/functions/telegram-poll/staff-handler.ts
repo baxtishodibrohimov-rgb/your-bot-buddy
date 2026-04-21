@@ -266,11 +266,12 @@ export async function handleStaffCommand(
     .replace('{name}', escapeHtml(staff.full_name))
     .replace('{position}', escapeHtml(positionLabel));
 
+  const isCoord = staff.position === 'koordinator';
   await setState(supabase, patient.id, 'staff:menu', { staff_id: staff.id });
   await sendMessage(
     chatId,
     greeting + '\n\n' + t.staffPortalTitle[lang],
-    { replyKeyboard: staffMenuKeyboard(lang) },
+    { replyKeyboard: staffMenuKeyboard(lang, isCoord) },
     lovableKey,
     telegramKey,
   );
@@ -292,6 +293,7 @@ export async function handleStaffPortalMessage(
     await setState(supabase, patient.id, null, null);
     return false;
   }
+  const isCoord = staff.position === 'koordinator';
 
   const matches = (key: keyof typeof t.staffMenu) =>
     text === t.staffMenu[key].uz || text === t.staffMenu[key].ru;
