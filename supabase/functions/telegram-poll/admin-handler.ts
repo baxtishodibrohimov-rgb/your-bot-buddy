@@ -1282,6 +1282,19 @@ export async function handleAdminMessage(
     await clinicSaveField(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
   }
+  // Maydon-maydon tahrirlash (yangi qiymat saqlash) — startsWith'dan oldin
+  if (state === 'admin:svc:editfld') {
+    await saveServiceFieldValue(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return true;
+  }
+  if (state === 'admin:doc:editfld') {
+    await saveDoctorFieldValue(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return true;
+  }
+  if (state === 'admin:pat:search') {
+    await searchPatients(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return true;
+  }
   if (state.startsWith('admin:svc:')) {
     await handleServiceStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
@@ -1407,9 +1420,29 @@ export async function handleAdminCallback(
     await deleteService(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
   }
+  if (data.startsWith('svc:tog:')) {
+    const id = data.slice('svc:tog:'.length);
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await toggleService(supabase, patient, chatId, id, lovableKey, telegramKey);
+    return true;
+  }
+  if (data.startsWith('svc:fld:')) {
+    const rest = data.slice('svc:fld:'.length);
+    const idx = rest.indexOf(':');
+    if (idx > 0) {
+      const id = rest.slice(0, idx);
+      const field = rest.slice(idx + 1);
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+      await askServiceFieldValue(supabase, patient, chatId, id, field, lovableKey, telegramKey);
+    } else {
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    }
+    return true;
+  }
   if (data.startsWith('svc:edit:')) {
-    // Edit = o'chirib qaytadan qo'shish (oddiyligi uchun)
-    await answerCallbackQuery(callbackId, 'O\'chirib, qaytadan qo\'shing', lovableKey, telegramKey);
+    const id = data.slice('svc:edit:'.length);
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await showServiceEditMenu(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
   }
 
@@ -1425,12 +1458,38 @@ export async function handleAdminCallback(
     await deleteDoctor(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
   }
+  if (data.startsWith('doc:tog:')) {
+    const id = data.slice('doc:tog:'.length);
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await toggleDoctor(supabase, patient, chatId, id, lovableKey, telegramKey);
+    return true;
+  }
+  if (data.startsWith('doc:fld:')) {
+    const rest = data.slice('doc:fld:'.length);
+    const idx = rest.indexOf(':');
+    if (idx > 0) {
+      const id = rest.slice(0, idx);
+      const field = rest.slice(idx + 1);
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+      await askDoctorFieldValue(supabase, patient, chatId, id, field, lovableKey, telegramKey);
+    } else {
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    }
+    return true;
+  }
   if (data.startsWith('doc:edit:')) {
-    await answerCallbackQuery(callbackId, 'O\'chirib, qaytadan qo\'shing', lovableKey, telegramKey);
+    const id = data.slice('doc:edit:'.length);
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await showDoctorEditMenu(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
   }
 
   // Bemorlar
+  if (data === 'pat:search') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await startPatientSearch(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
   if (data.startsWith('pat:card:')) {
     const id = data.slice('pat:card:'.length);
     await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
