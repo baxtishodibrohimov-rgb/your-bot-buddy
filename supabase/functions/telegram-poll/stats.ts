@@ -101,10 +101,10 @@ export async function buildStatsReport(
   // Appointmentlar bloki
   text += `📅 <b>${t.statsSecAppts[lang]}</b>\n`;
   text += `   ${t.statsApptTotal[lang]}: <b>${apptTotal}</b>\n`;
-  text += `   🆕 ${t.apptStatusName.new[lang]}: <b>${apptNew}</b>\n`;
-  text += `   📞 ${t.apptStatusName.called[lang]}: <b>${apptCalled}</b>\n`;
-  text += `   ✅ ${t.apptStatusName.done[lang]}: <b>${apptDone}</b>\n`;
-  text += `   ❌ ${t.apptStatusName.cancelled[lang]}: <b>${apptCancelled}</b>\n\n`;
+  text += `   ${t.apptStatus.new[lang]}: <b>${apptNew}</b>\n`;
+  text += `   ${t.apptStatus.called[lang]}: <b>${apptCalled}</b>\n`;
+  text += `   ${t.apptStatus.done[lang]}: <b>${apptDone}</b>\n`;
+  text += `   ${t.apptStatus.cancelled[lang]}: <b>${apptCancelled}</b>\n\n`;
 
   // Shikoyatlar bloki
   text += `✉️ <b>${t.statsSecComplaints[lang]}</b>\n`;

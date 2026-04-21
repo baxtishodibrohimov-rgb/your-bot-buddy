@@ -286,6 +286,35 @@ export const t = {
   statsToday: { uz: 'Bugungi yangi bemorlar', ru: 'Новые пациенты сегодня' },
   statsAppointmentsNew: { uz: 'Yangi qabul so\'rovlari', ru: 'Новые записи' },
 
+  // Statistika v2 (vaqt oralig'i bilan)
+  statsTitle2: { uz: 'Statistika', ru: 'Статистика' },
+  statsPeriod: { uz: 'Davr', ru: 'Период' },
+  statsChoosePeriod: {
+    uz: '📊 <b>Statistika</b>\n\nQaysi davr uchun ko\'rmoqchisiz?',
+    ru: '📊 <b>Статистика</b>\n\nЗа какой период показать?',
+  },
+  statsBtnToday: { uz: '📅 Bugun', ru: '📅 Сегодня' },
+  statsBtnWeek: { uz: '📆 Hafta', ru: '📆 Неделя' },
+  statsBtnMonth: { uz: '🗓 Oy', ru: '🗓 Месяц' },
+  statsBtnAll: { uz: '∞ Jami', ru: '∞ Всего' },
+  statsBtnRefresh: { uz: '🔄 Yangilash', ru: '🔄 Обновить' },
+  statsBtnBack: { uz: '⬅️ Davrlar', ru: '⬅️ Периоды' },
+
+  statsSecPatients: { uz: 'Bemorlar', ru: 'Пациенты' },
+  statsSecAppts: { uz: 'Qabul so\'rovlari', ru: 'Запросы на приём' },
+  statsSecComplaints: { uz: 'Shikoyatlar', ru: 'Жалобы' },
+  statsSecBroadcast: { uz: 'Yangiliklar (broadcast)', ru: 'Рассылки' },
+
+  statsNewPatients: { uz: 'Yangi bemorlar', ru: 'Новые пациенты' },
+  statsApptTotal: { uz: 'Jami so\'rovlar', ru: 'Всего запросов' },
+  statsCmpTotal: { uz: 'Jami', ru: 'Всего' },
+  statsCmpNew: { uz: 'Yangi', ru: 'Новые' },
+  statsCmpResolved: { uz: 'Hal qilingan', ru: 'Решённые' },
+  statsBcCount: { uz: 'Yuborilgan broadcastlar', ru: 'Отправлено рассылок' },
+  statsBcRecipients: { uz: 'Jami qabul qiluvchilar', ru: 'Всего получателей' },
+  statsBcSent: { uz: 'Muvaffaqiyatli', ru: 'Успешно' },
+  statsBcFailed: { uz: 'Xatolik', ru: 'Ошибки' },
+
   // ========== QABULGA YOZILISH (BEMOR) ==========
   apptStart: {
     uz: '📅 <b>Qabulga yozilish</b>\n\nBiz sizdan 3 ta savol so\'raymiz, so\'ng klinika xodimi qo\'ng\'iroq qilib, sizga qulay vaqtni kelishadi.\n\n1️⃣ <b>To\'liq ism-sharifingiz?</b>\n\n/cancel — bekor qilish',
