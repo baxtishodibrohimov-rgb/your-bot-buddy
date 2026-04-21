@@ -963,10 +963,20 @@ async function listAppointments(
     let text = `${statusLabel} • ${date}\n`;
     text += `👤 <b>${escapeHtml(a.full_name)}</b>\n`;
     text += `📞 <code>${escapeHtml(a.phone)}</code>\n`;
+    if (a.appointment_at) {
+      const dt = new Date(a.appointment_at).toLocaleString(lang === 'ru' ? 'ru-RU' : 'uz-UZ', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      });
+      text += `${t.apptTimeLabel[lang]}: <b>${dt}</b>\n`;
+    }
     if (a.notes) text += `📝 ${escapeHtml(a.notes)}\n`;
     if (a.admin_note) text += `\n<i>${escapeHtml(a.admin_note)}</i>`;
 
     const buttons: InlineKeyboard = [];
+    if (a.status !== 'done' && a.status !== 'cancelled') {
+      buttons.push([{ text: t.apptSetTimeBtn[lang], callback_data: `apt:time:${a.id}` }]);
+    }
     if (a.status === 'new') {
       buttons.push([{ text: t.apptMarkCalled[lang], callback_data: `apt:called:${a.id}` }]);
     }
