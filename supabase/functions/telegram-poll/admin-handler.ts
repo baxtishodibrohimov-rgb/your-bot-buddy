@@ -3,6 +3,7 @@ import { sendMessage, answerCallbackQuery, escapeHtml, sendMediaByType, type Rep
 import { t, type Lang } from './i18n.ts';
 import { showMediaLibrary, showEntityMedia, handleMediaCallback } from './media-handler.ts';
 import { runBroadcast, notifyPatientAboutAppointmentStatus } from './notifications.ts';
+import { buildStatsReport, type Period } from './stats.ts';
 
 type Admin = {
   id: string;
@@ -1189,8 +1190,6 @@ async function markComplaintResolved(
 }
 
 // ============= STATISTIKA =============
-
-import { buildStatsReport, type Period } from './stats.ts';
 
 async function showStatsMenu(
   supabase: any,
