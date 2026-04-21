@@ -1224,7 +1224,150 @@ async function showStats(
   await sendMessage(chatId, text, {}, lovableKey, telegramKey);
 }
 
-// ============= ADMINLAR (super-admin) =============
+// ============= BROADCAST (Yangilik yuborish) =============
+
+async function startBroadcast(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  await setState(supabase, patient.id, 'admin:bc:text', { mediaIds: [] });
+  await sendMessage(chatId, t.bcStart[lang], { removeKeyboard: true }, lovableKey, telegramKey);
+}
+
+async function bcReceiveText(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? { mediaIds: [] };
+  const trimmed = text.trim();
+  data.text = trimmed === '—' || trimmed === '-' ? '' : trimmed;
+  await setState(supabase, patient.id, 'admin:bc:media', data);
+  await sendMessage(
+    chatId,
+    t.bcAskMedia[lang],
+    {
+      inlineKeyboard: [[{ text: t.bcContinueBtn[lang], callback_data: 'bc:next' }]],
+    },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+export async function bcAddMedia(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  mediaId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? { mediaIds: [] };
+  const ids: string[] = data.mediaIds ?? [];
+  ids.push(mediaId);
+  data.mediaIds = ids;
+  await setState(supabase, patient.id, 'admin:bc:media', data);
+  await sendMessage(
+    chatId,
+    `${t.bcMediaAdded[lang]}${ids.length})`,
+    {
+      inlineKeyboard: [[{ text: t.bcContinueBtn[lang], callback_data: 'bc:next' }]],
+    },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function bcShowReview(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? {};
+  const text = (data.text as string) ?? '';
+  const ids: string[] = data.mediaIds ?? [];
+
+  if (!text && ids.length === 0) {
+    await sendMessage(chatId, t.bcNoText[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+
+  const { count } = await supabase.from('patients').select('*', { count: 'exact', head: true });
+
+  let preview = t.bcReview[lang];
+  preview += `<b>${t.bcRecipients[lang]}:</b> ${count ?? 0}\n`;
+  preview += `<b>${t.bcMediaCount[lang]}:</b> ${ids.length}\n\n`;
+  if (text) preview += `<i>${escapeHtml(text)}</i>`;
+
+  await setState(supabase, patient.id, 'admin:bc:review', data);
+  await sendMessage(
+    chatId,
+    preview,
+    {
+      inlineKeyboard: [
+        [{ text: t.bcSendBtn[lang], callback_data: 'bc:send' }],
+        [{ text: t.adminCancel[lang], callback_data: 'bc:cancel' }],
+      ],
+    },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function bcExecute(
+  supabase: any,
+  patient: Patient,
+  admin: Admin,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? {};
+  const text = (data.text as string) ?? '';
+  const mediaIds: string[] = data.mediaIds ?? [];
+
+  await setState(supabase, patient.id, 'admin:menu', null);
+  await sendMessage(chatId, t.bcSending[lang], {}, lovableKey, telegramKey);
+
+  // Asinxron — bot bloklanmasin
+  runBroadcast(
+    supabase,
+    {
+      adminId: admin.id,
+      adminTelegramId: admin.telegram_id,
+      text,
+      mediaIds,
+    },
+    lovableKey,
+    telegramKey,
+  )
+    .then(async (result) => {
+      let summary = t.bcDone[lang];
+      summary += `<b>${t.bcStatTotal[lang]}:</b> ${result.total}\n`;
+      summary += `<b>${t.bcStatSent[lang]}:</b> ${result.sent}\n`;
+      summary += `<b>${t.bcStatFailed[lang]}:</b> ${result.failed}`;
+      await sendMessage(chatId, summary, {}, lovableKey, telegramKey).catch(() => {});
+    })
+    .catch((e) => {
+      console.error('Broadcast failed:', e);
+      sendMessage(chatId, `⚠️ ${String(e)}`, {}, lovableKey, telegramKey).catch(() => {});
+    });
+}
+
+
 
 async function listAdmins(
   supabase: any,
