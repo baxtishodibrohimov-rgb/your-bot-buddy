@@ -918,6 +918,183 @@ export const t = {
     uz: '🚫 Sizga rezidentura bo\'limiga ruxsat berilmagan.\n\nAgar siz rezident bo\'lsangiz, admin sizni ro\'yxatga olishi kerak.',
     ru: '🚫 У вас нет доступа к разделу резидентуры.\n\nЕсли вы резидент, администратор должен вас зарегистрировать.',
   },
+
+  // ========== LABORATORIYA ==========
+  adminMenuLab: { uz: '🦷 Laboratoriya', ru: '🦷 Лаборатория' },
+  labNotAuthorized: {
+    uz: '🚫 Sizga laboratoriya bo\'limiga ruxsat berilmagan.\n\nAgar siz lab xodimi bo\'lsangiz, admin sizni ro\'yxatga olishi kerak.',
+    ru: '🚫 У вас нет доступа к разделу лаборатории.\n\nЕсли вы сотрудник лаборатории, администратор должен вас зарегистрировать.',
+  },
+  // Lab xodim portali (reply tugmalar)
+  labMenuNew: { uz: '🆕 Yangi apparatlar', ru: '🆕 Новые аппараты' },
+  labMenuInProgress: { uz: '⚙️ Tayyorlanayotgan', ru: '⚙️ В процессе' },
+  labMenuDone: { uz: '✅ Tugallangan', ru: '✅ Завершённые' },
+  labMenuExit: { uz: '🚪 Chiqish', ru: '🚪 Выход' },
+  labGreeting: {
+    uz: '🦷 <b>Laboratoriya</b>\n\nSalom, <b>{name}</b>!\n\nKerakli bo\'limni tanlang:',
+    ru: '🦷 <b>Лаборатория</b>\n\nЗдравствуйте, <b>{name}</b>!\n\nВыберите раздел:',
+  },
+  labExited: {
+    uz: '🚪 Laboratoriya bo\'limidan chiqdingiz. Qayta kirish: /laboratoriya',
+    ru: '🚪 Вы вышли из раздела лаборатории. Снова войти: /laboratoriya',
+  },
+  labListNewTitle: { uz: '🆕 <b>Yangi apparatlar</b>', ru: '🆕 <b>Новые аппараты</b>' },
+  labListInProgressTitle: { uz: '⚙️ <b>Tayyorlanayotgan</b>', ru: '⚙️ <b>В процессе</b>' },
+  labListDoneTitle: { uz: '✅ <b>Tugallangan apparatlar</b>', ru: '✅ <b>Завершённые аппараты</b>' },
+  labListEmpty: { uz: 'Hozircha hech narsa yo\'q.', ru: 'Пока ничего нет.' },
+
+  // Lab buyurtma kartochkasi
+  labOrderCardNew: {
+    uz: '🆕 <b>Yangi apparat</b>\n\n👤 Bemor: <b>{patient}</b>\n🦷 Apparat: <b>{appliance}</b>\n👨‍⚕️ Shifokor: <b>{doctor}</b>\n📅 Yuborilgan: {created}',
+    ru: '🆕 <b>Новый аппарат</b>\n\n👤 Пациент: <b>{patient}</b>\n🦷 Аппарат: <b>{appliance}</b>\n👨‍⚕️ Врач: <b>{doctor}</b>\n📅 Отправлено: {created}',
+  },
+  labOrderCardInProgress: {
+    uz: '⚙️ <b>Tayyorlanmoqda</b>\n\n👤 Bemor: <b>{patient}</b>\n🦷 Apparat: <b>{appliance}</b>\n👨‍⚕️ Shifokor: <b>{doctor}</b>\n📅 Qabul qilingan: {accepted}\n⏰ Tayyor bo\'lish sanasi: <b>{due}</b>',
+    ru: '⚙️ <b>В процессе</b>\n\n👤 Пациент: <b>{patient}</b>\n🦷 Аппарат: <b>{appliance}</b>\n👨‍⚕️ Врач: <b>{doctor}</b>\n📅 Принято: {accepted}\n⏰ Срок готовности: <b>{due}</b>',
+  },
+  labOrderCardDone: {
+    uz: '✅ <b>Tugallangan</b>\n\n👤 Bemor: <b>{patient}</b>\n🦷 Apparat: <b>{appliance}</b>\n👨‍⚕️ Shifokor: <b>{doctor}</b>\n✅ Tugallangan: {completed}',
+    ru: '✅ <b>Завершено</b>\n\n👤 Пациент: <b>{patient}</b>\n🦷 Аппарат: <b>{appliance}</b>\n👨‍⚕️ Врач: <b>{doctor}</b>\n✅ Завершено: {completed}',
+  },
+  labOrderNotesLabel: { uz: '📝 Qo\'shimcha izoh', ru: '📝 Дополнительная заметка' },
+  labOrderXrayLabel: { uz: '🦴 3D rentgen', ru: '🦴 3D рентген' },
+  labOrderScannerLabel: { uz: '📡 Skaner', ru: '📡 Сканер' },
+
+  // Lab amallar tugmalari
+  labAcceptBtn: { uz: '✅ Qabul qilaman', ru: '✅ Принимаю' },
+  labRejectBtn: { uz: '❌ Qabul qilmayman', ru: '❌ Не принимаю' },
+  labReadyBtn: { uz: '✅ Tayyor', ru: '✅ Готово' },
+  labRejectAskReason: {
+    uz: '❌ Iltimos, rad etish sababini yozing:\n\n/cancel — bekor qilish',
+    ru: '❌ Пожалуйста, напишите причину отказа:\n\n/cancel — отменить',
+  },
+  labAcceptedMsg: {
+    uz: '✅ Qabul qilindi! "Tayyorlanayotgan" bo\'limiga o\'tdi.\n⏰ Tayyor bo\'lish sanasi: <b>{due}</b>',
+    ru: '✅ Принято! Перешло в раздел «В процессе».\n⏰ Срок готовности: <b>{due}</b>',
+  },
+  labRejectedMsg: {
+    uz: '❌ Apparat rad etildi. Koordinatorga xabar yuborildi.',
+    ru: '❌ Аппарат отклонён. Координатор уведомлён.',
+  },
+  labReadyDoneMsg: {
+    uz: '🎉 Apparat tayyor deb belgilandi! "Tugallangan" bo\'limiga o\'tdi.',
+    ru: '🎉 Аппарат отмечен как готовый! Перешло в раздел «Завершённые».',
+  },
+
+  // ========== KOORDINATOR LAB BO'LIMI ==========
+  coordExtraLab: { uz: '🦷 Laboratoriya', ru: '🦷 Лаборатория' },
+  coordLabTitle: {
+    uz: '🦷 <b>Laboratoriya</b>\n\nKerakli amalni tanlang:',
+    ru: '🦷 <b>Лаборатория</b>\n\nВыберите действие:',
+  },
+  coordLabAddBtn: { uz: '➕ Yangi apparat qo\'shish', ru: '➕ Добавить новый аппарат' },
+  coordLabReadyBtn: { uz: '✅ Tayyor apparatlar', ru: '✅ Готовые аппараты' },
+
+  // Yangi apparat qadamlari (koordinator)
+  labAskPatient: {
+    uz: '👤 <b>Bemor ism-familiyasini</b> kiriting:\n\n/cancel — bekor qilish',
+    ru: '👤 Введите <b>ФИО пациента</b>:\n\n/cancel — отменить',
+  },
+  labAskAppliance: { uz: '🦷 Apparat nomini tanlang:', ru: '🦷 Выберите название аппарата:' },
+  labAskDoctor: { uz: '👨‍⚕️ Shifokorni tanlang:', ru: '👨‍⚕️ Выберите врача:' },
+  labAskXray: {
+    uz: '🦴 <b>Bemor 3D rentgenini</b> yuboring (rasm yoki fayl).\n\n<i>O\'tkazib yuborish:</i> /skip\n/cancel — bekor',
+    ru: '🦴 Отправьте <b>3D рентген пациента</b> (фото или файл).\n\n<i>Пропустить:</i> /skip\n/cancel — отмена',
+  },
+  labAskScanner: {
+    uz: '📡 <b>Bemor skaneri</b> yuboring (rasm, video yoki fayl).\n\n<i>O\'tkazib yuborish:</i> /skip\n/cancel — bekor',
+    ru: '📡 Отправьте <b>сканер пациента</b> (фото, видео или файл).\n\n<i>Пропустить:</i> /skip\n/cancel — отмена',
+  },
+  labAskNotes: {
+    uz: '📝 <b>Qo\'shimcha izoh</b> yuboring (matn, rasm, audio, fayl yoki ovozli xabar).\n\n<i>O\'tkazib yuborish:</i> /skip\n/cancel — bekor',
+    ru: '📝 Отправьте <b>дополнительную заметку</b> (текст, фото, аудио, файл или голосовое).\n\n<i>Пропустить:</i> /skip\n/cancel — отмена',
+  },
+  labFileSaved: { uz: '✅ Saqlandi.', ru: '✅ Сохранено.' },
+  labMoreFilesHint: {
+    uz: 'Yana fayl yuborishingiz mumkin yoki <b>/next</b> orqali keyingi qadamga o\'ting.',
+    ru: 'Можете отправить ещё файл или продолжить через <b>/next</b>.',
+  },
+  labOrderCreated: {
+    uz: '✅ <b>Apparat yuborildi!</b>\n\nLaboratoriya xodimlariga xabar yuborildi.',
+    ru: '✅ <b>Аппарат отправлен!</b>\n\nСотрудники лаборатории уведомлены.',
+  },
+  labReadyOrdersTitle: {
+    uz: '✅ <b>Tayyor apparatlar</b>',
+    ru: '✅ <b>Готовые аппараты</b>',
+  },
+
+  // Bildirishnomalar
+  labNotifyNewToWorker: {
+    uz: '🔔 <b>Yangi apparat keldi!</b>\n\n👤 Bemor: <b>{patient}</b>\n🦷 Apparat: <b>{appliance}</b>\n👨‍⚕️ Shifokor: <b>{doctor}</b>\n\n/laboratoriya — Yangi apparatlar bo\'limiga kiring.',
+    ru: '🔔 <b>Новый аппарат!</b>\n\n👤 Пациент: <b>{patient}</b>\n🦷 Аппарат: <b>{appliance}</b>\n👨‍⚕️ Врач: <b>{doctor}</b>\n\n/laboratoriya — откройте раздел «Новые аппараты».',
+  },
+  labNotifyAcceptedToCoord: {
+    uz: '✅ <b>Lab qabul qildi</b>\n\n👤 Bemor: <b>{patient}</b>\n🦷 {appliance}\n🧑‍🔧 Lab xodim: <b>{worker}</b>\n⏰ Tayyor: <b>{due}</b>',
+    ru: '✅ <b>Лаборатория приняла</b>\n\n👤 Пациент: <b>{patient}</b>\n🦷 {appliance}\n🧑‍🔧 Сотрудник: <b>{worker}</b>\n⏰ Готов: <b>{due}</b>',
+  },
+  labNotifyRejectedToCoord: {
+    uz: '❌ <b>Lab rad etdi</b>\n\n👤 Bemor: <b>{patient}</b>\n🦷 {appliance}\n🧑‍🔧 Lab xodim: <b>{worker}</b>\n💬 Sabab: <i>{reason}</i>\n\nMa\'lumotlarni tahrirlab qaytadan yuborishingiz mumkin: /koordinator → 🦷 Laboratoriya',
+    ru: '❌ <b>Лаборатория отклонила</b>\n\n👤 Пациент: <b>{patient}</b>\n🦷 {appliance}\n🧑‍🔧 Сотрудник: <b>{worker}</b>\n💬 Причина: <i>{reason}</i>\n\nВы можете отредактировать и отправить снова: /koordinator → 🦷 Лаборатория',
+  },
+  labNotifyDoneToCoord: {
+    uz: '🎉 <b>Apparat tayyor!</b>\n\n👤 Bemor: <b>{patient}</b>\n🦷 {appliance}\n🧑‍🔧 Lab xodim: <b>{worker}</b>',
+    ru: '🎉 <b>Аппарат готов!</b>\n\n👤 Пациент: <b>{patient}</b>\n🦷 {appliance}\n🧑‍🔧 Сотрудник: <b>{worker}</b>',
+  },
+
+  // ========== ADMIN: LABORATORIYA BOSHQARUVI ==========
+  adminLabHomeTitle: {
+    uz: '🦷 <b>Laboratoriya — Admin</b>\n\nKerakli bo\'limni tanlang:',
+    ru: '🦷 <b>Лаборатория — Админ</b>\n\nВыберите раздел:',
+  },
+  adminLabWorkersBtn: { uz: '👥 Lab xodimlari', ru: '👥 Сотрудники лаборатории' },
+  adminLabAppliancesBtn: { uz: '🦷 Apparat nomlari', ru: '🦷 Названия аппаратов' },
+  adminLabDoctorsBtn: { uz: '👨‍⚕️ Shifokorlar', ru: '👨‍⚕️ Врачи' },
+  adminLabOrdersNewBtn: { uz: '🆕 Yangi ishlar', ru: '🆕 Новые работы' },
+  adminLabOrdersInProgressBtn: { uz: '⚙️ Tayyorlanayotgan', ru: '⚙️ В процессе' },
+  adminLabOrdersDoneBtn: { uz: '✅ Tugagan ishlar', ru: '✅ Завершённые' },
+
+  adminLabWorkersTitle: { uz: '👥 <b>Lab xodimlari</b>', ru: '👥 <b>Сотрудники лаборатории</b>' },
+  adminLabWorkersEmpty: { uz: 'Hali lab xodimi yo\'q.', ru: 'Сотрудников ещё нет.' },
+  adminLabWorkerAdd: { uz: '➕ Yangi xodim', ru: '➕ Новый сотрудник' },
+  adminLabAskWorkerTg: {
+    uz: '🆔 Yangi lab xodimining <b>Telegram ID</b> sini yuboring:\n\n💡 @userinfobot orqali bilib oladi.\n\n/cancel — bekor',
+    ru: '🆔 Отправьте <b>Telegram ID</b> нового сотрудника:\n\n💡 Через @userinfobot.\n\n/cancel — отмена',
+  },
+  adminLabAskWorkerName: { uz: '👤 Ism familiyasini yuboring:', ru: '👤 Введите имя и фамилию:' },
+  adminLabWorkerInvalidTg: {
+    uz: '⚠️ Telegram ID faqat raqamlardan iborat bo\'lishi kerak.',
+    ru: '⚠️ Telegram ID должен состоять только из цифр.',
+  },
+  adminLabWorkerDuplicate: {
+    uz: '⚠️ Bu Telegram ID allaqachon lab xodimi sifatida ro\'yxatda.',
+    ru: '⚠️ Этот Telegram ID уже есть в списке сотрудников.',
+  },
+  adminLabWorkerAdded: { uz: '✅ Lab xodim qo\'shildi.', ru: '✅ Сотрудник добавлен.' },
+  adminLabWorkerDeleted: { uz: '🗑 Xodim o\'chirildi.', ru: '🗑 Сотрудник удалён.' },
+
+  adminLabAppliancesTitle: { uz: '🦷 <b>Apparat nomlari</b>', ru: '🦷 <b>Названия аппаратов</b>' },
+  adminLabAppliancesEmpty: { uz: 'Apparat nomlari yo\'q.', ru: 'Названий нет.' },
+  adminLabApplianceAdd: { uz: '➕ Yangi apparat nomi', ru: '➕ Новое название' },
+  adminLabAskApplianceName: {
+    uz: '🦷 Yangi apparat nomini kiriting (masalan: <i>Twin block</i>):\n\n/cancel — bekor',
+    ru: '🦷 Введите название аппарата (например: <i>Twin block</i>):\n\n/cancel — отмена',
+  },
+  adminLabApplianceAdded: { uz: '✅ Apparat nomi qo\'shildi.', ru: '✅ Название добавлено.' },
+  adminLabApplianceDeleted: { uz: '🗑 O\'chirildi.', ru: '🗑 Удалено.' },
+  adminLabApplianceDuplicate: { uz: '⚠️ Bu nom allaqachon mavjud.', ru: '⚠️ Это название уже есть.' },
+
+  adminLabDoctorsTitle: { uz: '👨‍⚕️ <b>Shifokorlar (lab uchun)</b>', ru: '👨‍⚕️ <b>Врачи (для лаборатории)</b>' },
+  adminLabDoctorsEmpty: { uz: 'Shifokorlar yo\'q.', ru: 'Врачей нет.' },
+  adminLabDoctorAdd: { uz: '➕ Yangi shifokor', ru: '➕ Новый врач' },
+  adminLabAskDoctorName: {
+    uz: '👨‍⚕️ Shifokor ism-familiyasini kiriting (masalan: <i>Ahrorxon Sobirov</i>):\n\n/cancel — bekor',
+    ru: '👨‍⚕️ Введите ФИО врача (например: <i>Ahrorxon Sobirov</i>):\n\n/cancel — отмена',
+  },
+  adminLabDoctorAdded: { uz: '✅ Shifokor qo\'shildi.', ru: '✅ Врач добавлен.' },
+  adminLabDoctorDeleted: { uz: '🗑 O\'chirildi.', ru: '🗑 Удалено.' },
+  adminLabDoctorDuplicate: { uz: '⚠️ Bu shifokor allaqachon mavjud.', ru: '⚠️ Этот врач уже есть.' },
+
+  adminLabOrdersEmpty: { uz: 'Hozircha ishlar yo\'q.', ru: 'Пока работ нет.' },
 };
 
 export function tr(key: keyof typeof t, lang: Lang): string {
