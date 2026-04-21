@@ -573,6 +573,223 @@ export type Database = {
         }
         Relationships: []
       }
+      resident_section_media: {
+        Row: {
+          caption_override: string | null
+          created_at: string
+          id: string
+          media_id: string
+          section_id: string
+          sort_order: number
+        }
+        Insert: {
+          caption_override?: string | null
+          created_at?: string
+          id?: string
+          media_id: string
+          section_id: string
+          sort_order?: number
+        }
+        Update: {
+          caption_override?: string | null
+          created_at?: string
+          id?: string
+          media_id?: string
+          section_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resident_section_media_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "media_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resident_section_media_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "resident_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resident_sections: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_root: boolean
+          parent_id: string | null
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_root?: boolean
+          parent_id?: string | null
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_root?: boolean
+          parent_id?: string | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resident_sections_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "resident_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resident_test_attempts: {
+        Row: {
+          answered_at: string
+          id: string
+          is_correct: boolean
+          resident_id: string
+          resident_telegram_id: number
+          section_id: string
+          selected_option_index: number
+          test_id: string
+        }
+        Insert: {
+          answered_at?: string
+          id?: string
+          is_correct: boolean
+          resident_id: string
+          resident_telegram_id: number
+          section_id: string
+          selected_option_index: number
+          test_id: string
+        }
+        Update: {
+          answered_at?: string
+          id?: string
+          is_correct?: boolean
+          resident_id?: string
+          resident_telegram_id?: number
+          section_id?: string
+          selected_option_index?: number
+          test_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resident_test_attempts_resident_id_fkey"
+            columns: ["resident_id"]
+            isOneToOne: false
+            referencedRelation: "residents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resident_test_attempts_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "resident_sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resident_test_attempts_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "resident_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resident_tests: {
+        Row: {
+          created_at: string
+          id: string
+          options: Json
+          question: string
+          section_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          options?: Json
+          question: string
+          section_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          options?: Json
+          question?: string
+          section_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resident_tests_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "resident_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      residents: {
+        Row: {
+          added_by_admin_id: string | null
+          added_by_telegram_id: number | null
+          created_at: string
+          full_name: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          telegram_id: number
+        }
+        Insert: {
+          added_by_admin_id?: string | null
+          added_by_telegram_id?: number | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          telegram_id: number
+        }
+        Update: {
+          added_by_admin_id?: string | null
+          added_by_telegram_id?: number | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          telegram_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "residents_added_by_admin_id_fkey"
+            columns: ["added_by_admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           created_at: string
