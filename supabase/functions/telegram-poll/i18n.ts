@@ -870,6 +870,47 @@ export const t = {
   },
   coordAttendanceCame: { uz: '🟢 Keldi', ru: '🟢 Пришёл' },
   coordAttendanceMissing: { uz: '⚪ Yo\'q', ru: '⚪ Нет' },
+
+  // ========== KOORDINATOR XODIM PORTALIDA (qo'shimcha tugmalar) ==========
+  // Koordinator oddiy xodim portaliga kiradi, lekin unga 2 ta qo'shimcha tugma ko'rinadi
+  coordExtraStaff: { uz: '👥 Xodimlar (admin)', ru: '👥 Сотрудники (админ)' },
+  coordExtraStats: { uz: '📊 Statistika', ru: '📊 Статистика' },
+
+  // Koordinator statistikasi: bo'limlar
+  coordStatsTitle: {
+    uz: '📊 <b>Koordinator statistikasi</b>\n\nKerakli bo\'limni tanlang:',
+    ru: '📊 <b>Статистика координатора</b>\n\nВыберите раздел:',
+  },
+  coordStatsAttendance: { uz: '📅 Xodimlar davomati', ru: '📅 Посещаемость сотрудников' },
+  coordStatsChecklists: { uz: '📋 Cheklistlar holati', ru: '📋 Статус чек-листов' },
+  coordStatsPatients: { uz: '👥 Bemorlar ro\'yxati', ru: '👥 Список пациентов' },
+  coordStatsBack: { uz: '⬅️ Statistikaga qaytish', ru: '⬅️ К статистике' },
+
+  // Cheklistlar holati hisoboti
+  coordChkReportTitle: {
+    uz: '📋 <b>Bugungi cheklistlar holati</b>',
+    ru: '📋 <b>Статус чек-листов на сегодня</b>',
+  },
+  coordChkReportEmpty: {
+    uz: 'Bugun majburiy cheklistlar belgilanmagan.',
+    ru: 'На сегодня обязательные чек-листы не назначены.',
+  },
+  coordChkStatusDone: { uz: '✅ To\'liq', ru: '✅ Полностью' },
+  coordChkStatusPartial: { uz: '🟡 Qisman', ru: '🟡 Частично' },
+  coordChkStatusEmpty: { uz: '⚪ Boshlanmagan', ru: '⚪ Не начат' },
+  coordChkStatusApproved: { uz: '✅ Tasdiqlangan', ru: '✅ Подтверждён' },
+  coordChkStatusPending: { uz: '⏳ Tekshiruvda', ru: '⏳ На проверке' },
+  coordChkStatusRejected: { uz: '❌ Qaytarilgan', ru: '❌ Отклонён' },
+
+  // Bemorlar ro'yxati
+  coordPatientsTitle: {
+    uz: '👥 <b>Bemorlar ro\'yxati</b>\n<i>Eng yangilari (50 ta)</i>',
+    ru: '👥 <b>Список пациентов</b>\n<i>Последние (50)</i>',
+  },
+  coordPatientsEmpty: {
+    uz: 'Hali bemorlar ro\'yxatdan o\'tmagan.',
+    ru: 'Пока пациенты не зарегистрированы.',
+  },
 };
 
 export function tr(key: keyof typeof t, lang: Lang): string {

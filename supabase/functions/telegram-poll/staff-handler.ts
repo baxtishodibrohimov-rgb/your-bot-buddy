@@ -1,6 +1,7 @@
 // Xodimlar (staff) — admin bo'limi va /staff buyrug'i
 import { sendMessage, escapeHtml, sendMediaByType, type InlineKeyboard, type ReplyKeyboard } from './telegram-api.ts';
 import { t, type Lang } from './i18n.ts';
+import { isCoordinator } from './coordinator-handler.ts';
 
 export type StaffPosition =
   | 'registratura'
@@ -220,13 +221,19 @@ export async function deleteStaffMember(
 
 // ============= /staff buyrug'i (xodim botga yozsa) =============
 
-function staffMenuKeyboard(lang: Lang): ReplyKeyboard {
-  return [
+function staffMenuKeyboard(lang: Lang, isCoord: boolean = false): ReplyKeyboard {
+  const rows: ReplyKeyboard = [
     [{ text: t.staffMenu.instruction[lang] }, { text: t.staffMenuChecklists[lang] }],
     [{ text: t.staffMenu.startDay[lang] }],
-    [{ text: t.staffMenu.complaint[lang] }],
-    [{ text: t.staffMenu.exit[lang] }],
   ];
+  if (isCoord) {
+    // Koordinator uchun qo'shimcha bo'lim: xodimlar boshqaruvi, statistika va tekshiruvlar
+    rows.push([{ text: t.coordExtraStaff[lang] }, { text: t.coordExtraStats[lang] }]);
+    rows.push([{ text: t.coordMenu.pending[lang] }]);
+  }
+  rows.push([{ text: t.staffMenu.complaint[lang] }]);
+  rows.push([{ text: t.staffMenu.exit[lang] }]);
+  return rows;
 }
 
 async function getStaffByTgId(supabase: any, telegramId: number) {
@@ -259,11 +266,12 @@ export async function handleStaffCommand(
     .replace('{name}', escapeHtml(staff.full_name))
     .replace('{position}', escapeHtml(positionLabel));
 
+  const isCoord = staff.position === 'koordinator';
   await setState(supabase, patient.id, 'staff:menu', { staff_id: staff.id });
   await sendMessage(
     chatId,
     greeting + '\n\n' + t.staffPortalTitle[lang],
-    { replyKeyboard: staffMenuKeyboard(lang) },
+    { replyKeyboard: staffMenuKeyboard(lang, isCoord) },
     lovableKey,
     telegramKey,
   );
@@ -285,6 +293,7 @@ export async function handleStaffPortalMessage(
     await setState(supabase, patient.id, null, null);
     return false;
   }
+  const isCoord = staff.position === 'koordinator';
 
   const matches = (key: keyof typeof t.staffMenu) =>
     text === t.staffMenu[key].uz || text === t.staffMenu[key].ru;
@@ -311,6 +320,67 @@ export async function handleStaffPortalMessage(
   if (matches('exit')) {
     await setState(supabase, patient.id, null, null);
     await sendMessage(chatId, t.staffExited[lang], { removeKeyboard: true }, lovableKey, telegramKey);
+    return true;
+  }
+
+  // ===== KOORDINATOR uchun qo'shimcha tugmalar =====
+  if (isCoord) {
+    // 👥 Xodimlar (admin) — admindagi xodimlar bo'limi
+    if (text === t.coordExtraStaff.uz || text === t.coordExtraStaff.ru) {
+      await showStaffPositionsMenu(supabase, patient, chatId, lovableKey, telegramKey);
+      return true;
+    }
+    // 📊 Statistika — koordinator statistikasi menyusi
+    if (text === t.coordExtraStats.uz || text === t.coordExtraStats.ru) {
+      const { showCoordStatsMenu } = await import('./coordinator-stats.ts');
+      await setState(supabase, patient.id, 'coord:stats', { staff_id: staff.id });
+      await showCoordStatsMenu(chatId, lang, lovableKey, telegramKey);
+      return true;
+    }
+    // ⏳ Tekshiruvlar — pending reviews ro'yxati
+    if (text === t.coordMenu.pending.uz || text === t.coordMenu.pending.ru) {
+      const { showPendingReviewsForStaff } = await import('./coordinator-handler.ts');
+      await showPendingReviewsForStaff(supabase, chatId, lang, lovableKey, telegramKey);
+      return true;
+    }
+  }
+  return false;
+}
+
+// Statistika menyusidan tugmalarni ushlash (koordinator uchun)
+export async function handleCoordStatsMessage(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+): Promise<boolean> {
+  const lang = patient.language;
+  const staff = await getStaffByTgId(supabase, patient.telegram_id);
+  if (!staff || staff.position !== 'koordinator') {
+    await setState(supabase, patient.id, null, null);
+    return false;
+  }
+
+  if (text === t.coordStatsAttendance.uz || text === t.coordStatsAttendance.ru) {
+    const { showAttendanceReport } = await import('./coordinator-stats.ts');
+    await showAttendanceReport(supabase, chatId, lang, lovableKey, telegramKey);
+    return true;
+  }
+  if (text === t.coordStatsChecklists.uz || text === t.coordStatsChecklists.ru) {
+    const { showChecklistsReport } = await import('./coordinator-stats.ts');
+    await showChecklistsReport(supabase, chatId, lang, lovableKey, telegramKey);
+    return true;
+  }
+  if (text === t.coordStatsPatients.uz || text === t.coordStatsPatients.ru) {
+    const { showPatientsList } = await import('./coordinator-stats.ts');
+    await showPatientsList(supabase, chatId, lang, lovableKey, telegramKey);
+    return true;
+  }
+  // Chiqish — staff portaliga qaytish
+  if (text === t.staffMenu.exit.uz || text === t.staffMenu.exit.ru) {
+    await handleStaffCommand(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
   return false;
@@ -372,11 +442,13 @@ export async function handleStaffComplaint(
   const staffId = data.staff_id as string | undefined;
 
   let prefix = '[XODIM] ';
+  let isCoord = false;
   if (staffId) {
     const { data: s } = await supabase.from('staff').select('full_name, position').eq('id', staffId).maybeSingle();
     if (s) {
       const posLabel = t.staffPositions[s.position as StaffPosition]?.uz ?? s.position;
       prefix = `[XODIM: ${s.full_name} — ${posLabel}] `;
+      if (s.position === 'koordinator') isCoord = true;
     }
   }
 
@@ -390,7 +462,7 @@ export async function handleStaffComplaint(
   await sendMessage(
     chatId,
     t.staffComplaintSaved[lang],
-    { replyKeyboard: staffMenuKeyboard(lang) },
+    { replyKeyboard: staffMenuKeyboard(lang, isCoord) },
     lovableKey,
     telegramKey,
   );

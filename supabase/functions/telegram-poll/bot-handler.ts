@@ -684,12 +684,14 @@ export async function handleUpdate(
   if (text === '/start') {
     await setState(supabase, patient.id, null, null);
 
-    // Agar foydalanuvchi koordinator bo'lsa — avtomatik koordinator portali
+    // Agar foydalanuvchi koordinator (staff.position='koordinator') bo'lsa
+    // — avtomatik xodim portaliga kiradi (qo'shimcha tugmalar bilan)
     {
-      const { isCoordinator, handleCoordinatorCommand } = await import('./coordinator-handler.ts');
+      const { isCoordinator } = await import('./coordinator-handler.ts');
       const coord = await isCoordinator(supabase, patient.telegram_id);
       if (coord) {
-        await handleCoordinatorCommand(supabase, patient, chatId, lovableKey, telegramKey);
+        const { handleStaffCommand } = await import('./staff-handler.ts');
+        await handleStaffCommand(supabase, patient, chatId, lovableKey, telegramKey);
         return;
       }
     }
@@ -717,28 +719,20 @@ export async function handleUpdate(
     return;
   }
 
-  // /staff — xodim portali
-  if (text === '/staff' || text === '/xodim') {
+  // /staff — xodim portali (koordinator ham shu yerda)
+  if (text === '/staff' || text === '/xodim' || text === '/coordinator' || text === '/koordinator') {
     const { handleStaffCommand } = await import('./staff-handler.ts');
     await handleStaffCommand(supabase, patient, chatId, lovableKey, telegramKey);
     return;
   }
 
-  // /coordinator — koordinator portali
-  if (text === '/coordinator' || text === '/koordinator') {
-    const { handleCoordinatorCommand } = await import('./coordinator-handler.ts');
-    await handleCoordinatorCommand(supabase, patient, chatId, lovableKey, telegramKey);
-    return;
-  }
-
-  // Koordinator portali state'i (bemor menyusi tushmasin)
-  if (patient.state === 'coord:menu') {
-    const { handleCoordinatorPortalMessage } = await import('./coordinator-handler.ts');
-    const handled = await handleCoordinatorPortalMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+  // Koordinator statistika menyusi state'i
+  if (patient.state === 'coord:stats') {
+    const { handleCoordStatsMessage, handleStaffCommand } = await import('./staff-handler.ts');
+    const handled = await handleCoordStatsMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
     if (handled) return;
-    // tushunilmagan matn — menyu qayta ko'rsatamiz
-    const { handleCoordinatorCommand } = await import('./coordinator-handler.ts');
-    await handleCoordinatorCommand(supabase, patient, chatId, lovableKey, telegramKey);
+    // tushunilmagan matn — staff menyuga qaytamiz
+    await handleStaffCommand(supabase, patient, chatId, lovableKey, telegramKey);
     return;
   }
 
