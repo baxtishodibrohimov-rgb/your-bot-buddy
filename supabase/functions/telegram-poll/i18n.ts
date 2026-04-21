@@ -226,6 +226,51 @@ export const t = {
     ru: '📚 <b>Материалы для вашей должности:</b>',
   },
 
+  // ========== XODIM PORTALI (xodim botda) ==========
+  staffMenu: {
+    instruction: { uz: '📖 Xodim uchun yo\'riqnoma', ru: '📖 Инструкция для сотрудника' },
+    checklist: { uz: '✅ Kunlik cheklist', ru: '✅ Ежедневный чек-лист' },
+    startDay: { uz: '🌅 Kunlik ishni boshlash', ru: '🌅 Начать рабочий день' },
+    complaint: { uz: '✍️ Shikoyat va taklif', ru: '✍️ Жалоба и предложение' },
+    exit: { uz: '🚪 Chiqish', ru: '🚪 Выход' },
+  },
+  staffPortalTitle: {
+    uz: '👨‍💼 <b>Xodim paneli</b>\n\nKerakli bo\'limni tanlang:',
+    ru: '👨‍💼 <b>Панель сотрудника</b>\n\nВыберите раздел:',
+  },
+  staffInstructionEmpty: {
+    uz: '📖 Sizga hali yo\'riqnoma materiallari biriktirilmagan.\n\nAdministrator yaqin orada qo\'shadi.',
+    ru: '📖 Для вас пока не прикреплены материалы инструкции.\n\nАдминистратор скоро добавит.',
+  },
+  staffInstructionIntro: {
+    uz: '📖 <b>Yo\'riqnoma materiallari:</b>',
+    ru: '📖 <b>Материалы инструкции:</b>',
+  },
+  staffChecklistMsg: {
+    uz: '✅ <b>Kunlik cheklist</b>\n\n• Ish joyini tayyorlash\n• Asboblarni tekshirish\n• Sterilizatsiyani nazorat qilish\n• Bemor kartalarini ko\'rib chiqish\n• Smena oxirida hisobot\n\n<i>To\'liq cheklist tez orada qo\'shiladi.</i>',
+    ru: '✅ <b>Ежедневный чек-лист</b>\n\n• Подготовить рабочее место\n• Проверить инструменты\n• Контроль стерилизации\n• Просмотреть карты пациентов\n• Отчёт в конце смены\n\n<i>Полный чек-лист скоро будет добавлен.</i>',
+  },
+  staffStartDayMsg: {
+    uz: '🌅 <b>Ish kuni boshlandi!</b>\n\nMuvaffaqiyatli kun tilaymiz! 💪\n\n<i>Vaqt belgilandi:</i> {time}',
+    ru: '🌅 <b>Рабочий день начат!</b>\n\nУспешного дня! 💪\n\n<i>Время отметки:</i> {time}',
+  },
+  staffComplaintAsk: {
+    uz: '✍️ Shikoyat yoki taklifingizni yozing. Administrator albatta ko\'rib chiqadi.\n\n/cancel — bekor qilish',
+    ru: '✍️ Напишите вашу жалобу или предложение. Администратор обязательно рассмотрит.\n\n/cancel — отменить',
+  },
+  staffComplaintSaved: {
+    uz: '✅ Rahmat! Murojaatingiz administratorga yuborildi.',
+    ru: '✅ Спасибо! Ваше обращение отправлено администратору.',
+  },
+  staffExited: {
+    uz: '🚪 Xodim panelidan chiqdingiz. Qayta kirish uchun /staff yuboring.',
+    ru: '🚪 Вы вышли из панели сотрудника. Для повторного входа отправьте /staff.',
+  },
+  staffMediaBtn: {
+    uz: '🖼 Yo\'riqnoma media',
+    ru: '🖼 Медиа инструкция',
+  },
+
   // Shifokor (faqat bemorlar uchun ko'rsatiladigan qo'shimcha maydonlar)
   docAskName: { uz: 'Shifokor F.I.SH:', ru: 'Ф.И.О. врача:' },
   docAskSpecUz: { uz: 'Mutaxassisligi (UZ):', ru: 'Специальность (UZ):' },

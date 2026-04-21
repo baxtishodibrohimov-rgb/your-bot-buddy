@@ -464,6 +464,7 @@ export async function startAttachFlow(
     {
       inlineKeyboard: [
         [{ text: t.mediaEntityDoctor[lang], callback_data: `med:at:staff_position:${mediaId}` }],
+        [{ text: lang === 'uz' ? '👤 Aniq xodim' : '👤 Конкретный сотрудник', callback_data: `med:at:staff:${mediaId}` }],
         [{ text: t.mediaEntityService[lang], callback_data: `med:at:service:${mediaId}` }],
         [{ text: t.mediaEntityClinic[lang], callback_data: `med:at:clinic:${mediaId}` }],
       ],
@@ -490,7 +491,6 @@ export async function pickAttachTarget(
   }
 
   if (entityType === 'staff_position') {
-    // Lavozim tanlash menyusi
     const positions: Array<keyof typeof t.staffPositions> = [
       'registratura', 'koordinator', 'shifokor', 'shifokor_yordamchisi', 'hisobchi', 'sterilizatsiya',
     ];
@@ -498,6 +498,34 @@ export async function pickAttachTarget(
       { text: t.staffPositions[p][lang], callback_data: `med:do:staff_position:${mediaId}:${p}` },
     ]);
     await sendMessage(chatId, lang === 'uz' ? 'Qaysi lavozimga?' : 'К какой должности?', { inlineKeyboard: buttons }, lovableKey, telegramKey);
+    return;
+  }
+
+  if (entityType === 'staff') {
+    const { data } = await supabase
+      .from('staff')
+      .select('id, full_name, position')
+      .eq('is_active', true)
+      .order('position')
+      .order('sort_order')
+      .limit(80);
+    if (!data || data.length === 0) {
+      await sendMessage(chatId, t.staffListEmpty[lang], {}, lovableKey, telegramKey);
+      return;
+    }
+    const buttons: InlineKeyboard = data.map((s: any) => {
+      const posLabel = t.staffPositions[s.position as keyof typeof t.staffPositions]?.[lang] ?? s.position;
+      return [
+        { text: `${posLabel.split(' ')[0]} ${s.full_name.slice(0, 30)}`, callback_data: `med:do:staff:${mediaId}:${s.id}` },
+      ];
+    });
+    await sendMessage(
+      chatId,
+      lang === 'uz' ? 'Qaysi xodimga?' : 'Какому сотруднику?',
+      { inlineKeyboard: buttons },
+      lovableKey,
+      telegramKey,
+    );
     return;
   }
 
