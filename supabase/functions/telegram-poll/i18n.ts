@@ -446,6 +446,82 @@ export const t = {
 
   // Stats
   statsMedia: { uz: 'Media fayllar', ru: 'Медиа файлы' },
+
+  // ========== BROADCAST (Yangilik yuborish) ==========
+  adminMenuBroadcast: { uz: '📢 Yangilik yuborish', ru: '📢 Рассылка' },
+  bcStart: {
+    uz: '📢 <b>Yangilik yuborish</b>\n\nBu xabar barcha bemorlarga (botda /start bosganlar) yetkaziladi.\n\n1️⃣ Avval <b>matn</b>ni yuboring (yoki <code>—</code> — faqat media yuborish uchun):\n\n/cancel — bekor qilish',
+    ru: '📢 <b>Рассылка</b>\n\nЭто сообщение получат все пациенты (запустившие /start).\n\n1️⃣ Сначала отправьте <b>текст</b> (или <code>—</code> — только медиа):\n\n/cancel — отменить',
+  },
+  bcAskMedia: {
+    uz: '2️⃣ Endi <b>media</b> yuborishingiz mumkin (rasm, video, fayl). Birdan ortiq yuborsangiz, hammasi qo\'shiladi.\n\nMedia kerak bo\'lmasa, <b>Davom etish</b> tugmasini bosing.',
+    ru: '2️⃣ Теперь можно отправить <b>медиа</b> (фото, видео, файл). Можно отправить несколько — все добавятся.\n\nЕсли медиа не нужно — нажмите <b>Продолжить</b>.',
+  },
+  bcMediaAdded: { uz: '✅ Media qo\'shildi (', ru: '✅ Медиа добавлено (' },
+  bcContinueBtn: { uz: '➡️ Davom etish', ru: '➡️ Продолжить' },
+  bcReview: {
+    uz: '📋 <b>Yuborishdan oldin tekshiring</b>\n\n',
+    ru: '📋 <b>Проверьте перед отправкой</b>\n\n',
+  },
+  bcRecipients: { uz: 'Qabul qiluvchilar', ru: 'Получатели' },
+  bcMediaCount: { uz: 'Media', ru: 'Медиа' },
+  bcSendBtn: { uz: '📨 Yuborish', ru: '📨 Отправить' },
+  bcSending: {
+    uz: '📨 Yuborilmoqda... Bu bir necha daqiqa olishi mumkin. Yakunlanganda xabar beraman.',
+    ru: '📨 Отправляется... Это может занять несколько минут. Сообщу, когда завершится.',
+  },
+  bcDone: {
+    uz: '✅ <b>Yuborildi!</b>\n\n',
+    ru: '✅ <b>Отправлено!</b>\n\n',
+  },
+  bcStatTotal: { uz: 'Jami', ru: 'Всего' },
+  bcStatSent: { uz: 'Muvaffaqiyatli', ru: 'Успешно' },
+  bcStatFailed: { uz: 'Xatolik', ru: 'Ошибка' },
+  bcNoText: {
+    uz: '⚠️ Matn yoki kamida 1 ta media kerak.',
+    ru: '⚠️ Нужен текст или минимум 1 медиа.',
+  },
+
+  // ========== BEMORGA STATUS BILDIRISHNOMALARI ==========
+  apptStatusUserNotif: {
+    called: {
+      uz: '📞 <b>Sizning so\'rovingiz qayta ko\'rib chiqildi.</b>\n\nKlinika xodimi siz bilan bog\'lanishga harakat qildi.',
+      ru: '📞 <b>Ваша заявка обработана.</b>\n\nСотрудник клиники связался с вами.',
+    },
+    done: {
+      uz: '✅ <b>Sizning qabulingiz tasdiqlandi va bajarildi.</b>\n\nBizni tanlaganingiz uchun rahmat! 🙏',
+      ru: '✅ <b>Ваш приём подтверждён и выполнен.</b>\n\nСпасибо, что выбрали нас! 🙏',
+    },
+    cancelled: {
+      uz: '❌ <b>Sizning qabul so\'rovingiz bekor qilindi.</b>\n\nSavollar bo\'lsa, biz bilan bog\'laning.',
+      ru: '❌ <b>Ваша заявка на приём отменена.</b>\n\nЕсли есть вопросы — свяжитесь с нами.',
+    },
+  },
+
+  // ========== ESLATMA ==========
+  apptReminder: {
+    uz: '🔔 <b>Eslatma!</b>\n\nErtaga sizning qabulingiz bor:',
+    ru: '🔔 <b>Напоминание!</b>\n\nЗавтра у вас приём:',
+  },
+
+  // ========== ADMINGA SHIKOYAT BILDIRISHNOMASI ==========
+  cmpNotifyAdmin: {
+    uz: '🔔 <b>Yangi shikoyat / taklif!</b>\n\n',
+    ru: '🔔 <b>Новая жалоба / предложение!</b>\n\n',
+  },
+
+  // ========== APPOINTMENT VAQTI (admin) ==========
+  apptSetTimeBtn: { uz: '🕐 Vaqt belgilash', ru: '🕐 Назначить время' },
+  apptAskTime: {
+    uz: '🕐 <b>Qabul vaqtini kiriting</b>\n\nFormat: <code>kun.oy.yil soat:daqiqa</code>\nMasalan: <code>22.04.2026 14:30</code>\n\n/cancel — bekor qilish',
+    ru: '🕐 <b>Введите время приёма</b>\n\nФормат: <code>день.месяц.год часы:минуты</code>\nПример: <code>22.04.2026 14:30</code>\n\n/cancel — отменить',
+  },
+  apptInvalidTime: {
+    uz: '⚠️ Vaqt formati noto\'g\'ri. Misol: <code>22.04.2026 14:30</code>',
+    ru: '⚠️ Неверный формат. Пример: <code>22.04.2026 14:30</code>',
+  },
+  apptTimeSaved: { uz: '✅ Vaqt belgilandi.', ru: '✅ Время назначено.' },
+  apptTimeLabel: { uz: '🕐 Vaqt', ru: '🕐 Время' },
 };
 
 export function tr(key: keyof typeof t, lang: Lang): string {
