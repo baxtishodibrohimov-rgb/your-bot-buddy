@@ -293,15 +293,14 @@ export async function handleStaffPortalMessage(
     await sendStaffInstruction(supabase, chatId, staff, lang, lovableKey, telegramKey);
     return true;
   }
-  if (matches('checklist')) {
-    await sendMessage(chatId, t.staffChecklistMsg[lang], {}, lovableKey, telegramKey);
+  if (text === t.staffMenuChecklists.uz || text === t.staffMenuChecklists.ru) {
+    const { showStaffChecklistsList } = await import('./checklist-handler.ts');
+    await showStaffChecklistsList(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
   if (matches('startDay')) {
-    const time = new Date().toLocaleString(lang === 'uz' ? 'uz-UZ' : 'ru-RU', {
-      hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric',
-    });
-    await sendMessage(chatId, t.staffStartDayMsg[lang].replace('{time}', escapeHtml(time)), {}, lovableKey, telegramKey);
+    const { startWorkDay } = await import('./checklist-handler.ts');
+    await startWorkDay(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
   if (matches('complaint')) {
