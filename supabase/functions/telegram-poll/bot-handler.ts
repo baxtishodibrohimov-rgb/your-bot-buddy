@@ -632,6 +632,17 @@ export async function handleUpdate(
       if (handled) return;
     }
 
+    // Koordinator tekshiruv callback (admin emas — alohida yo'l)
+    if (data.startsWith('crv:')) {
+      const { handleCoordinatorCallback } = await import('./coordinator-handler.ts');
+      const handled = await handleCoordinatorCallback(
+        supabase, patient, chatId, data,
+        async (txt?: string) => { await answerCallbackQuery(cq.id, txt, lovableKey, telegramKey); },
+        lovableKey, telegramKey,
+      );
+      if (handled) return;
+    }
+
     // Admin callbacks
     const handled = await handleAdminCallback(supabase, patient, chatId, data, cq.id, lovableKey, telegramKey);
     if (handled) return;
