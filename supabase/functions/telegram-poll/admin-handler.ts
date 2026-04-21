@@ -608,6 +608,7 @@ async function showDoctorEditMenu(
     }
     buttons.push(row);
   }
+  buttons.push([{ text: t.entityMediaBtn[lang], callback_data: `ent:med:doctor:${doctorId}` }]);
   await setState(supabase, patient.id, 'admin:doctors', null);
   await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
 }
