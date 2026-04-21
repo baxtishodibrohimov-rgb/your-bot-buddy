@@ -227,9 +227,9 @@ function staffMenuKeyboard(lang: Lang, isCoord: boolean = false): ReplyKeyboard 
     [{ text: t.staffMenu.startDay[lang] }],
   ];
   if (isCoord) {
-    // Koordinator uchun qo'shimcha bo'lim: xodimlar boshqaruvi, statistika va tekshiruvlar
+    // Koordinator uchun qo'shimcha bo'lim: xodimlar boshqaruvi, statistika, tekshiruvlar va laboratoriya
     rows.push([{ text: t.coordExtraStaff[lang] }, { text: t.coordExtraStats[lang] }]);
-    rows.push([{ text: t.coordMenu.pending[lang] }]);
+    rows.push([{ text: t.coordExtraLab[lang] }, { text: t.coordMenu.pending[lang] }]);
   }
   rows.push([{ text: t.staffMenu.complaint[lang] }]);
   rows.push([{ text: t.staffMenu.exit[lang] }]);
