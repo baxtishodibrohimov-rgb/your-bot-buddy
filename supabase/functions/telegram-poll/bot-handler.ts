@@ -198,21 +198,256 @@ async function showOrStartMedicalCard(
 
   if (card && card.full_name) {
     let text = t.mcExisting[lang];
-    text += `<b>${lang === 'uz' ? 'Ism' : 'Имя'}:</b> ${escapeHtml(card.full_name)}\n`;
-    if (card.birth_date) text += `<b>${lang === 'uz' ? 'Tug\'ilgan sana' : 'Дата рождения'}:</b> ${card.birth_date}\n`;
-    if (card.gender) text += `<b>${lang === 'uz' ? 'Jinsi' : 'Пол'}:</b> ${escapeHtml(card.gender)}\n`;
-    if (card.address) text += `<b>${lang === 'uz' ? 'Manzil' : 'Адрес'}:</b> ${escapeHtml(card.address)}\n`;
-    if (card.allergies) text += `<b>${lang === 'uz' ? 'Allergiya' : 'Аллергии'}:</b> ${escapeHtml(card.allergies)}\n`;
-    if (card.chronic_diseases) text += `<b>${lang === 'uz' ? 'Surunkali kasalliklar' : 'Хронические заболевания'}:</b> ${escapeHtml(card.chronic_diseases)}\n`;
-    if (card.current_medications) text += `<b>${lang === 'uz' ? 'Dorilar' : 'Лекарства'}:</b> ${escapeHtml(card.current_medications)}\n`;
-    if (card.previous_treatments) text += `<b>${lang === 'uz' ? 'Avvalgi davolanishlar' : 'Предыдущие лечения'}:</b> ${escapeHtml(card.previous_treatments)}\n`;
+    const fields: Array<keyof typeof t.mcFields> = [
+      'full_name', 'birth_date', 'gender', 'address',
+      'allergies', 'chronic_diseases', 'current_medications', 'previous_treatments',
+    ];
+    for (const f of fields) {
+      const label = t.mcFields[f][lang];
+      const val = (card as any)[f];
+      if (val) text += `<b>${escapeHtml(label)}:</b> ${escapeHtml(String(val))}\n`;
+    }
 
-    await sendMessage(chatId, text, {
-      inlineKeyboard: [[{ text: t.mcUpdate[lang], callback_data: 'mc:update' }]],
-    }, lovableKey, telegramKey);
+    // Inline tugmalar — har bir maydonni alohida tahrirlash
+    const buttons: InlineKeyboard = [];
+    for (let i = 0; i < fields.length; i += 2) {
+      const row = [
+        { text: '✏️ ' + t.mcFields[fields[i]][lang], callback_data: `mc:edit:${fields[i]}` },
+      ];
+      if (i + 1 < fields.length) {
+        row.push({ text: '✏️ ' + t.mcFields[fields[i + 1]][lang], callback_data: `mc:edit:${fields[i + 1]}` });
+      }
+      buttons.push(row);
+    }
+    buttons.push([{ text: t.mcRedoAll[lang], callback_data: 'mc:update' }]);
+
+    await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
   } else {
     await setState(supabase, patient.id, 'mc:full_name', {});
     await sendMessage(chatId, t.mcStart[lang], { removeKeyboard: true }, lovableKey, telegramKey);
+  }
+}
+
+// Bitta tibbiy karta maydonini tahrirlash
+async function startMcEdit(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  field: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const label = (t.mcFields as any)[field]?.[lang] ?? field;
+  await setState(supabase, patient.id, 'mc:edit', { field });
+  await sendMessage(
+    chatId,
+    `<b>${escapeHtml(label)}</b>\n\n${t.mcEnterNew[lang]}\n\n/cancel — ${t.cancel[lang]}`,
+    { removeKeyboard: true },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function saveMcEdit(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? {};
+  const field = data.field as string;
+  if (!field) return;
+
+  let value: string | null = text.trim();
+  if (field === 'birth_date') {
+    const parsed = parseBirthDate(text);
+    if (!parsed) {
+      await sendMessage(
+        chatId,
+        lang === 'uz'
+          ? '⚠️ Sana noto\'g\'ri. Format: <code>kun.oy.yil</code> (masalan: 15.03.1990)'
+          : '⚠️ Неверная дата. Формат: <code>день.месяц.год</code> (например: 15.03.1990)',
+        {},
+        lovableKey,
+        telegramKey,
+      );
+      return;
+    }
+    value = parsed;
+  }
+
+  const { data: existing } = await supabase
+    .from('medical_cards')
+    .select('id')
+    .eq('patient_id', patient.id)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase
+      .from('medical_cards')
+      .update({ [field]: value, updated_at: new Date().toISOString() })
+      .eq('id', existing.id);
+  }
+
+  await setState(supabase, patient.id, null, null);
+  await sendMessage(chatId, t.mcFieldSaved[lang], { replyKeyboard: mainKeyboard(lang) }, lovableKey, telegramKey);
+  await showOrStartMedicalCard(supabase, patient, chatId, lovableKey, telegramKey);
+}
+
+// ============= QABULGA YOZILISH (BEMOR) =============
+
+async function startAppointment(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  // Default qiymatlar (agar bemor avval tibbiy karta to'ldirgan bo'lsa)
+  const initial: Record<string, any> = {};
+  await setState(supabase, patient.id, 'appt:name', initial);
+  await sendMessage(chatId, t.apptStart[lang], { removeKeyboard: true }, lovableKey, telegramKey);
+}
+
+async function handleAppointmentStep(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const state = patient.state ?? '';
+  const data = (patient.state_data as Record<string, any>) ?? {};
+
+  if (state === 'appt:name') {
+    const name = text.trim();
+    if (name.length < 2 || name.length > 200) {
+      await sendMessage(
+        chatId,
+        lang === 'uz' ? '⚠️ Ismni 2-200 belgi orasida kiriting.' : '⚠️ Введите имя от 2 до 200 символов.',
+        {},
+        lovableKey,
+        telegramKey,
+      );
+      return;
+    }
+    data.full_name = name;
+    await setState(supabase, patient.id, 'appt:phone', data);
+    await sendMessage(chatId, t.apptAskPhone[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+
+  if (state === 'appt:phone') {
+    const phone = normalizePhone(text);
+    if (!phone) {
+      await sendMessage(chatId, t.apptInvalidPhone[lang], {}, lovableKey, telegramKey);
+      return;
+    }
+    data.phone = phone;
+    await setState(supabase, patient.id, 'appt:notes', data);
+    await sendMessage(chatId, t.apptAskNotes[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+
+  if (state === 'appt:notes') {
+    const trimmed = text.trim();
+    const notes = trimmed === '—' || trimmed === '-' ? null : trimmed.slice(0, 500);
+    data.notes = notes;
+    await setState(supabase, patient.id, 'appt:review', data);
+    await showAppointmentReview(supabase, patient, chatId, data, lovableKey, telegramKey);
+    return;
+  }
+}
+
+async function showAppointmentReview(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  data: Record<string, any>,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  let text = t.apptReview[lang] + escapeHtml(data.full_name);
+  text += t.apptReviewPhone[lang] + escapeHtml(data.phone);
+  if (data.notes) text += t.apptReviewNotes[lang] + escapeHtml(data.notes);
+  await sendMessage(
+    chatId,
+    text,
+    {
+      inlineKeyboard: [
+        [{ text: t.apptConfirmBtn[lang], callback_data: 'appt:save' }],
+        [{ text: t.apptRestartBtn[lang], callback_data: 'appt:restart' }],
+        [{ text: t.apptCancelBtn[lang], callback_data: 'appt:cancel' }],
+      ],
+    },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function saveAppointment(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as Record<string, any>) ?? {};
+  if (!data.full_name || !data.phone) return;
+
+  const { data: created } = await supabase
+    .from('appointments')
+    .insert({
+      patient_id: patient.id,
+      full_name: data.full_name,
+      phone: data.phone,
+      notes: data.notes ?? null,
+      status: 'new',
+    })
+    .select('*')
+    .single();
+
+  // Bemorning telefon raqamini ham yangilab qo'yamiz
+  await supabase.from('patients').update({ phone: data.phone }).eq('id', patient.id);
+
+  await setState(supabase, patient.id, null, null);
+  await sendMessage(chatId, t.apptDone[lang], { replyKeyboard: mainKeyboard(lang) }, lovableKey, telegramKey);
+
+  // Adminlarga bildirishnoma yuborish (asinxron, xatoga uchragan bo'lsa ham bemor jarayoni davom etadi)
+  notifyAdminsAboutAppointment(supabase, created, lovableKey, telegramKey).catch((e) =>
+    console.error('Admin notify failed:', e),
+  );
+}
+
+async function notifyAdminsAboutAppointment(
+  supabase: any,
+  appt: any,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const { data: admins } = await supabase.from('admins').select('telegram_id');
+  if (!admins) return;
+  for (const admin of admins) {
+    const adminLang: Lang = 'uz';
+    let text = t.apptNotifyAdmin[adminLang];
+    text += `👤 <b>${escapeHtml(appt.full_name)}</b>\n`;
+    text += `📞 <code>${escapeHtml(appt.phone)}</code>\n`;
+    if (appt.notes) text += `📝 ${escapeHtml(appt.notes)}\n`;
+    text += `\n/admin → 📞 Qo'ng'iroq so'rovlari`;
+    try {
+      await sendMessage(admin.telegram_id, text, {}, lovableKey, telegramKey);
+    } catch (e) {
+      console.error(`Failed to notify admin ${admin.telegram_id}:`, e);
+    }
   }
 }
 
