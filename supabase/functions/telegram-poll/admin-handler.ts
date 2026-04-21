@@ -4,6 +4,11 @@ import { t, type Lang } from './i18n.ts';
 import { showMediaLibrary, showEntityMedia, handleMediaCallback } from './media-handler.ts';
 import { runBroadcast, notifyPatientAboutAppointmentStatus } from './notifications.ts';
 import { buildStatsReport, type Period } from './stats.ts';
+import {
+  showStaffPositionsMenu,
+  handleStaffStep,
+  handleStaffCallback,
+} from './staff-handler.ts';
 
 type Admin = {
   id: string;
