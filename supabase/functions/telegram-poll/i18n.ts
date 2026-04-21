@@ -122,8 +122,8 @@ export const t = {
   adminMenu: {
     clinic: { uz: '🏥 Klinika ma\'lumotlari', ru: '🏥 Информация о клинике' },
     services: { uz: '🦷 Xizmatlar', ru: '🦷 Услуги' },
-    doctors: { uz: '👨‍⚕️ Shifokorlar', ru: '👨‍⚕️ Врачи' },
-    patients: { uz: '👥 Bemorlar', ru: '👥 Пациенты' },
+    doctors: { uz: '👥 Xodimlar', ru: '👥 Сотрудники' },
+    patients: { uz: '🧑‍🦱 Bemorlar', ru: '🧑‍🦱 Пациенты' },
     complaints: { uz: '✉️ Shikoyatlar', ru: '✉️ Жалобы' },
     stats: { uz: '📊 Statistika', ru: '📊 Статистика' },
     admins: { uz: '🔑 Adminlar', ru: '🔑 Админы' },
@@ -165,6 +165,68 @@ export const t = {
   svcAskPriceFrom: { uz: 'Narx (dan, faqat raqam) yoki "—":', ru: 'Цена (от, число) или "—":' },
   svcAskPriceTo: { uz: 'Narx (gacha) yoki "—":', ru: 'Цена (до) или "—":' },
 
+  // ========== XODIMLAR (STAFF) ==========
+  staffPositions: {
+    registratura: { uz: '📋 Registratura', ru: '📋 Регистратура' },
+    koordinator: { uz: '🧭 Koordinator', ru: '🧭 Координатор' },
+    shifokor: { uz: '👨‍⚕️ Shifokor', ru: '👨‍⚕️ Врач' },
+    shifokor_yordamchisi: { uz: '🩺 Shifokor yordamchisi', ru: '🩺 Помощник врача' },
+    hisobchi: { uz: '💼 Hisobchi', ru: '💼 Бухгалтер' },
+    sterilizatsiya: { uz: '🧼 Sterilizatsiya xodimi', ru: '🧼 Сотрудник стерилизации' },
+  },
+  staffMenuTitle: {
+    uz: '👥 <b>Xodimlar</b>\n\nLavozimni tanlang:',
+    ru: '👥 <b>Сотрудники</b>\n\nВыберите должность:',
+  },
+  staffPositionTitle: {
+    uz: 'Lavozim',
+    ru: 'Должность',
+  },
+  staffListEmpty: {
+    uz: 'Bu lavozimda hali xodim yo\'q.',
+    ru: 'В этой должности пока нет сотрудников.',
+  },
+  staffAddBtn: { uz: '➕ Yangi xodim qo\'shish', ru: '➕ Добавить сотрудника' },
+  staffPositionMediaBtn: {
+    uz: '🖼 Lavozim mediasi (xodimlarga ko\'rinadi)',
+    ru: '🖼 Медиа должности (видят сотрудники)',
+  },
+  staffAskTgId: {
+    uz: '🆔 <b>Telegram ID</b>\n\nXodimning Telegram ID raqamini yuboring (faqat raqam, masalan: <code>123456789</code>).\n\n💡 Xodim @userinfobot ga /start yuborib, o\'z ID raqamini bilib oladi.\n\n/cancel — bekor qilish',
+    ru: '🆔 <b>Telegram ID</b>\n\nОтправьте Telegram ID сотрудника (только число, например: <code>123456789</code>).\n\n💡 Сотрудник может узнать свой ID, отправив /start боту @userinfobot.\n\n/cancel — отменить',
+  },
+  staffAskName: {
+    uz: '👤 <b>Ism familiyasi</b>\n\nXodimning to\'liq ismini yuboring:',
+    ru: '👤 <b>Имя и фамилия</b>\n\nОтправьте полное имя сотрудника:',
+  },
+  staffInvalidTgId: {
+    uz: '⚠️ Telegram ID faqat raqamlardan iborat bo\'lishi kerak.',
+    ru: '⚠️ Telegram ID должен состоять только из цифр.',
+  },
+  staffDuplicateTgId: {
+    uz: '⚠️ Bu Telegram ID bilan xodim allaqachon mavjud.',
+    ru: '⚠️ Сотрудник с таким Telegram ID уже существует.',
+  },
+  staffAdded: {
+    uz: '✅ Xodim qo\'shildi.',
+    ru: '✅ Сотрудник добавлен.',
+  },
+  staffDeleted: { uz: '🗑 O\'chirildi.', ru: '🗑 Удалено.' },
+  // /staff buyrug'i (xodim botga yozsa)
+  staffGreeting: {
+    uz: '👋 Salom, <b>{name}</b>!\n\nSiz <b>{position}</b> sifatida ro\'yxatdan o\'tgansiz.',
+    ru: '👋 Здравствуйте, <b>{name}</b>!\n\nВы зарегистрированы как <b>{position}</b>.',
+  },
+  staffNotRegistered: {
+    uz: '⛔️ Siz xodimlar ro\'yxatida yo\'qsiz. Iltimos, administrator bilan bog\'laning.',
+    ru: '⛔️ Вы не в списке сотрудников. Свяжитесь с администратором.',
+  },
+  staffPositionMediaIntro: {
+    uz: '📚 <b>Sizning lavozimingiz uchun materiallar:</b>',
+    ru: '📚 <b>Материалы для вашей должности:</b>',
+  },
+
+  // Shifokor (faqat bemorlar uchun ko'rsatiladigan qo'shimcha maydonlar)
   docAskName: { uz: 'Shifokor F.I.SH:', ru: 'Ф.И.О. врача:' },
   docAskSpecUz: { uz: 'Mutaxassisligi (UZ):', ru: 'Специальность (UZ):' },
   docAskSpecRu: { uz: 'Mutaxassisligi (RU):', ru: 'Специальность (RU):' },
