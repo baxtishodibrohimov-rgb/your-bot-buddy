@@ -148,9 +148,10 @@ async function showServices(supabase: any, chatId: number, lang: Lang, lovableKe
 
 async function showDoctors(supabase: any, chatId: number, lang: Lang, lovableKey: string, telegramKey: string) {
   const { data } = await supabase
-    .from('doctors')
+    .from('staff')
     .select('*')
     .eq('is_active', true)
+    .eq('position', 'shifokor')
     .order('sort_order');
 
   if (!data || data.length === 0) {
@@ -160,13 +161,13 @@ async function showDoctors(supabase: any, chatId: number, lang: Lang, lovableKey
 
   await sendMessage(chatId, t.doctorsTitle[lang], {}, lovableKey, telegramKey);
   for (const d of data) {
-    const spec = lang === 'uz' ? d.specialty_uz : d.specialty_ru;
+    const spec = lang === 'uz' ? (d.specialty_uz ?? '') : (d.specialty_ru ?? '');
     const bio = lang === 'uz' ? d.bio_uz : d.bio_ru;
     let text = `👨‍⚕️ <b>${escapeHtml(d.full_name)}</b>\n${escapeHtml(spec)}\n`;
     if (d.experience_years) text += `📅 ${d.experience_years} ${t.yearsExperience[lang]}\n`;
     if (bio) text += `${escapeHtml(bio)}\n`;
     await sendMessage(chatId, text, {}, lovableKey, telegramKey);
-    await sendEntityMediaToUser(supabase, chatId, 'doctor', d.id, lovableKey, telegramKey);
+    await sendEntityMediaToUser(supabase, chatId, 'staff', d.id, lovableKey, telegramKey);
   }
 }
 
@@ -682,14 +683,18 @@ export async function handleUpdate(
     return;
   }
 
-  // Admin (/admin, /staff, /xodim buyruqlari va admin state/menu xabarlari)
-  const isAdminCmd = text === '/admin' || text === '/staff' || text === '/xodim' || text === '/xodimlar';
+  // /staff — xodimni tanish va salom berish (admin emas)
+  if (text === '/staff' || text === '/xodim') {
+    const { handleStaffCommand } = await import('./staff-handler.ts');
+    await handleStaffCommand(supabase, patient, chatId, lovableKey, telegramKey);
+    return;
+  }
+
+  // Admin (/admin buyrug'i va admin state/menu xabarlari)
+  const isAdminCmd = text === '/admin';
   if (isAdminCmd || patient.state?.startsWith('admin:')) {
-    // Buyruqni /admin ga normalizatsiya qilamiz
-    const normalizedText = isAdminCmd ? '/admin' : text;
-    const handled = await handleAdminMessage(supabase, patient, chatId, normalizedText, lovableKey, telegramKey);
+    const handled = await handleAdminMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
     if (handled) return;
-    // Agar admin emas bo'lsa va buyruq bo'lsa — xabar beramiz
     if (isAdminCmd) {
       await sendMessage(chatId, t.adminNotAuthorized[lang], {}, lovableKey, telegramKey);
       return;

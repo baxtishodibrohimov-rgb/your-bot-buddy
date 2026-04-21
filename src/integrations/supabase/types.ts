@@ -230,51 +230,6 @@ export type Database = {
           },
         ]
       }
-      doctors: {
-        Row: {
-          bio_ru: string | null
-          bio_uz: string | null
-          created_at: string
-          experience_years: number | null
-          full_name: string
-          id: string
-          is_active: boolean
-          photo_url: string | null
-          sort_order: number
-          specialty_ru: string
-          specialty_uz: string
-          updated_at: string
-        }
-        Insert: {
-          bio_ru?: string | null
-          bio_uz?: string | null
-          created_at?: string
-          experience_years?: number | null
-          full_name: string
-          id?: string
-          is_active?: boolean
-          photo_url?: string | null
-          sort_order?: number
-          specialty_ru: string
-          specialty_uz: string
-          updated_at?: string
-        }
-        Update: {
-          bio_ru?: string | null
-          bio_uz?: string | null
-          created_at?: string
-          experience_years?: number | null
-          full_name?: string
-          id?: string
-          is_active?: boolean
-          photo_url?: string | null
-          sort_order?: number
-          specialty_ru?: string
-          specialty_uz?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       media_attachments: {
         Row: {
           caption_override: string | null
@@ -515,6 +470,60 @@ export type Database = {
         }
         Relationships: []
       }
+      staff: {
+        Row: {
+          bio_ru: string | null
+          bio_uz: string | null
+          created_at: string
+          experience_years: number | null
+          full_name: string
+          id: string
+          is_active: boolean
+          phone: string | null
+          photo_url: string | null
+          position: Database["public"]["Enums"]["staff_position"]
+          sort_order: number
+          specialty_ru: string | null
+          specialty_uz: string | null
+          telegram_id: number
+          updated_at: string
+        }
+        Insert: {
+          bio_ru?: string | null
+          bio_uz?: string | null
+          created_at?: string
+          experience_years?: number | null
+          full_name: string
+          id?: string
+          is_active?: boolean
+          phone?: string | null
+          photo_url?: string | null
+          position: Database["public"]["Enums"]["staff_position"]
+          sort_order?: number
+          specialty_ru?: string | null
+          specialty_uz?: string | null
+          telegram_id: number
+          updated_at?: string
+        }
+        Update: {
+          bio_ru?: string | null
+          bio_uz?: string | null
+          created_at?: string
+          experience_years?: number | null
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          phone?: string | null
+          photo_url?: string | null
+          position?: Database["public"]["Enums"]["staff_position"]
+          sort_order?: number
+          specialty_ru?: string | null
+          specialty_uz?: string | null
+          telegram_id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       telegram_bot_state: {
         Row: {
           id: number
@@ -568,7 +577,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      staff_position:
+        | "registratura"
+        | "koordinator"
+        | "shifokor"
+        | "shifokor_yordamchisi"
+        | "hisobchi"
+        | "sterilizatsiya"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -695,6 +710,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      staff_position: [
+        "registratura",
+        "koordinator",
+        "shifokor",
+        "shifokor_yordamchisi",
+        "hisobchi",
+        "sterilizatsiya",
+      ],
+    },
   },
 } as const
