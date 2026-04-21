@@ -1620,7 +1620,7 @@ export async function handleAdminMessage(
     return true;
   }
   if (m('stats')) {
-    await showStats(supabase, patient, chatId, lovableKey, telegramKey);
+    await showStatsMenu(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
   if (m('admins') && admin.is_super_admin) {
@@ -1846,6 +1846,16 @@ export async function handleAdminCallback(
     await setState(supabase, patient.id, 'admin:menu', null);
     await sendMessage(chatId, t.adminCancelled[patient.language], {}, lovableKey, telegramKey);
     return true;
+  }
+
+  // Statistika davri tanlash
+  if (data.startsWith('stat:p:')) {
+    const period = data.slice('stat:p:'.length) as Period;
+    if (period === 'today' || period === 'week' || period === 'month' || period === 'all') {
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+      await showStatsForPeriod(supabase, patient, chatId, period, lovableKey, telegramKey);
+      return true;
+    }
   }
 
   return false;
