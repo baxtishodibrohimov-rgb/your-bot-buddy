@@ -3,6 +3,9 @@ import { sendMessage, answerCallbackQuery, escapeHtml, type ReplyKeyboard, type 
 import { t, tr, type Lang } from './i18n.ts';
 import { handleAdminMessage, handleAdminCallback, isAdmin } from './admin-handler.ts';
 import { handleAdminMediaUpload, sendEntityMediaToUser } from './media-handler.ts';
+import { saveAdminMedia } from './media-handler.ts';
+import { bcAddMedia } from './admin-handler.ts';
+import { notifyAdminsAboutComplaint } from './notifications.ts';
 
 type Patient = {
   id: string;
@@ -547,13 +550,20 @@ async function handleComplaintStep(
   telegramKey: string,
 ) {
   const lang = patient.language;
-  await supabase.from('complaints').insert({
+  const { data: created } = await supabase.from('complaints').insert({
     patient_id: patient.id,
     type: 'complaint',
     message: text,
-  });
+  }).select('*').single();
   await setState(supabase, patient.id, null, null);
   await sendMessage(chatId, t.complaintSaved[lang], { replyKeyboard: mainKeyboard(lang) }, lovableKey, telegramKey);
+
+  // Adminlarga bildirishnoma (asinxron)
+  if (created) {
+    notifyAdminsAboutComplaint(supabase, created, lovableKey, telegramKey).catch((e) =>
+      console.error('Notify admins about complaint failed:', e),
+    );
+  }
 }
 
 export async function handleUpdate(
@@ -633,6 +643,14 @@ export async function handleUpdate(
   if (hasMedia) {
     const admin = await isAdmin(supabase, patient.telegram_id);
     if (admin) {
+      // Agar broadcast oqimida media kutilmoqda bo'lsa — to'g'ridan-to'g'ri broadcastga qo'shamiz
+      if (patient.state === 'admin:bc:media') {
+        const saved = await saveAdminMedia(supabase, admin, msg);
+        if (saved) {
+          await bcAddMedia(supabase, patient, chatId, saved.id, lovableKey, telegramKey);
+        }
+        return;
+      }
       await handleAdminMediaUpload(supabase, patient, admin, chatId, msg, lovableKey, telegramKey);
       return;
     }

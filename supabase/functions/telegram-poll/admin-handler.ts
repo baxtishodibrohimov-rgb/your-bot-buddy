@@ -1762,6 +1762,12 @@ export async function handleAdminCallback(
   }
 
   // Qabul so'rovlari (status o'zgartirish)
+  if (data.startsWith('apt:time:')) {
+    const id = data.slice('apt:time:'.length);
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await askAppointmentTime(supabase, patient, chatId, id, lovableKey, telegramKey);
+    return true;
+  }
   if (data.startsWith('apt:called:')) {
     const id = data.slice('apt:called:'.length);
     await answerCallbackQuery(callbackId, '📞', lovableKey, telegramKey);
@@ -1791,6 +1797,24 @@ export async function handleAdminCallback(
     const id = data.slice('adm:del:'.length);
     await answerCallbackQuery(callbackId, '🗑', lovableKey, telegramKey);
     await deleteAdmin(supabase, patient, chatId, id, lovableKey, telegramKey);
+    return true;
+  }
+
+  // Broadcast (yangilik yuborish)
+  if (data === 'bc:next') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await bcShowReview(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'bc:send') {
+    await answerCallbackQuery(callbackId, '📨', lovableKey, telegramKey);
+    await bcExecute(supabase, patient, admin, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'bc:cancel') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await setState(supabase, patient.id, 'admin:menu', null);
+    await sendMessage(chatId, t.adminCancelled[patient.language], {}, lovableKey, telegramKey);
     return true;
   }
 
