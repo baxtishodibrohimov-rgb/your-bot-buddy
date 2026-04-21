@@ -1581,6 +1581,10 @@ export async function handleAdminMessage(
     await showMediaLibrary(supabase, patient, chatId, 'all', 0, lovableKey, telegramKey);
     return true;
   }
+  if (text === t.adminMenuBroadcast.uz || text === t.adminMenuBroadcast.ru) {
+    await startBroadcast(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
   if (m('complaints')) {
     await listComplaints(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
