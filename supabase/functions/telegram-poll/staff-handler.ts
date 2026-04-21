@@ -1,5 +1,5 @@
 // Xodimlar (staff) — admin bo'limi va /staff buyrug'i
-import { sendMessage, escapeHtml, sendMediaByType, type InlineKeyboard } from './telegram-api.ts';
+import { sendMessage, escapeHtml, sendMediaByType, type InlineKeyboard, type ReplyKeyboard } from './telegram-api.ts';
 import { t, type Lang } from './i18n.ts';
 
 export type StaffPosition =
@@ -98,7 +98,8 @@ export async function showStaffByPosition(
   if (list) {
     for (const s of list) {
       buttons.push([
-        { text: `🗑 ${s.full_name.slice(0, 24)}`, callback_data: `stf:del:${s.id}` },
+        { text: `🖼 ${s.full_name.slice(0, 20)}`, callback_data: `ent:med:staff:${s.id}` },
+        { text: `🗑`, callback_data: `stf:del:${s.id}` },
       ]);
     }
   }
