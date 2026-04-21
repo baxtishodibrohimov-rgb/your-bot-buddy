@@ -433,7 +433,6 @@ export async function markChecklistItem(
   supabase: any,
   patient: Patient,
   chatId: number,
-  checklistId: string,
   itemId: string,
   isDone: boolean,
   lovableKey: string,
@@ -443,18 +442,25 @@ export async function markChecklistItem(
   if (!staff) return;
 
   const date = todayDate();
-  // Verify item belongs to the checklist (and to this staff)
+  // Item -> checklist_id, keyin checklist staff_id ga tegishli ekanini tekshiramiz
+  const { data: item } = await supabase
+    .from('checklist_items')
+    .select('id, checklist_id')
+    .eq('id', itemId)
+    .maybeSingle();
+  if (!item) return;
+
   const { data: cl } = await supabase
     .from('staff_checklists')
     .select('id, staff_id')
-    .eq('id', checklistId)
+    .eq('id', item.checklist_id)
     .maybeSingle();
   if (!cl || cl.staff_id !== staff.id) return;
 
   await supabase.from('checklist_completions').upsert(
     {
       staff_id: staff.id,
-      checklist_id: checklistId,
+      checklist_id: cl.id,
       item_id: itemId,
       completion_date: date,
       is_done: isDone,
@@ -463,7 +469,7 @@ export async function markChecklistItem(
     { onConflict: 'staff_id,item_id,completion_date' },
   );
 
-  await showChecklistForStaff(supabase, patient, chatId, checklistId, lovableKey, telegramKey);
+  await showChecklistForStaff(supabase, patient, chatId, cl.id, lovableKey, telegramKey);
 }
 
 // "Ishni boshlash" — majburiy cheklistni avto chiqarish
