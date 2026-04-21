@@ -350,6 +350,42 @@ export const t = {
   mcEnterNew: { uz: 'Yangi qiymatni kiriting:', ru: 'Введите новое значение:' },
   mcFieldSaved: { uz: '✅ Yangilandi', ru: '✅ Обновлено' },
   mcRedoAll: { uz: '🔄 Hammasini qayta to\'ldirish', ru: '🔄 Заполнить заново' },
+
+  // ========== XIZMAT / SHIFOKOR TAHRIRLASH ==========
+  svcFields: {
+    name_uz: { uz: 'Nomi (UZ)', ru: 'Название (UZ)' },
+    name_ru: { uz: 'Nomi (RU)', ru: 'Название (RU)' },
+    description_uz: { uz: 'Tavsif (UZ)', ru: 'Описание (UZ)' },
+    description_ru: { uz: 'Tavsif (RU)', ru: 'Описание (RU)' },
+    price_from: { uz: 'Narx (dan)', ru: 'Цена (от)' },
+    price_to: { uz: 'Narx (gacha)', ru: 'Цена (до)' },
+    sort_order: { uz: 'Tartib raqami', ru: 'Порядок' },
+  },
+  docFields: {
+    full_name: { uz: 'F.I.SH', ru: 'Ф.И.О.' },
+    specialty_uz: { uz: 'Mutaxassislik (UZ)', ru: 'Специальность (UZ)' },
+    specialty_ru: { uz: 'Mutaxassislik (RU)', ru: 'Специальность (RU)' },
+    experience_years: { uz: 'Tajriba (yil)', ru: 'Опыт (лет)' },
+    bio_uz: { uz: 'Bio (UZ)', ru: 'Био (UZ)' },
+    bio_ru: { uz: 'Bio (RU)', ru: 'Био (RU)' },
+    sort_order: { uz: 'Tartib raqami', ru: 'Порядок' },
+  },
+  editPickField: { uz: '✏️ Qaysi maydonni o\'zgartirasiz?', ru: '✏️ Какое поле изменить?' },
+  editEnterValue: { uz: 'Yangi qiymatni kiriting (yoki <code>—</code> bo\'sh qoldirish uchun):', ru: 'Введите новое значение (или <code>—</code> чтобы очистить):' },
+  editSaved: { uz: '✅ O\'zgartirildi.', ru: '✅ Изменено.' },
+  editInvalidNumber: { uz: '⚠️ Faqat raqam kiriting.', ru: '⚠️ Введите только число.' },
+  toggleActive: { uz: '🟢 Faollashtirish', ru: '🟢 Активировать' },
+  toggleInactive: { uz: '⚪️ Yashirish', ru: '⚪️ Скрыть' },
+
+  // ========== BEMORLAR QIDIRUVI ==========
+  patientsSearchBtn: { uz: '🔍 Qidirish', ru: '🔍 Поиск' },
+  patientsSearchAsk: {
+    uz: '🔍 <b>Bemor qidirish</b>\n\nIsm, familiya, telefon yoki Telegram ID kiriting (kamida 2 belgi):\n\n/cancel — bekor qilish',
+    ru: '🔍 <b>Поиск пациента</b>\n\nВведите имя, фамилию, телефон или Telegram ID (минимум 2 символа):\n\n/cancel — отменить',
+  },
+  patientsSearchEmpty: { uz: 'Hech narsa topilmadi.', ru: 'Ничего не найдено.' },
+  patientsSearchTitle: { uz: '🔍 <b>Topildi:</b>\n\n', ru: '🔍 <b>Найдено:</b>\n\n' },
+  patientsSearchTooShort: { uz: '⚠️ Kamida 2 belgi kiriting.', ru: '⚠️ Введите минимум 2 символа.' },
 };
 
 export function tr(key: keyof typeof t, lang: Lang): string {
