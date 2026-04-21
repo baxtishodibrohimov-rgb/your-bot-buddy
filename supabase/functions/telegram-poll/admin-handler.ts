@@ -1385,6 +1385,11 @@ export async function handleAdminCallback(
   const admin = await isAdmin(supabase, patient.telegram_id);
   if (!admin) return false;
 
+  // Media callbacks (kutubxona, biriktirish, ko'rish)
+  if (data.startsWith('med:') || data.startsWith('ent:med:')) {
+    return await handleMediaCallback(supabase, patient, chatId, data, callbackId, lovableKey, telegramKey);
+  }
+
   // Klinika sehrgari (wizard)
   if (data === 'cli:wiz:start') {
     await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
