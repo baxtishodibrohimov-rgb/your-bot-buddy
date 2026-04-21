@@ -379,6 +379,12 @@ export async function handleUpdate(
     return;
   }
 
+  // Admin (/admin buyrug'i va admin state/menu xabarlari)
+  if (text === '/admin' || patient.state?.startsWith('admin:')) {
+    const handled = await handleAdminMessage(supabase, patient, chatId, text, lovableKey, telegramKey);
+    if (handled) return;
+  }
+
   // State'da turgan bo'lsa
   if (patient.state?.startsWith('mc:')) {
     await handleMedicalCardStep(supabase, patient, chatId, text, lovableKey, telegramKey);
