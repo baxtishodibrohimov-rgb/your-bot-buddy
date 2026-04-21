@@ -3,6 +3,9 @@ import { sendMessage, answerCallbackQuery, escapeHtml, type ReplyKeyboard, type 
 import { t, tr, type Lang } from './i18n.ts';
 import { handleAdminMessage, handleAdminCallback, isAdmin } from './admin-handler.ts';
 import { handleAdminMediaUpload, sendEntityMediaToUser } from './media-handler.ts';
+import { saveAdminMedia } from './media-handler.ts';
+import { bcAddMedia } from './admin-handler.ts';
+import { notifyAdminsAboutComplaint } from './notifications.ts';
 
 type Patient = {
   id: string;
