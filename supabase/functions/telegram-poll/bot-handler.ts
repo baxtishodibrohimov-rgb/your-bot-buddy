@@ -13,6 +13,16 @@ import {
   handleResidentCallback,
   handleAdminResidentMediaUpload,
 } from './resident-handler.ts';
+import {
+  isLabWorker,
+  handleLaboratoryCommand,
+  handleLabPortalMessage,
+  handleLabCallback,
+  handleLabRejectReason,
+  handleCoordLabStep,
+  handleCoordLabCallback,
+  handleCoordLabMedia,
+} from './lab-handler.ts';
 
 type Patient = {
   id: string;
