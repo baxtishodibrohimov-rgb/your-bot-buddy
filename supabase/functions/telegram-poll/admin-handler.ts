@@ -1,7 +1,8 @@
 // Admin panel - Telegram bot ichida
-import { sendMessage, answerCallbackQuery, escapeHtml, type ReplyKeyboard, type InlineKeyboard } from './telegram-api.ts';
+import { sendMessage, answerCallbackQuery, escapeHtml, sendMediaByType, type ReplyKeyboard, type InlineKeyboard } from './telegram-api.ts';
 import { t, type Lang } from './i18n.ts';
 import { showMediaLibrary, showEntityMedia, handleMediaCallback } from './media-handler.ts';
+import { runBroadcast, notifyPatientAboutAppointmentStatus } from './notifications.ts';
 
 type Admin = {
   id: string;
@@ -32,7 +33,8 @@ export function adminMainKeyboard(lang: Lang, isSuper: boolean): ReplyKeyboard {
     [{ text: t.adminMenuAppointments[lang] }, { text: t.adminMenu.complaints[lang] }],
     [{ text: t.adminMenu.clinic[lang] }, { text: t.adminMenu.services[lang] }],
     [{ text: t.adminMenu.doctors[lang] }, { text: t.adminMenu.patients[lang] }],
-    [{ text: t.adminMenuMedia[lang] }, { text: t.adminMenu.stats[lang] }],
+    [{ text: t.adminMenuMedia[lang] }, { text: t.adminMenuBroadcast[lang] }],
+    [{ text: t.adminMenu.stats[lang] }],
   ];
   if (isSuper) rows.push([{ text: t.adminMenu.admins[lang] }]);
   rows.push([{ text: t.adminMenu.exit[lang] }]);
@@ -961,10 +963,20 @@ async function listAppointments(
     let text = `${statusLabel} • ${date}\n`;
     text += `👤 <b>${escapeHtml(a.full_name)}</b>\n`;
     text += `📞 <code>${escapeHtml(a.phone)}</code>\n`;
+    if (a.appointment_at) {
+      const dt = new Date(a.appointment_at).toLocaleString(lang === 'ru' ? 'ru-RU' : 'uz-UZ', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      });
+      text += `${t.apptTimeLabel[lang]}: <b>${dt}</b>\n`;
+    }
     if (a.notes) text += `📝 ${escapeHtml(a.notes)}\n`;
     if (a.admin_note) text += `\n<i>${escapeHtml(a.admin_note)}</i>`;
 
     const buttons: InlineKeyboard = [];
+    if (a.status !== 'done' && a.status !== 'cancelled') {
+      buttons.push([{ text: t.apptSetTimeBtn[lang], callback_data: `apt:time:${a.id}` }]);
+    }
     if (a.status === 'new') {
       buttons.push([{ text: t.apptMarkCalled[lang], callback_data: `apt:called:${a.id}` }]);
     }
@@ -987,11 +999,75 @@ async function updateAppointmentStatus(
   lovableKey: string,
   telegramKey: string,
 ) {
-  await supabase
+  const { data: updated } = await supabase
     .from('appointments')
     .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', apptId);
+    .eq('id', apptId)
+    .select('*')
+    .single();
   await sendMessage(chatId, t.adminSaved[patient.language], {}, lovableKey, telegramKey);
+  if (updated) {
+    notifyPatientAboutAppointmentStatus(supabase, updated, status, lovableKey, telegramKey).catch((e) =>
+      console.error('Notify patient failed:', e),
+    );
+  }
+}
+
+// Admin appointmentga vaqt belgilashi
+async function askAppointmentTime(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  apptId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  await setState(supabase, patient.id, 'admin:apt:time', { apptId });
+  await sendMessage(
+    chatId,
+    t.apptAskTime[lang],
+    { removeKeyboard: true },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+function parseDateTime(s: string): string | null {
+  // "22.04.2026 14:30" => ISO (Toshkent vaqt zonasi +05)
+  const m = s.trim().match(/^(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})\s+(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  const [, d, mo, y, h, mi] = m;
+  const iso = `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}T${h.padStart(2, '0')}:${mi.padStart(2, '0')}:00+05:00`;
+  const date = new Date(iso);
+  if (isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
+
+async function saveAppointmentTime(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? {};
+  const apptId = data.apptId as string;
+  if (!apptId) return;
+  const iso = parseDateTime(text);
+  if (!iso) {
+    await sendMessage(chatId, t.apptInvalidTime[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+  await supabase
+    .from('appointments')
+    .update({ appointment_at: iso, reminder_sent_at: null, updated_at: new Date().toISOString() })
+    .eq('id', apptId);
+  await setState(supabase, patient.id, 'admin:menu', null);
+  await sendMessage(chatId, t.apptTimeSaved[lang], {}, lovableKey, telegramKey);
+  await listAppointments(supabase, patient, chatId, lovableKey, telegramKey);
 }
 
 // ============= SHIKOYATLAR =============
@@ -1148,7 +1224,150 @@ async function showStats(
   await sendMessage(chatId, text, {}, lovableKey, telegramKey);
 }
 
-// ============= ADMINLAR (super-admin) =============
+// ============= BROADCAST (Yangilik yuborish) =============
+
+async function startBroadcast(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  await setState(supabase, patient.id, 'admin:bc:text', { mediaIds: [] });
+  await sendMessage(chatId, t.bcStart[lang], { removeKeyboard: true }, lovableKey, telegramKey);
+}
+
+async function bcReceiveText(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? { mediaIds: [] };
+  const trimmed = text.trim();
+  data.text = trimmed === '—' || trimmed === '-' ? '' : trimmed;
+  await setState(supabase, patient.id, 'admin:bc:media', data);
+  await sendMessage(
+    chatId,
+    t.bcAskMedia[lang],
+    {
+      inlineKeyboard: [[{ text: t.bcContinueBtn[lang], callback_data: 'bc:next' }]],
+    },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+export async function bcAddMedia(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  mediaId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? { mediaIds: [] };
+  const ids: string[] = data.mediaIds ?? [];
+  ids.push(mediaId);
+  data.mediaIds = ids;
+  await setState(supabase, patient.id, 'admin:bc:media', data);
+  await sendMessage(
+    chatId,
+    `${t.bcMediaAdded[lang]}${ids.length})`,
+    {
+      inlineKeyboard: [[{ text: t.bcContinueBtn[lang], callback_data: 'bc:next' }]],
+    },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function bcShowReview(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? {};
+  const text = (data.text as string) ?? '';
+  const ids: string[] = data.mediaIds ?? [];
+
+  if (!text && ids.length === 0) {
+    await sendMessage(chatId, t.bcNoText[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+
+  const { count } = await supabase.from('patients').select('*', { count: 'exact', head: true });
+
+  let preview = t.bcReview[lang];
+  preview += `<b>${t.bcRecipients[lang]}:</b> ${count ?? 0}\n`;
+  preview += `<b>${t.bcMediaCount[lang]}:</b> ${ids.length}\n\n`;
+  if (text) preview += `<i>${escapeHtml(text)}</i>`;
+
+  await setState(supabase, patient.id, 'admin:bc:review', data);
+  await sendMessage(
+    chatId,
+    preview,
+    {
+      inlineKeyboard: [
+        [{ text: t.bcSendBtn[lang], callback_data: 'bc:send' }],
+        [{ text: t.adminCancel[lang], callback_data: 'bc:cancel' }],
+      ],
+    },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function bcExecute(
+  supabase: any,
+  patient: Patient,
+  admin: Admin,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? {};
+  const text = (data.text as string) ?? '';
+  const mediaIds: string[] = data.mediaIds ?? [];
+
+  await setState(supabase, patient.id, 'admin:menu', null);
+  await sendMessage(chatId, t.bcSending[lang], {}, lovableKey, telegramKey);
+
+  // Asinxron — bot bloklanmasin
+  runBroadcast(
+    supabase,
+    {
+      adminId: admin.id,
+      adminTelegramId: admin.telegram_id,
+      text,
+      mediaIds,
+    },
+    lovableKey,
+    telegramKey,
+  )
+    .then(async (result) => {
+      let summary = t.bcDone[lang];
+      summary += `<b>${t.bcStatTotal[lang]}:</b> ${result.total}\n`;
+      summary += `<b>${t.bcStatSent[lang]}:</b> ${result.sent}\n`;
+      summary += `<b>${t.bcStatFailed[lang]}:</b> ${result.failed}`;
+      await sendMessage(chatId, summary, {}, lovableKey, telegramKey).catch(() => {});
+    })
+    .catch((e) => {
+      console.error('Broadcast failed:', e);
+      sendMessage(chatId, `⚠️ ${String(e)}`, {}, lovableKey, telegramKey).catch(() => {});
+    });
+}
+
+
 
 async function listAdmins(
   supabase: any,
@@ -1314,6 +1533,21 @@ export async function handleAdminMessage(
     await handleAdminStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     return true;
   }
+  if (state === 'admin:apt:time') {
+    await saveAppointmentTime(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return true;
+  }
+  if (state === 'admin:bc:text') {
+    await bcReceiveText(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return true;
+  }
+  if (state === 'admin:bc:media') {
+    // Matn keldi — uni e'tiborsiz qoldirib, "Davom etish" bosishni so'raymiz
+    await sendMessage(chatId, t.bcAskMedia[lang], {
+      inlineKeyboard: [[{ text: t.bcContinueBtn[lang], callback_data: 'bc:next' }]],
+    }, lovableKey, telegramKey);
+    return true;
+  }
 
   // Admin menyu tugmalari
   if (!state.startsWith('admin:')) return false;
@@ -1345,6 +1579,10 @@ export async function handleAdminMessage(
   }
   if (text === t.adminMenuMedia.uz || text === t.adminMenuMedia.ru) {
     await showMediaLibrary(supabase, patient, chatId, 'all', 0, lovableKey, telegramKey);
+    return true;
+  }
+  if (text === t.adminMenuBroadcast.uz || text === t.adminMenuBroadcast.ru) {
+    await startBroadcast(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
   if (m('complaints')) {

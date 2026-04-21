@@ -41,34 +41,40 @@ export type Database = {
       appointments: {
         Row: {
           admin_note: string | null
+          appointment_at: string | null
           created_at: string
           full_name: string
           id: string
           notes: string | null
           patient_id: string | null
           phone: string
+          reminder_sent_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
           admin_note?: string | null
+          appointment_at?: string | null
           created_at?: string
           full_name: string
           id?: string
           notes?: string | null
           patient_id?: string | null
           phone: string
+          reminder_sent_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           admin_note?: string | null
+          appointment_at?: string | null
           created_at?: string
           full_name?: string
           id?: string
           notes?: string | null
           patient_id?: string | null
           phone?: string
+          reminder_sent_at?: string | null
           status?: string
           updated_at?: string
         }
@@ -78,6 +84,56 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      broadcasts: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          failed_count: number
+          id: string
+          language_filter: string | null
+          message_text: string
+          sent_by_admin_id: string | null
+          sent_by_telegram_id: number
+          sent_count: number
+          status: string
+          total_recipients: number
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          failed_count?: number
+          id?: string
+          language_filter?: string | null
+          message_text: string
+          sent_by_admin_id?: string | null
+          sent_by_telegram_id: number
+          sent_count?: number
+          status?: string
+          total_recipients?: number
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          failed_count?: number
+          id?: string
+          language_filter?: string | null
+          message_text?: string
+          sent_by_admin_id?: string | null
+          sent_by_telegram_id?: number
+          sent_count?: number
+          status?: string
+          total_recipients?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcasts_sent_by_admin_id_fkey"
+            columns: ["sent_by_admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
             referencedColumns: ["id"]
           },
         ]
