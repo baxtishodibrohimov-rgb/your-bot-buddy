@@ -1495,6 +1495,17 @@ export async function handleAdminCallback(
     return await handleMediaCallback(supabase, patient, chatId, data, callbackId, lovableKey, telegramKey);
   }
 
+  // Rezidentura admin callbacks
+  if (data.startsWith('ares:')) {
+    const { handleAdminResidentCallback } = await import('./resident-handler.ts');
+    const handled = await handleAdminResidentCallback(
+      supabase, patient, chatId, data,
+      async (txt?: string) => { await answerCallbackQuery(callbackId, txt, lovableKey, telegramKey); },
+      lovableKey, telegramKey,
+    );
+    if (handled) return true;
+  }
+
   // Klinika sehrgari (wizard)
   if (data === 'cli:wiz:start') {
     await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
