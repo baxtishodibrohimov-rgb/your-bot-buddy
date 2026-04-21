@@ -221,13 +221,19 @@ export async function deleteStaffMember(
 
 // ============= /staff buyrug'i (xodim botga yozsa) =============
 
-function staffMenuKeyboard(lang: Lang): ReplyKeyboard {
-  return [
+function staffMenuKeyboard(lang: Lang, isCoord: boolean = false): ReplyKeyboard {
+  const rows: ReplyKeyboard = [
     [{ text: t.staffMenu.instruction[lang] }, { text: t.staffMenuChecklists[lang] }],
     [{ text: t.staffMenu.startDay[lang] }],
-    [{ text: t.staffMenu.complaint[lang] }],
-    [{ text: t.staffMenu.exit[lang] }],
   ];
+  if (isCoord) {
+    // Koordinator uchun qo'shimcha bo'lim: xodimlar boshqaruvi, statistika va tekshiruvlar
+    rows.push([{ text: t.coordExtraStaff[lang] }, { text: t.coordExtraStats[lang] }]);
+    rows.push([{ text: t.coordMenu.pending[lang] }]);
+  }
+  rows.push([{ text: t.staffMenu.complaint[lang] }]);
+  rows.push([{ text: t.staffMenu.exit[lang] }]);
+  return rows;
 }
 
 async function getStaffByTgId(supabase: any, telegramId: number) {
