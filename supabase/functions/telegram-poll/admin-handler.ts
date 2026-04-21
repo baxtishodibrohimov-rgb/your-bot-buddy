@@ -618,6 +618,71 @@ async function showPatientCard(
   await sendMessage(chatId, text, {}, lovableKey, telegramKey);
 }
 
+// ============= QABUL SO'ROVLARI =============
+
+async function listAppointments(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const { data } = await supabase
+    .from('appointments')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  if (!data || data.length === 0) {
+    await sendMessage(chatId, t.apptListEmpty[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+
+  await setState(supabase, patient.id, 'admin:appointments', null);
+  await sendMessage(chatId, t.apptListTitle[lang], {}, lovableKey, telegramKey);
+
+  for (const a of data) {
+    const statusKey = (a.status as 'new' | 'called' | 'done' | 'cancelled') ?? 'new';
+    const statusLabel = (t.apptStatus as any)[statusKey]?.[lang] ?? a.status;
+    const date = new Date(a.created_at).toLocaleString('ru-RU');
+
+    let text = `${statusLabel} • ${date}\n`;
+    text += `👤 <b>${escapeHtml(a.full_name)}</b>\n`;
+    text += `📞 <code>${escapeHtml(a.phone)}</code>\n`;
+    if (a.notes) text += `📝 ${escapeHtml(a.notes)}\n`;
+    if (a.admin_note) text += `\n<i>${escapeHtml(a.admin_note)}</i>`;
+
+    const buttons: InlineKeyboard = [];
+    if (a.status === 'new') {
+      buttons.push([{ text: t.apptMarkCalled[lang], callback_data: `apt:called:${a.id}` }]);
+    }
+    if (a.status !== 'done' && a.status !== 'cancelled') {
+      buttons.push([
+        { text: t.apptMarkDone[lang], callback_data: `apt:done:${a.id}` },
+        { text: t.apptMarkCancelled[lang], callback_data: `apt:cancel:${a.id}` },
+      ]);
+    }
+    await sendMessage(chatId, text, { inlineKeyboard: buttons.length ? buttons : undefined }, lovableKey, telegramKey);
+  }
+}
+
+async function updateAppointmentStatus(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  apptId: string,
+  status: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  await supabase
+    .from('appointments')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', apptId);
+  await sendMessage(chatId, t.adminSaved[patient.language], {}, lovableKey, telegramKey);
+}
+
 // ============= SHIKOYATLAR =============
 
 async function listComplaints(
