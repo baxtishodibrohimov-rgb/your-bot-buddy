@@ -1564,7 +1564,23 @@ export async function handleAdminCallback(
   if (!admin) {
     const { isCoordinator } = await import('./coordinator-handler.ts');
     const coord = await isCoordinator(supabase, patient.telegram_id);
-    if (!coord) return false;
+    // Registratura xodimi ham apt:called: callbackini ishlata olsin
+    if (!coord) {
+      const { data: regStaff } = await supabase
+        .from('staff')
+        .select('id')
+        .eq('telegram_id', patient.telegram_id)
+        .eq('position', 'registratura')
+        .eq('is_active', true)
+        .maybeSingle();
+      if (regStaff && data.startsWith('apt:called:')) {
+        const id = data.slice('apt:called:'.length);
+        await answerCallbackQuery(callbackId, '📞', lovableKey, telegramKey);
+        await updateAppointmentStatus(supabase, patient, chatId, id, 'called', lovableKey, telegramKey);
+        return true;
+      }
+      return false;
+    }
     if (data.startsWith('chk:')) {
       const { handleChecklistCallback } = await import('./checklist-handler.ts');
       const handled = await handleChecklistCallback(
