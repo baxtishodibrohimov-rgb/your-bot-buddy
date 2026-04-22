@@ -345,11 +345,13 @@ export async function deleteStaffMember(
 
 // ============= /staff buyrug'i (xodim botga yozsa) =============
 
-function staffMenuKeyboard(lang: Lang, isCoord: boolean = false): ReplyKeyboard {
+function staffMenuKeyboard(lang: Lang, isCoord: boolean = false, isReg: boolean = false): ReplyKeyboard {
   const rows: ReplyKeyboard = [
     [{ text: t.staffMenu.instruction[lang] }, { text: t.staffMenuChecklists[lang] }],
-    [{ text: t.staffMenu.startDay[lang] }],
   ];
+  if (isReg) {
+    rows.push([{ text: t.regExtraAppointments[lang] }]);
+  }
   if (isCoord) {
     // Koordinator uchun qo'shimcha bo'lim: xodimlar boshqaruvi, statistika, tekshiruvlar va laboratoriya
     rows.push([{ text: t.coordExtraStaff[lang] }, { text: t.coordExtraStats[lang] }]);
