@@ -393,11 +393,12 @@ export async function handleStaffCommand(
     .replace('{position}', escapeHtml(positionLabel));
 
   const isCoord = staff.position === 'koordinator';
+  const isReg = staff.position === 'registratura';
   await setState(supabase, patient.id, 'staff:menu', { staff_id: staff.id });
   await sendMessage(
     chatId,
     greeting + '\n\n' + t.staffPortalTitle[lang],
-    { replyKeyboard: staffMenuKeyboard(lang, isCoord) },
+    { replyKeyboard: staffMenuKeyboard(lang, isCoord, isReg) },
     lovableKey,
     telegramKey,
   );
@@ -433,11 +434,7 @@ export async function handleStaffPortalMessage(
     await showStaffChecklistsList(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
-  if (matches('startDay')) {
-    const { startWorkDay } = await import('./checklist-handler.ts');
-    await startWorkDay(supabase, patient, chatId, lovableKey, telegramKey);
-    return true;
-  }
+  // "Kunni boshlash" tugmasi olib tashlandi (foydalanuvchi so'rovi).
   if (matches('complaint')) {
     await setState(supabase, patient.id, 'staff:complaint', { staff_id: staff.id });
     await sendMessage(chatId, t.staffComplaintAsk[lang], { removeKeyboard: true }, lovableKey, telegramKey);
