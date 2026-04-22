@@ -573,6 +573,7 @@ async function listPatients(
 
   let text = t.patientsTitle[lang];
   const buttons: InlineKeyboard = [
+    [{ text: t.patientsViewBtn[lang], callback_data: 'pat:view:menu' }],
     [{ text: t.patientsSearchBtn[lang], callback_data: 'pat:search' }],
   ];
 
@@ -587,6 +588,95 @@ async function listPatients(
   }
   await setState(supabase, patient.id, 'admin:patients', null);
   await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+}
+
+// ===== "Bemor ko'rinishi" — admin bemorlarga ko'rinadigan qismni tahrirlay oladi =====
+
+async function showPatientViewMenu(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  await setState(supabase, patient.id, 'admin:patients', null);
+  await sendMessage(
+    chatId,
+    t.patientsViewTitle[lang],
+    {
+      inlineKeyboard: [
+        [{ text: t.patientsViewServices[lang], callback_data: 'pat:view:services' }],
+        [{ text: t.patientsViewDoctors[lang], callback_data: 'pat:view:doctors' }],
+        [{ text: t.patientsViewAddress[lang], callback_data: 'pat:view:address' }],
+        [{ text: t.patientsViewContact[lang], callback_data: 'pat:view:contact' }],
+      ],
+    },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+// Manzil tahrirlash uchun mini-menyu (clinic_info: address_uz/ru, location_url)
+async function showPatientViewAddress(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const { data } = await supabase.from('clinic_info').select('address_uz, address_ru, location_url').eq('id', 1).single();
+  let text = `📍 <b>${t.patientsViewAddress[lang]}</b>\n\n`;
+  text += `<b>${t.clinicFields.address_uz[lang]}:</b> ${escapeHtml(data?.address_uz ?? '—')}\n`;
+  text += `<b>${t.clinicFields.address_ru[lang]}:</b> ${escapeHtml(data?.address_ru ?? '—')}\n`;
+  text += `<b>${t.clinicFields.location_url[lang]}:</b> ${escapeHtml(data?.location_url ?? '—')}\n`;
+
+  await setState(supabase, patient.id, 'admin:patients', null);
+  await sendMessage(
+    chatId,
+    text,
+    {
+      inlineKeyboard: [
+        [{ text: '✏️ ' + t.clinicFields.address_uz[lang], callback_data: 'cli:edit:address_uz' }],
+        [{ text: '✏️ ' + t.clinicFields.address_ru[lang], callback_data: 'cli:edit:address_ru' }],
+        [{ text: '✏️ ' + t.clinicFields.location_url[lang], callback_data: 'cli:edit:location_url' }],
+      ],
+    },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+// Bog'lanish tahrirlash uchun mini-menyu (phone, instagram, telegram_channel)
+async function showPatientViewContact(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const { data } = await supabase.from('clinic_info').select('phone, instagram, telegram_channel').eq('id', 1).single();
+  let text = `📞 <b>${t.patientsViewContact[lang]}</b>\n\n`;
+  text += `<b>${t.clinicFields.phone[lang]}:</b> ${escapeHtml(data?.phone ?? '—')}\n`;
+  text += `<b>${t.clinicFields.instagram[lang]}:</b> ${escapeHtml(data?.instagram ?? '—')}\n`;
+  text += `<b>${t.clinicFields.telegram_channel[lang]}:</b> ${escapeHtml(data?.telegram_channel ?? '—')}\n`;
+
+  await setState(supabase, patient.id, 'admin:patients', null);
+  await sendMessage(
+    chatId,
+    text,
+    {
+      inlineKeyboard: [
+        [{ text: '✏️ ' + t.clinicFields.phone[lang], callback_data: 'cli:edit:phone' }],
+        [{ text: '✏️ ' + t.clinicFields.instagram[lang], callback_data: 'cli:edit:instagram' }],
+        [{ text: '✏️ ' + t.clinicFields.telegram_channel[lang], callback_data: 'cli:edit:telegram_channel' }],
+      ],
+    },
+    lovableKey,
+    telegramKey,
+  );
 }
 
 async function startPatientSearch(
