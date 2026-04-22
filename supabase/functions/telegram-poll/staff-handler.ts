@@ -650,5 +650,24 @@ export async function handleStaffCallback(
     await deleteStaffMember(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
   }
+  if (data.startsWith('stf:edit:')) {
+    const id = data.slice('stf:edit:'.length);
+    await answerCb();
+    await showStaffEditMenu(supabase, patient, chatId, id, lovableKey, telegramKey);
+    return true;
+  }
+  if (data.startsWith('stf:fld:')) {
+    const rest = data.slice('stf:fld:'.length);
+    const idx = rest.indexOf(':');
+    if (idx > 0) {
+      const id = rest.slice(0, idx);
+      const field = rest.slice(idx + 1);
+      await answerCb();
+      await askStaffFieldValue(supabase, patient, chatId, id, field, lovableKey, telegramKey);
+    } else {
+      await answerCb();
+    }
+    return true;
+  }
   return false;
 }
