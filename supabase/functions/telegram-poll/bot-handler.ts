@@ -2,7 +2,7 @@
 import { sendMessage, answerCallbackQuery, escapeHtml, type ReplyKeyboard, type InlineKeyboard } from './telegram-api.ts';
 import { t, tr, type Lang } from './i18n.ts';
 import { handleAdminMessage, handleAdminCallback, isAdmin } from './admin-handler.ts';
-import { handleAdminMediaUpload, sendEntityMediaToUser } from './media-handler.ts';
+import { handleAdminMediaUpload, sendEntityMediaToUser, handleEntityMediaUpload } from './media-handler.ts';
 import { saveAdminMedia } from './media-handler.ts';
 import { bcAddMedia } from './admin-handler.ts';
 import { notifyAdminsAboutComplaint } from './notifications.ts';
@@ -881,6 +881,11 @@ export async function handleUpdate(
           await bcAddMedia(supabase, patient, chatId, saved.id, lovableKey, telegramKey);
         }
         return;
+      }
+      // Entity (xizmat / shifokor / klinika) uchun media qo'shish — to'g'ridan-to'g'ri biriktirish
+      if (patient.state === 'admin:ent:upload') {
+        const handled = await handleEntityMediaUpload(supabase, patient, admin, chatId, msg, lovableKey, telegramKey);
+        if (handled) return;
       }
       await handleAdminMediaUpload(supabase, patient, admin, chatId, msg, lovableKey, telegramKey);
       return;

@@ -625,10 +625,19 @@ export const t = {
   entityMediaBtn: { uz: '🖼 Media', ru: '🖼 Медиа' },
   entityMediaTitle: { uz: '🖼 <b>Biriktirilgan media</b>\n\n', ru: '🖼 <b>Прикреплённое медиа</b>\n\n' },
   entityMediaEmpty: {
-    uz: 'Bu yerga hech qanday media biriktirilmagan.\n\n💡 <b>Qo\'shish uchun</b>: Media kutubxonaga o\'ting, mediani tanlang va "📌 Biriktirish" tugmasini bosing.',
-    ru: 'Сюда не прикреплено медиа.\n\n💡 <b>Чтобы добавить</b>: перейдите в Медиа библиотеку, выберите медиа и нажмите "📌 Прикрепить".',
+    uz: 'Bu yerga hech qanday media biriktirilmagan.\n\n💡 Quyidagi <b>"📎 Media qo\'shish"</b> tugmasini bosing va botga rasm, video, audio yoki fayl yuboring — u avtomatik shu yerga biriktiriladi.',
+    ru: 'Сюда не прикреплено медиа.\n\n💡 Нажмите кнопку <b>"📎 Добавить медиа"</b> ниже и отправьте боту фото, видео, аудио или файл — оно автоматически прикрепится сюда.',
   },
   entityMediaGoLib: { uz: '📂 Kutubxonaga o\'tish', ru: '📂 Перейти в библиотеку' },
+  entityMediaAddBtn: { uz: '📎 Media qo\'shish', ru: '📎 Добавить медиа' },
+  entityMediaAskUpload: {
+    uz: '📤 Endi botga <b>rasm, video, audio, ovozli xabar yoki fayl</b> yuboring — u avtomatik shu yerga biriktiriladi.\n\n/cancel — bekor qilish',
+    ru: '📤 Теперь отправьте боту <b>фото, видео, аудио, голосовое сообщение или файл</b> — оно автоматически прикрепится сюда.\n\n/cancel — отмена',
+  },
+  entityMediaUploaded: {
+    uz: '✅ Media biriktirildi! Yana yuborishingiz mumkin yoki /cancel — yakunlash.',
+    ru: '✅ Медиа прикреплено! Можно отправить ещё или /cancel — завершить.',
+  },
 
   // Stats
   statsMedia: { uz: 'Media fayllar', ru: 'Медиа файлы' },

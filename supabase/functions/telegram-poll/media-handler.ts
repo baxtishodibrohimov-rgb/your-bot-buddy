@@ -614,6 +614,7 @@ export async function showEntityMedia(
   }
 
   const { data } = await query;
+  const addBtn = { text: t.entityMediaAddBtn[lang], callback_data: `ent:upl:${entityType}:${entityId ?? '-'}` };
 
   let text = t.entityMediaTitle[lang];
   if (!data || data.length === 0) {
@@ -622,7 +623,10 @@ export async function showEntityMedia(
       chatId,
       text,
       {
-        inlineKeyboard: [[{ text: t.entityMediaGoLib[lang], callback_data: 'med:lib' }]],
+        inlineKeyboard: [
+          [addBtn],
+          [{ text: t.entityMediaGoLib[lang], callback_data: 'med:lib' }],
+        ],
       },
       lovableKey,
       telegramKey,
@@ -639,7 +643,7 @@ export async function showEntityMedia(
     text += `• ${label} — ${escapeHtml(String(name).slice(0, 40))}\n`;
   }
 
-  const buttons: InlineKeyboard = [];
+  const buttons: InlineKeyboard = [[addBtn]];
   for (const a of data) {
     const m = a.media_library;
     if (!m) continue;
@@ -652,6 +656,57 @@ export async function showEntityMedia(
   buttons.push([{ text: t.entityMediaGoLib[lang], callback_data: 'med:lib' }]);
 
   await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+}
+
+// Admin entity media upload state — botga yuborilgan media to'g'ridan-to'g'ri shu entityga biriktiriladi
+export async function startEntityMediaUpload(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  entityType: 'staff' | 'staff_position' | 'service' | 'clinic',
+  entityId: string | null,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  await setState(supabase, patient.id, 'admin:ent:upload', { entityType, entityId });
+  await sendMessage(chatId, t.entityMediaAskUpload[lang], { removeKeyboard: true }, lovableKey, telegramKey);
+}
+
+/**
+ * Admin "admin:ent:upload" holatida media yuborganda — uni saqlaymiz va to'g'ridan-to'g'ri entityga biriktiramiz.
+ */
+export async function handleEntityMediaUpload(
+  supabase: any,
+  patient: Patient,
+  admin: Admin,
+  chatId: number,
+  msg: any,
+  lovableKey: string,
+  telegramKey: string,
+): Promise<boolean> {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? {};
+  const entityType = data.entityType as 'staff' | 'staff_position' | 'service' | 'clinic' | undefined;
+  const entityId = (data.entityId as string | null | undefined) ?? null;
+  if (!entityType) return false;
+
+  const saved = await saveAdminMedia(supabase, admin, msg);
+  if (!saved) return false;
+
+  const { error } = await supabase.from('media_attachments').insert({
+    media_id: saved.id,
+    entity_type: entityType,
+    entity_id: entityId,
+  });
+
+  if (error && error.code !== '23505') {
+    await sendMessage(chatId, `⚠️ ${error.message}`, {}, lovableKey, telegramKey);
+    return true;
+  }
+
+  await sendMessage(chatId, t.entityMediaUploaded[lang], {}, lovableKey, telegramKey);
+  return true;
 }
 
 // ============= BEMORGA MEDIA YUBORISH (shifokor/xizmat ko'rsatilganda) =============
@@ -789,6 +844,30 @@ export async function handleMediaCallback(
       const entityId = rest.slice(idx + 1);
       await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
       await showEntityMedia(
+        supabase,
+        patient,
+        chatId,
+        entityType,
+        entityId === '-' ? null : entityId,
+        lovableKey,
+        telegramKey,
+      );
+    } else {
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    }
+    return true;
+  }
+
+  // Entity uchun to'g'ridan-to'g'ri media yuklash boshlanadi
+  // ent:upl:{entityType}:{entityId|-}
+  if (data.startsWith('ent:upl:')) {
+    const rest = data.slice('ent:upl:'.length);
+    const idx = rest.indexOf(':');
+    if (idx > 0) {
+      const entityType = rest.slice(0, idx) as 'staff' | 'staff_position' | 'service' | 'clinic';
+      const entityId = rest.slice(idx + 1);
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+      await startEntityMediaUpload(
         supabase,
         patient,
         chatId,
