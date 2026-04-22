@@ -99,7 +99,8 @@ export async function showStaffByPosition(
   if (list) {
     for (const s of list) {
       buttons.push([
-        { text: `🖼 ${s.full_name.slice(0, 14)}`, callback_data: `ent:med:staff:${s.id}` },
+        { text: `✏️ ${s.full_name.slice(0, 12)}`, callback_data: `stf:edit:${s.id}` },
+        { text: `🖼`, callback_data: `ent:med:staff:${s.id}` },
         { text: `📋`, callback_data: `chk:s:${s.id}` },
         { text: `🗑`, callback_data: `stf:del:${s.id}` },
       ]);
@@ -109,6 +110,122 @@ export async function showStaffByPosition(
 
   await setState(supabase, patient.id, 'admin:staff', null);
   await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+}
+
+// ============= ADMIN: bitta xodim tahrirlash menyusi =============
+
+const STAFF_EDITABLE_FIELDS: Array<keyof typeof t.docFields> = [
+  'full_name', 'specialty_uz', 'specialty_ru', 'experience_years', 'bio_uz', 'bio_ru', 'sort_order',
+];
+
+export async function showStaffEditMenu(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  staffId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const { data: s } = await supabase.from('staff').select('*').eq('id', staffId).maybeSingle();
+  if (!s) {
+    await sendMessage(chatId, '—', {}, lovableKey, telegramKey);
+    return;
+  }
+
+  let text = t.staffEditTitle[lang].replace('{name}', escapeHtml(s.full_name)) + '\n\n';
+  for (const f of STAFF_EDITABLE_FIELDS) {
+    const label = t.docFields[f][lang];
+    const val = s[f] ?? '—';
+    text += `<b>${escapeHtml(label)}:</b> ${escapeHtml(String(val))}\n`;
+  }
+
+  const buttons: InlineKeyboard = [];
+  for (let i = 0; i < STAFF_EDITABLE_FIELDS.length; i += 2) {
+    const row = [
+      { text: '✏️ ' + t.docFields[STAFF_EDITABLE_FIELDS[i]][lang], callback_data: `stf:fld:${staffId}:${STAFF_EDITABLE_FIELDS[i]}` },
+    ];
+    if (i + 1 < STAFF_EDITABLE_FIELDS.length) {
+      row.push({ text: '✏️ ' + t.docFields[STAFF_EDITABLE_FIELDS[i + 1]][lang], callback_data: `stf:fld:${staffId}:${STAFF_EDITABLE_FIELDS[i + 1]}` });
+    }
+    buttons.push(row);
+  }
+  buttons.push([{ text: t.entityMediaBtn[lang] + ' (' + (lang === 'uz' ? 'media/audio/file' : 'медиа/аудио/файл') + ')', callback_data: `ent:med:staff:${staffId}` }]);
+  if (s.position) {
+    buttons.push([{ text: '⬅️', callback_data: `stf:p:${s.position}` }]);
+  }
+
+  await setState(supabase, patient.id, 'admin:staff', null);
+  await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+}
+
+async function askStaffFieldValue(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  staffId: string,
+  field: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const label = (t.docFields as any)[field]?.[lang] ?? field;
+  await setState(supabase, patient.id, 'admin:stf:editfld', { staffId, field });
+  await sendMessage(
+    chatId,
+    `<b>${escapeHtml(label)}</b>\n\n${t.editEnterValue[lang]}\n\n/cancel — ${t.adminCancel[lang]}`,
+    { removeKeyboard: true },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function saveStaffFieldValue(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+): Promise<boolean> {
+  const lang = patient.language;
+  const data = (patient.state_data as any) ?? {};
+  const { staffId, field } = data;
+  if (!staffId || !field) return false;
+
+  const trimmed = text.trim();
+  const skip = trimmed === '—' || trimmed === '-';
+  let value: any;
+
+  if (field === 'experience_years' || field === 'sort_order') {
+    if (skip) {
+      value = field === 'sort_order' ? 0 : null;
+    } else {
+      const n = Number(trimmed.replace(/\s/g, ''));
+      if (isNaN(n)) {
+        await sendMessage(chatId, t.editInvalidNumber[lang], {}, lovableKey, telegramKey);
+        return true;
+      }
+      value = n;
+    }
+  } else if (field === 'full_name') {
+    if (skip || trimmed.length < 2) {
+      await sendMessage(
+        chatId,
+        lang === 'uz' ? '⚠️ Ism bo\'sh bo\'lishi mumkin emas.' : '⚠️ Имя не может быть пустым.',
+        {}, lovableKey, telegramKey,
+      );
+      return true;
+    }
+    value = trimmed;
+  } else {
+    value = skip ? null : trimmed;
+  }
+
+  await supabase.from('staff').update({ [field]: value, updated_at: new Date().toISOString() }).eq('id', staffId);
+  await sendMessage(chatId, t.editSaved[lang], {}, lovableKey, telegramKey);
+  await showStaffEditMenu(supabase, patient, chatId, staffId, lovableKey, telegramKey);
+  return true;
 }
 
 // ============= ADMIN: yangi xodim qo'shish (2 qadam) =============
