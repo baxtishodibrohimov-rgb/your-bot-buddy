@@ -1742,6 +1742,32 @@ export async function handleAdminCallback(
     await startPatientSearch(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
+  // "Bemor ko'rinishi" — admin bemorlarga ko'rinadigan qismni tahrirlay oladi
+  if (data === 'pat:view:menu') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await showPatientViewMenu(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'pat:view:services') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await listServices(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'pat:view:doctors') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await showStaffPositionsMenu(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'pat:view:address') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await showPatientViewAddress(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'pat:view:contact') {
+    await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    await showPatientViewContact(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
   if (data.startsWith('pat:card:')) {
     const id = data.slice('pat:card:'.length);
     await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
