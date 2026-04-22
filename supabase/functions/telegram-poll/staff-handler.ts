@@ -270,7 +270,7 @@ export async function handleStaffStep(
     const trimmed = text.trim().replace(/^@/, '');
     if (!/^\d+$/.test(trimmed)) {
       await sendMessage(chatId, t.staffInvalidTgId[lang], {}, lovableKey, telegramKey);
-      return;
+      return true;
     }
     const tgId = Number(trimmed);
     // Duplikat tekshiruvi
@@ -281,12 +281,12 @@ export async function handleStaffStep(
       .maybeSingle();
     if (existing) {
       await sendMessage(chatId, t.staffDuplicateTgId[lang], {}, lovableKey, telegramKey);
-      return;
+      return true;
     }
     data.telegram_id = tgId;
     await setState(supabase, patient.id, 'admin:stf:name', data);
     await sendMessage(chatId, t.staffAskName[lang], {}, lovableKey, telegramKey);
-    return;
+    return true;
   }
 
   if (state === 'admin:stf:name') {
@@ -297,7 +297,7 @@ export async function handleStaffStep(
         lang === 'uz' ? '⚠️ Ismni 2-200 belgi orasida kiriting.' : '⚠️ Введите имя от 2 до 200 символов.',
         {}, lovableKey, telegramKey,
       );
-      return;
+      return true;
     }
     const position = data.position as StaffPosition;
     const tgId = data.telegram_id as number;
@@ -309,13 +309,15 @@ export async function handleStaffStep(
     });
     if (error) {
       await sendMessage(chatId, `⚠️ ${error.message}`, {}, lovableKey, telegramKey);
-      return;
+      return true;
     }
     await setState(supabase, patient.id, 'admin:staff', null);
     await sendMessage(chatId, t.staffAdded[lang], {}, lovableKey, telegramKey);
     await showStaffByPosition(supabase, patient, chatId, position, lovableKey, telegramKey);
-    return;
+    return true;
   }
+
+  return false;
 }
 
 export async function deleteStaffMember(
