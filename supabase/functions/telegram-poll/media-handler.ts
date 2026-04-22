@@ -858,5 +858,29 @@ export async function handleMediaCallback(
     return true;
   }
 
+  // Entity uchun to'g'ridan-to'g'ri media yuklash boshlanadi
+  // ent:upl:{entityType}:{entityId|-}
+  if (data.startsWith('ent:upl:')) {
+    const rest = data.slice('ent:upl:'.length);
+    const idx = rest.indexOf(':');
+    if (idx > 0) {
+      const entityType = rest.slice(0, idx) as 'staff' | 'staff_position' | 'service' | 'clinic';
+      const entityId = rest.slice(idx + 1);
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+      await startEntityMediaUpload(
+        supabase,
+        patient,
+        chatId,
+        entityType,
+        entityId === '-' ? null : entityId,
+        lovableKey,
+        telegramKey,
+      );
+    } else {
+      await answerCallbackQuery(callbackId, undefined, lovableKey, telegramKey);
+    }
+    return true;
+  }
+
   return false;
 }
