@@ -741,6 +741,20 @@ export async function handleUpdate(
       return;
     }
 
+    if (data.startsWith('svc:')) {
+      const id = data.slice('svc:'.length);
+      await answerCallbackQuery(cq.id, undefined, lovableKey, telegramKey);
+      await showServiceDetail(supabase, chatId, patient.language, id, lovableKey, telegramKey);
+      return;
+    }
+
+    if (data.startsWith('doc:')) {
+      const id = data.slice('doc:'.length);
+      await answerCallbackQuery(cq.id, undefined, lovableKey, telegramKey);
+      await showDoctorDetail(supabase, chatId, patient.language, id, lovableKey, telegramKey);
+      return;
+    }
+
     if (data === 'mc:update') {
       await answerCallbackQuery(cq.id, undefined, lovableKey, telegramKey);
       await setState(supabase, patient.id, 'mc:full_name', {});
