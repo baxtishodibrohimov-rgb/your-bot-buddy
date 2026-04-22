@@ -794,9 +794,25 @@ export async function handleCoordLabCallback(
     await startCoordAddOrder(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
-  if (data === 'clab:ready') {
+  if (data === 'clab:ready' || data === 'clab:incoming') {
     await ack();
-    await showCoordReadyOrders(supabase, chatId, lang, lovableKey, telegramKey);
+    await showCoordIncomingOrders(supabase, chatId, lang, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'clab:inprog') {
+    await ack();
+    await showCoordInProgressOrders(supabase, chatId, lang, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'clab:completed') {
+    await ack();
+    await showCoordCompletedOrders(supabase, chatId, lang, lovableKey, telegramKey);
+    return true;
+  }
+  if (data.startsWith('clab:rcv:')) {
+    const id = data.slice('clab:rcv:'.length);
+    await ack('📬');
+    await markCoordOrderReceived(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
   }
   if (data.startsWith('clab:app:')) {
