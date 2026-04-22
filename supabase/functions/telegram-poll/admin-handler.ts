@@ -42,7 +42,6 @@ export async function isAdmin(supabase: any, tgId: number): Promise<Admin | null
 export function adminMainKeyboard(lang: Lang, isSuper: boolean): ReplyKeyboard {
   const rows: ReplyKeyboard = [
     [{ text: t.adminMenuAppointments[lang] }, { text: t.adminMenu.complaints[lang] }],
-    [{ text: t.adminMenu.clinic[lang] }, { text: t.adminMenu.services[lang] }],
     [{ text: t.adminMenu.doctors[lang] }, { text: t.adminMenu.patients[lang] }],
     [{ text: t.adminMenuMedia[lang] }, { text: t.adminMenuBroadcast[lang] }],
     [{ text: t.adminMenu.stats[lang] }, { text: t.adminMenuResidency[lang] }],
