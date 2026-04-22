@@ -686,7 +686,24 @@ export async function handleUpdate(
       const lang = data.split(':')[1] as Lang;
       await setLanguage(supabase, patient.id, lang);
       await answerCallbackQuery(cq.id, undefined, lovableKey, telegramKey);
-      await showMainMenu(chatId, lang, lovableKey, telegramKey);
+      // Yangi tildagi patientni qayta o'qiymiz (registratsiya tekshiruvi uchun)
+      const { data: refreshed } = await supabase
+        .from('patients')
+        .select('*')
+        .eq('id', patient.id)
+        .single();
+      const p = (refreshed ?? patient) as Patient;
+      if (!isRegistered(p)) {
+        await showRegisterPrompt(chatId, lang, lovableKey, telegramKey);
+      } else {
+        await showMainMenu(chatId, lang, lovableKey, telegramKey);
+      }
+      return;
+    }
+
+    if (data === 'reg:start') {
+      await answerCallbackQuery(cq.id, undefined, lovableKey, telegramKey);
+      await startRegistration(supabase, patient, chatId, lovableKey, telegramKey);
       return;
     }
 
@@ -826,21 +843,25 @@ export async function handleUpdate(
   if (text === '/start') {
     await setState(supabase, patient.id, null, null);
 
-    // Koordinator ham boshqa bemorlar kabi — bemor menyusini ko'radi.
-    // Xodim/koordinator portaliga faqat /staff orqali kiradi.
+    // Til tanlanmaganmi (birinchi marta) — har doim til tanlash
+    const { count } = await supabase
+      .from('telegram_messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('chat_id', chatId);
+    const isFirstTime = (count ?? 0) <= 1;
 
-    // Til tanlanmaganmi tekshirish — yangi yoki avvalgisi
-    if (!patient.state && (patient.language === 'uz' || patient.language === 'ru')) {
-      // Birinchi marta — har doim til tanlash
-      const { count } = await supabase
-        .from('telegram_messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('chat_id', chatId);
-      if ((count ?? 0) <= 1) {
-        await showLanguagePicker(chatId, lovableKey, telegramKey);
-        return;
-      }
+    if (isFirstTime) {
+      await showLanguagePicker(chatId, lovableKey, telegramKey);
+      return;
     }
+
+    // Ro'yxatdan o'tmagan bo'lsa — ro'yxatga olishni so'raymiz
+    if (!isRegistered(patient)) {
+      await showRegisterPrompt(chatId, lang, lovableKey, telegramKey);
+      return;
+    }
+
+    // Ro'yxatda — to'g'ridan-to'g'ri bemor menyusi
     await showMainMenu(chatId, lang, lovableKey, telegramKey);
     return;
   }
@@ -942,6 +963,10 @@ export async function handleUpdate(
   // State'da turgan bo'lsa
   if (patient.state === 'mc:edit') {
     await saveMcEdit(supabase, patient, chatId, text, lovableKey, telegramKey);
+    return;
+  }
+  if (patient.state?.startsWith('reg:')) {
+    await handleRegistrationStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     return;
   }
   if (patient.state?.startsWith('mc:')) {
