@@ -421,6 +421,7 @@ export async function handleStaffPortalMessage(
     return false;
   }
   const isCoord = staff.position === 'koordinator';
+  const isReg = staff.position === 'registratura';
 
   const matches = (key: keyof typeof t.staffMenu) =>
     text === t.staffMenu[key].uz || text === t.staffMenu[key].ru;
@@ -444,6 +445,14 @@ export async function handleStaffPortalMessage(
     await setState(supabase, patient.id, null, null);
     await sendMessage(chatId, t.staffExited[lang], { removeKeyboard: true }, lovableKey, telegramKey);
     return true;
+  }
+
+  // ===== REGISTRATURA uchun qo'shimcha tugmalar =====
+  if (isReg) {
+    if (text === t.regExtraAppointments.uz || text === t.regExtraAppointments.ru) {
+      await showRegistraturaAppointments(supabase, chatId, lang, lovableKey, telegramKey);
+      return true;
+    }
   }
 
   // ===== KOORDINATOR uchun qo'shimcha tugmalar =====
@@ -474,6 +483,47 @@ export async function handleStaffPortalMessage(
     }
   }
   return false;
+}
+
+// Registratura xodimi uchun bemor qabul ro'yxati (faqat ko'rish)
+async function showRegistraturaAppointments(
+  supabase: any,
+  chatId: number,
+  lang: Lang,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const { data: rows } = await supabase
+    .from('appointments')
+    .select('id, full_name, phone, status, notes, created_at, appointment_at')
+    .in('status', ['new', 'called'])
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (!rows || rows.length === 0) {
+    await sendMessage(chatId, t.regAppointmentsEmpty[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+
+  await sendMessage(chatId, t.regAppointmentsTitle[lang], {}, lovableKey, telegramKey);
+
+  for (const a of rows) {
+    const statusKey = (a.status as 'new' | 'called') ?? 'new';
+    const statusLabel = (t.apptStatus as any)[statusKey]?.[lang] ?? a.status;
+    const created = new Date(a.created_at).toLocaleString(lang === 'ru' ? 'ru-RU' : 'uz-UZ', {
+      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+    let text = `${statusLabel} • ${escapeHtml(created)}\n`;
+    text += `👤 <b>${escapeHtml(a.full_name)}</b>\n`;
+    text += `📞 <code>${escapeHtml(a.phone)}</code>`;
+    if (a.notes) text += `\n📝 ${escapeHtml(a.notes)}`;
+
+    const buttons: InlineKeyboard = [];
+    if (a.status === 'new') {
+      buttons.push([{ text: t.apptMarkCalled[lang], callback_data: `apt:called:${a.id}` }]);
+    }
+    await sendMessage(chatId, text, { inlineKeyboard: buttons.length ? buttons : undefined }, lovableKey, telegramKey);
+  }
 }
 
 // Statistika menyusidan tugmalarni ushlash (koordinator uchun)
