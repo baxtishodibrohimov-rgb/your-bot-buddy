@@ -38,12 +38,95 @@ type Patient = {
 
 function mainKeyboard(lang: Lang): ReplyKeyboard {
   return [
-    [{ text: t.menu.appointment[lang] }, { text: t.menu.medicalCard[lang] }],
     [{ text: t.menu.services[lang] }, { text: t.menu.doctors[lang] }],
-    [{ text: t.menu.about[lang] }, { text: t.menu.address[lang] }],
-    [{ text: t.menu.contact[lang] }, { text: t.menu.complaint[lang] }],
+    [{ text: t.menu.address[lang] }, { text: t.menu.contact[lang] }],
+    [{ text: t.menu.complaint[lang] }],
     [{ text: t.menu.changeLang[lang] }],
   ];
+}
+
+// Ro'yxatdan o'tganmi tekshirish: ism va telefon bo'lsa — ro'yxatda
+function isRegistered(p: Patient): boolean {
+  return Boolean(p.first_name && p.first_name.trim().length > 0 && p.phone && p.phone.trim().length > 0);
+}
+
+async function showRegisterPrompt(chatId: number, lang: Lang, lovableKey: string, telegramKey: string) {
+  await sendMessage(
+    chatId,
+    t.registerPrompt[lang],
+    {
+      inlineKeyboard: [[{ text: t.registerBtn[lang], callback_data: 'reg:start' }]],
+    },
+    lovableKey,
+    telegramKey,
+  );
+}
+
+async function startRegistration(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  await setState(supabase, patient.id, 'reg:name', {});
+  await sendMessage(chatId, t.registerAskName[lang], { removeKeyboard: true }, lovableKey, telegramKey);
+}
+
+async function handleRegistrationStep(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const state = patient.state ?? '';
+  const data = (patient.state_data as Record<string, any>) ?? {};
+
+  if (state === 'reg:name') {
+    const name = text.trim();
+    if (name.length < 2 || name.length > 200) {
+      await sendMessage(chatId, t.registerInvalidName[lang], {}, lovableKey, telegramKey);
+      return;
+    }
+    // Ism va familiyani ajratamiz (oxirgi so'z — familiya)
+    const parts = name.split(/\s+/);
+    const firstName = parts.length > 1 ? parts.slice(0, -1).join(' ') : name;
+    const lastName = parts.length > 1 ? parts[parts.length - 1] : null;
+    data.first_name = firstName;
+    data.last_name = lastName;
+    await setState(supabase, patient.id, 'reg:phone', data);
+    await sendMessage(chatId, t.registerAskPhone[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+
+  if (state === 'reg:phone') {
+    const phone = normalizePhone(text);
+    if (!phone) {
+      await sendMessage(chatId, t.registerInvalidPhone[lang], {}, lovableKey, telegramKey);
+      return;
+    }
+    // Bemorni yangilaymiz
+    await supabase
+      .from('patients')
+      .update({
+        first_name: data.first_name ?? null,
+        last_name: data.last_name ?? null,
+        phone,
+      })
+      .eq('id', patient.id);
+    await setState(supabase, patient.id, null, null);
+    await sendMessage(
+      chatId,
+      t.registerDone[lang],
+      { replyKeyboard: mainKeyboard(lang) },
+      lovableKey,
+      telegramKey,
+    );
+  }
 }
 
 // Telefon raqamini tozalash va validatsiya
