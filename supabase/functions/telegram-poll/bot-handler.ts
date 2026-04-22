@@ -882,6 +882,11 @@ export async function handleUpdate(
         }
         return;
       }
+      // Entity (xizmat / shifokor / klinika) uchun media qo'shish — to'g'ridan-to'g'ri biriktirish
+      if (patient.state === 'admin:ent:upload') {
+        const handled = await handleEntityMediaUpload(supabase, patient, admin, chatId, msg, lovableKey, telegramKey);
+        if (handled) return;
+      }
       await handleAdminMediaUpload(supabase, patient, admin, chatId, msg, lovableKey, telegramKey);
       return;
     }
