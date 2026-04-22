@@ -552,6 +552,27 @@ export const t = {
   patientsSearchTitle: { uz: '🔍 <b>Topildi:</b>\n\n', ru: '🔍 <b>Найдено:</b>\n\n' },
   patientsSearchTooShort: { uz: '⚠️ Kamida 2 belgi kiriting.', ru: '⚠️ Введите минимум 2 символа.' },
 
+  // ========== BEMOR KO'RINISHI (admin tahrirlash) ==========
+  patientsViewBtn: {
+    uz: '👁 Bemorlarga ko\'rinadigan qismi',
+    ru: '👁 Раздел, видимый пациентам',
+  },
+  patientsViewTitle: {
+    uz: '👁 <b>Bemorlarga ko\'rinadigan qism</b>\n\nBemorlar bot menyusida ko\'radigan bo\'limlardan birini tanlang va tahrirlang:',
+    ru: '👁 <b>Раздел, видимый пациентам</b>\n\nВыберите раздел, который пациенты видят в меню бота, и отредактируйте его:',
+  },
+  patientsViewServices: { uz: '🦷 Xizmatlar', ru: '🦷 Услуги' },
+  patientsViewDoctors: { uz: '👨‍⚕️ Shifokorlar', ru: '👨‍⚕️ Врачи' },
+  patientsViewAddress: { uz: '📍 Manzil', ru: '📍 Адрес' },
+  patientsViewContact: { uz: '📞 Bog\'lanish', ru: '📞 Связаться' },
+
+  // ========== SHIFOKOR/XODIM TAHRIRLASH ==========
+  staffEditBtn: { uz: '✏️ Tahrirlash', ru: '✏️ Редактировать' },
+  staffEditTitle: {
+    uz: '✏️ <b>{name}</b>\n\nQaysi maydonni o\'zgartirasiz?',
+    ru: '✏️ <b>{name}</b>\n\nКакое поле изменить?',
+  },
+
   // ========== MEDIA ==========
   adminMenuMedia: { uz: '🖼 Media kutubxona', ru: '🖼 Медиа библиотека' },
   mediaTitle: { uz: '🖼 <b>Media kutubxona</b>\n\n', ru: '🖼 <b>Медиа библиотека</b>\n\n' },
