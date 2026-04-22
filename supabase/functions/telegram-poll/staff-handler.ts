@@ -345,11 +345,13 @@ export async function deleteStaffMember(
 
 // ============= /staff buyrug'i (xodim botga yozsa) =============
 
-function staffMenuKeyboard(lang: Lang, isCoord: boolean = false): ReplyKeyboard {
+function staffMenuKeyboard(lang: Lang, isCoord: boolean = false, isReg: boolean = false): ReplyKeyboard {
   const rows: ReplyKeyboard = [
     [{ text: t.staffMenu.instruction[lang] }, { text: t.staffMenuChecklists[lang] }],
-    [{ text: t.staffMenu.startDay[lang] }],
   ];
+  if (isReg) {
+    rows.push([{ text: t.regExtraAppointments[lang] }]);
+  }
   if (isCoord) {
     // Koordinator uchun qo'shimcha bo'lim: xodimlar boshqaruvi, statistika, tekshiruvlar va laboratoriya
     rows.push([{ text: t.coordExtraStaff[lang] }, { text: t.coordExtraStats[lang] }]);
@@ -391,11 +393,12 @@ export async function handleStaffCommand(
     .replace('{position}', escapeHtml(positionLabel));
 
   const isCoord = staff.position === 'koordinator';
+  const isReg = staff.position === 'registratura';
   await setState(supabase, patient.id, 'staff:menu', { staff_id: staff.id });
   await sendMessage(
     chatId,
     greeting + '\n\n' + t.staffPortalTitle[lang],
-    { replyKeyboard: staffMenuKeyboard(lang, isCoord) },
+    { replyKeyboard: staffMenuKeyboard(lang, isCoord, isReg) },
     lovableKey,
     telegramKey,
   );
@@ -418,6 +421,7 @@ export async function handleStaffPortalMessage(
     return false;
   }
   const isCoord = staff.position === 'koordinator';
+  const isReg = staff.position === 'registratura';
 
   const matches = (key: keyof typeof t.staffMenu) =>
     text === t.staffMenu[key].uz || text === t.staffMenu[key].ru;
@@ -431,11 +435,7 @@ export async function handleStaffPortalMessage(
     await showStaffChecklistsList(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
-  if (matches('startDay')) {
-    const { startWorkDay } = await import('./checklist-handler.ts');
-    await startWorkDay(supabase, patient, chatId, lovableKey, telegramKey);
-    return true;
-  }
+  // "Kunni boshlash" tugmasi olib tashlandi (foydalanuvchi so'rovi).
   if (matches('complaint')) {
     await setState(supabase, patient.id, 'staff:complaint', { staff_id: staff.id });
     await sendMessage(chatId, t.staffComplaintAsk[lang], { removeKeyboard: true }, lovableKey, telegramKey);
@@ -445,6 +445,14 @@ export async function handleStaffPortalMessage(
     await setState(supabase, patient.id, null, null);
     await sendMessage(chatId, t.staffExited[lang], { removeKeyboard: true }, lovableKey, telegramKey);
     return true;
+  }
+
+  // ===== REGISTRATURA uchun qo'shimcha tugmalar =====
+  if (isReg) {
+    if (text === t.regExtraAppointments.uz || text === t.regExtraAppointments.ru) {
+      await showRegistraturaAppointments(supabase, chatId, lang, lovableKey, telegramKey);
+      return true;
+    }
   }
 
   // ===== KOORDINATOR uchun qo'shimcha tugmalar =====
@@ -475,6 +483,47 @@ export async function handleStaffPortalMessage(
     }
   }
   return false;
+}
+
+// Registratura xodimi uchun bemor qabul ro'yxati (faqat ko'rish)
+async function showRegistraturaAppointments(
+  supabase: any,
+  chatId: number,
+  lang: Lang,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const { data: rows } = await supabase
+    .from('appointments')
+    .select('id, full_name, phone, status, notes, created_at, appointment_at')
+    .in('status', ['new', 'called'])
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (!rows || rows.length === 0) {
+    await sendMessage(chatId, t.regAppointmentsEmpty[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+
+  await sendMessage(chatId, t.regAppointmentsTitle[lang], {}, lovableKey, telegramKey);
+
+  for (const a of rows) {
+    const statusKey = (a.status as 'new' | 'called') ?? 'new';
+    const statusLabel = (t.apptStatus as any)[statusKey]?.[lang] ?? a.status;
+    const created = new Date(a.created_at).toLocaleString(lang === 'ru' ? 'ru-RU' : 'uz-UZ', {
+      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+    let text = `${statusLabel} • ${escapeHtml(created)}\n`;
+    text += `👤 <b>${escapeHtml(a.full_name)}</b>\n`;
+    text += `📞 <code>${escapeHtml(a.phone)}</code>`;
+    if (a.notes) text += `\n📝 ${escapeHtml(a.notes)}`;
+
+    const buttons: InlineKeyboard = [];
+    if (a.status === 'new') {
+      buttons.push([{ text: t.apptMarkCalled[lang], callback_data: `apt:called:${a.id}` }]);
+    }
+    await sendMessage(chatId, text, { inlineKeyboard: buttons.length ? buttons : undefined }, lovableKey, telegramKey);
+  }
 }
 
 // Statistika menyusidan tugmalarni ushlash (koordinator uchun)
@@ -573,12 +622,14 @@ export async function handleStaffComplaint(
 
   let prefix = '[XODIM] ';
   let isCoord = false;
+  let isReg = false;
   if (staffId) {
     const { data: s } = await supabase.from('staff').select('full_name, position').eq('id', staffId).maybeSingle();
     if (s) {
       const posLabel = t.staffPositions[s.position as StaffPosition]?.uz ?? s.position;
       prefix = `[XODIM: ${s.full_name} — ${posLabel}] `;
       if (s.position === 'koordinator') isCoord = true;
+      if (s.position === 'registratura') isReg = true;
     }
   }
 
@@ -592,7 +643,7 @@ export async function handleStaffComplaint(
   await sendMessage(
     chatId,
     t.staffComplaintSaved[lang],
-    { replyKeyboard: staffMenuKeyboard(lang, isCoord) },
+    { replyKeyboard: staffMenuKeyboard(lang, isCoord, isReg) },
     lovableKey,
     telegramKey,
   );

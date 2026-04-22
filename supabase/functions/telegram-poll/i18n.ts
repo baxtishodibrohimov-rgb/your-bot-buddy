@@ -935,6 +935,14 @@ export const t = {
   coordExtraStaff: { uz: '👥 Xodimlar (admin)', ru: '👥 Сотрудники (админ)' },
   coordExtraStats: { uz: '📊 Statistika', ru: '📊 Статистика' },
 
+  // ========== REGISTRATURA: MUROJAATLAR (xodim portalida) ==========
+  regExtraAppointments: { uz: '📞 Murojaatlar', ru: '📞 Обращения' },
+  regAppointmentsTitle: {
+    uz: '📞 <b>Bemor murojaatlari</b>\n\nQabulga yozilgan bemorlar ro\'yxati:',
+    ru: '📞 <b>Обращения пациентов</b>\n\nСписок записавшихся пациентов:',
+  },
+  regAppointmentsEmpty: { uz: 'Hozircha murojaatlar yo\'q.', ru: 'Обращений пока нет.' },
+
   // Koordinator statistikasi: bo'limlar
   coordStatsTitle: {
     uz: '📊 <b>Koordinator statistikasi</b>\n\nKerakli bo\'limni tanlang:',
@@ -1048,6 +1056,27 @@ export const t = {
   },
   coordLabAddBtn: { uz: '➕ Yangi apparat qo\'shish', ru: '➕ Добавить новый аппарат' },
   coordLabReadyBtn: { uz: '✅ Tayyor apparatlar', ru: '✅ Готовые аппараты' },
+  coordLabInProgressBtn: { uz: '⚙️ Tayyorlashda', ru: '⚙️ В изготовлении' },
+  coordLabIncomingBtn: { uz: '📦 Kelgan', ru: '📦 Поступившие' },
+  coordLabCompletedBtn: { uz: '✅ Tugagan', ru: '✅ Завершённые' },
+  coordLabInProgressTitle: {
+    uz: '⚙️ <b>Tayyorlashda</b>\n\nLaboratoriyaga yuborilgan, hali tayyor bo\'lmagan apparatlar:',
+    ru: '⚙️ <b>В изготовлении</b>\n\nОтправлены в лабораторию, ещё не готовы:',
+  },
+  coordLabIncomingTitle: {
+    uz: '📦 <b>Kelgan apparatlar</b>\n\nLaboratoriya tayyor deb belgilagan. "Qabul qildim" tugmasini bosing:',
+    ru: '📦 <b>Поступившие аппараты</b>\n\nЛаборатория отметила как готовые. Нажмите «Принял»:',
+  },
+  coordLabCompletedTitle: {
+    uz: '✅ <b>Tugagan apparatlar</b>',
+    ru: '✅ <b>Завершённые аппараты</b>',
+  },
+  coordLabReceiveBtn: { uz: '📬 Qabul qildim', ru: '📬 Принял' },
+  coordLabReceivedMsg: {
+    uz: '✅ Apparat qabul qilindi va "Tugagan" bo\'limiga o\'tdi.',
+    ru: '✅ Аппарат принят и перемещён в «Завершённые».',
+  },
+  coordLabListEmpty: { uz: 'Hozircha bo\'sh.', ru: 'Пока пусто.' },
 
   // Yangi apparat qadamlari (koordinator)
   labAskPatient: {

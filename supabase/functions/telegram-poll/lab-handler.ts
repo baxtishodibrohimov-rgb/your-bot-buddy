@@ -552,7 +552,9 @@ export async function showCoordLabMenu(
   await setState(supabase, patient.id, 'coord:lab', null);
   const buttons: InlineKeyboard = [
     [{ text: t.coordLabAddBtn[lang], callback_data: 'clab:add' }],
-    [{ text: t.coordLabReadyBtn[lang], callback_data: 'clab:ready' }],
+    [{ text: t.coordLabInProgressBtn[lang], callback_data: 'clab:inprog' }],
+    [{ text: t.coordLabIncomingBtn[lang], callback_data: 'clab:incoming' }],
+    [{ text: t.coordLabCompletedBtn[lang], callback_data: 'clab:completed' }],
   ];
   await sendMessage(chatId, t.coordLabTitle[lang], { inlineKeyboard: buttons }, lovableKey, telegramKey);
 }
@@ -569,7 +571,8 @@ async function startCoordAddOrder(
   await sendMessage(chatId, t.labAskPatient[lang], { removeKeyboard: true }, lovableKey, telegramKey);
 }
 
-async function showCoordReadyOrders(
+// Tayyorlashda: koordinator yuborgan, hali tayyor bo'lmagan (new + in_progress)
+async function showCoordInProgressOrders(
   supabase: any,
   chatId: number,
   lang: Lang,
@@ -578,20 +581,101 @@ async function showCoordReadyOrders(
 ) {
   const { data: orders } = await supabase
     .from('lab_orders')
-    .select('id, patient_full_name, appliance_name, completed_at')
+    .select('id, patient_full_name, appliance_name, doctor_name, status, ready_due_date, created_at')
+    .in('status', ['new', 'in_progress'])
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (!orders || orders.length === 0) {
+    await sendMessage(chatId, `${t.coordLabInProgressTitle[lang]}\n\n${t.coordLabListEmpty[lang]}`, {}, lovableKey, telegramKey);
+    return;
+  }
+  let text = `${t.coordLabInProgressTitle[lang]}\n\n`;
+  for (const o of orders) {
+    const stIcon = o.status === 'new' ? '🆕' : '⚙️';
+    text += `${stIcon} <b>${escapeHtml(o.patient_full_name)}</b> — ${escapeHtml(o.appliance_name)}\n   👨‍⚕️ ${escapeHtml(o.doctor_name)}`;
+    if (o.status === 'in_progress' && o.ready_due_date) {
+      text += `\n   ⏰ ${fmtDateOnly(o.ready_due_date, lang)}`;
+    }
+    text += '\n\n';
+  }
+  await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+}
+
+// Kelgan: laboratoriya tayyor deb belgilagan, hali koordinator qabul qilmagan (status='done')
+async function showCoordIncomingOrders(
+  supabase: any,
+  chatId: number,
+  lang: Lang,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const { data: orders } = await supabase
+    .from('lab_orders')
+    .select('id, patient_full_name, appliance_name, doctor_name, completed_at')
     .eq('status', 'done')
     .order('completed_at', { ascending: false })
     .limit(50);
 
   if (!orders || orders.length === 0) {
-    await sendMessage(chatId, `${t.labReadyOrdersTitle[lang]}\n\n${t.labListEmpty[lang]}`, {}, lovableKey, telegramKey);
+    await sendMessage(chatId, `${t.coordLabIncomingTitle[lang]}\n\n${t.coordLabListEmpty[lang]}`, {}, lovableKey, telegramKey);
     return;
   }
-  let text = `${t.labReadyOrdersTitle[lang]}\n\n`;
+  await sendMessage(chatId, t.coordLabIncomingTitle[lang], {}, lovableKey, telegramKey);
   for (const o of orders) {
-    text += `✅ <b>${escapeHtml(o.patient_full_name)}</b> — ${escapeHtml(o.appliance_name)}\n   ${fmtDate(o.completed_at, lang)}\n\n`;
+    const text = `📦 <b>${escapeHtml(o.patient_full_name)}</b>\n🦷 ${escapeHtml(o.appliance_name)}\n👨‍⚕️ ${escapeHtml(o.doctor_name)}\n✅ ${fmtDate(o.completed_at, lang)}`;
+    const buttons: InlineKeyboard = [[{ text: t.coordLabReceiveBtn[lang], callback_data: `clab:rcv:${o.id}` }]];
+    await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+  }
+}
+
+// Tugagan: koordinator qabul qilgan (status='received')
+async function showCoordCompletedOrders(
+  supabase: any,
+  chatId: number,
+  lang: Lang,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const { data: orders } = await supabase
+    .from('lab_orders')
+    .select('id, patient_full_name, appliance_name, doctor_name, completed_at')
+    .eq('status', 'received')
+    .order('completed_at', { ascending: false })
+    .limit(50);
+
+  if (!orders || orders.length === 0) {
+    await sendMessage(chatId, `${t.coordLabCompletedTitle[lang]}\n\n${t.coordLabListEmpty[lang]}`, {}, lovableKey, telegramKey);
+    return;
+  }
+  let text = `${t.coordLabCompletedTitle[lang]}\n\n`;
+  for (const o of orders) {
+    text += `✅ <b>${escapeHtml(o.patient_full_name)}</b> — ${escapeHtml(o.appliance_name)}\n   👨‍⚕️ ${escapeHtml(o.doctor_name)} • ${fmtDate(o.completed_at, lang)}\n\n`;
   }
   await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+}
+
+async function markCoordOrderReceived(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  orderId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const { data: updated } = await supabase
+    .from('lab_orders')
+    .update({ status: 'received' })
+    .eq('id', orderId)
+    .eq('status', 'done')
+    .select('*')
+    .maybeSingle();
+  if (!updated) {
+    await sendMessage(chatId, t.coordLabListEmpty[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+  await sendMessage(chatId, t.coordLabReceivedMsg[lang], {}, lovableKey, telegramKey);
 }
 
 // Koordinator yangi apparat qo'shish: matn xabarlari
@@ -710,9 +794,25 @@ export async function handleCoordLabCallback(
     await startCoordAddOrder(supabase, patient, chatId, lovableKey, telegramKey);
     return true;
   }
-  if (data === 'clab:ready') {
+  if (data === 'clab:ready' || data === 'clab:incoming') {
     await ack();
-    await showCoordReadyOrders(supabase, chatId, lang, lovableKey, telegramKey);
+    await showCoordIncomingOrders(supabase, chatId, lang, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'clab:inprog') {
+    await ack();
+    await showCoordInProgressOrders(supabase, chatId, lang, lovableKey, telegramKey);
+    return true;
+  }
+  if (data === 'clab:completed') {
+    await ack();
+    await showCoordCompletedOrders(supabase, chatId, lang, lovableKey, telegramKey);
+    return true;
+  }
+  if (data.startsWith('clab:rcv:')) {
+    const id = data.slice('clab:rcv:'.length);
+    await ack('📬');
+    await markCoordOrderReceived(supabase, patient, chatId, id, lovableKey, telegramKey);
     return true;
   }
   if (data.startsWith('clab:app:')) {
