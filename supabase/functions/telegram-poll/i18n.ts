@@ -21,6 +21,35 @@ export const t = {
     complaint: { uz: '✍️ Shikoyat / Taklif', ru: '✍️ Жалоба / Предложение' },
     changeLang: { uz: '🌐 Tilni o\'zgartirish', ru: '🌐 Сменить язык' },
   },
+  // Ro'yxatdan o'tish (yangi foydalanuvchi)
+  registerPrompt: {
+    uz: '👋 Botga xush kelibsiz!\n\nDavom etish uchun ro\'yxatdan o\'ting:',
+    ru: '👋 Добро пожаловать в бота!\n\nДля продолжения, пожалуйста, зарегистрируйтесь:',
+  },
+  registerBtn: {
+    uz: '📝 Ro\'yxatdan o\'tish',
+    ru: '📝 Регистрация',
+  },
+  registerAskName: {
+    uz: '👤 Ism va familiyangizni kiriting:',
+    ru: '👤 Введите ваше имя и фамилию:',
+  },
+  registerInvalidName: {
+    uz: '⚠️ Iltimos, ism-familiyangizni to\'liq kiriting (kamida 2 belgi).',
+    ru: '⚠️ Пожалуйста, введите полное имя и фамилию (минимум 2 символа).',
+  },
+  registerAskPhone: {
+    uz: '📞 Telefon raqamingizni kiriting (masalan: +998 90 123 45 67):',
+    ru: '📞 Введите ваш номер телефона (например: +998 90 123 45 67):',
+  },
+  registerInvalidPhone: {
+    uz: '⚠️ Telefon raqami noto\'g\'ri. Iltimos, qayta urinib ko\'ring.',
+    ru: '⚠️ Неверный номер телефона. Пожалуйста, попробуйте снова.',
+  },
+  registerDone: {
+    uz: '✅ Ro\'yxatdan o\'tdingiz! Endi bo\'limlardan birini tanlang:',
+    ru: '✅ Регистрация завершена! Теперь выберите раздел:',
+  },
   back: { uz: '⬅️ Orqaga', ru: '⬅️ Назад' },
   cancel: { uz: '❌ Bekor qilish', ru: '❌ Отмена' },
   cancelled: { uz: 'Bekor qilindi.', ru: 'Отменено.' },
