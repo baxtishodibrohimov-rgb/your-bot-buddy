@@ -220,7 +220,7 @@ async function showAbout(supabase: any, chatId: number, lang: Lang, lovableKey: 
 async function showServices(supabase: any, chatId: number, lang: Lang, lovableKey: string, telegramKey: string) {
   const { data } = await supabase
     .from('services')
-    .select('*')
+    .select('id, name_uz, name_ru')
     .eq('is_active', true)
     .order('sort_order');
 
@@ -229,27 +229,44 @@ async function showServices(supabase: any, chatId: number, lang: Lang, lovableKe
     return;
   }
 
-  await sendMessage(chatId, t.servicesTitle[lang], {}, lovableKey, telegramKey);
-  for (const s of data) {
+  const inlineKeyboard: InlineKeyboard = data.map((s: any) => {
     const name = lang === 'uz' ? s.name_uz : s.name_ru;
-    const desc = lang === 'uz' ? s.description_uz : s.description_ru;
-    let text = `🔹 <b>${escapeHtml(name)}</b>\n`;
-    if (desc) text += `${escapeHtml(desc)}\n`;
-    if (s.price_from) {
-      const priceText = s.price_to
-        ? `${s.price_from.toLocaleString()} - ${s.price_to.toLocaleString()}`
-        : `${s.price_from.toLocaleString()}+`;
-      text += `💰 ${priceText} ${t.sum[lang]}\n`;
-    }
-    await sendMessage(chatId, text, {}, lovableKey, telegramKey);
-    await sendEntityMediaToUser(supabase, chatId, 'service', s.id, lovableKey, telegramKey);
+    return [{ text: `🔹 ${name}`, callback_data: `svc:${s.id}` }];
+  });
+  await sendMessage(chatId, t.servicesTitle[lang], { inlineKeyboard }, lovableKey, telegramKey);
+}
+
+async function showServiceDetail(
+  supabase: any,
+  chatId: number,
+  lang: Lang,
+  serviceId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const { data: s } = await supabase.from('services').select('*').eq('id', serviceId).maybeSingle();
+  if (!s) {
+    await sendMessage(chatId, t.noServices[lang], {}, lovableKey, telegramKey);
+    return;
   }
+  const name = lang === 'uz' ? s.name_uz : s.name_ru;
+  const desc = lang === 'uz' ? s.description_uz : s.description_ru;
+  let text = `🔹 <b>${escapeHtml(name)}</b>\n`;
+  if (desc) text += `\n${escapeHtml(desc)}\n`;
+  if (s.price_from) {
+    const priceText = s.price_to
+      ? `${s.price_from.toLocaleString()} - ${s.price_to.toLocaleString()}`
+      : `${s.price_from.toLocaleString()}+`;
+    text += `\n💰 ${priceText} ${t.sum[lang]}`;
+  }
+  await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+  await sendEntityMediaToUser(supabase, chatId, 'service', s.id, lovableKey, telegramKey);
 }
 
 async function showDoctors(supabase: any, chatId: number, lang: Lang, lovableKey: string, telegramKey: string) {
   const { data } = await supabase
     .from('staff')
-    .select('*')
+    .select('id, full_name')
     .eq('is_active', true)
     .eq('position', 'shifokor')
     .order('sort_order');
@@ -259,16 +276,33 @@ async function showDoctors(supabase: any, chatId: number, lang: Lang, lovableKey
     return;
   }
 
-  await sendMessage(chatId, t.doctorsTitle[lang], {}, lovableKey, telegramKey);
-  for (const d of data) {
-    const spec = lang === 'uz' ? (d.specialty_uz ?? '') : (d.specialty_ru ?? '');
-    const bio = lang === 'uz' ? d.bio_uz : d.bio_ru;
-    let text = `👨‍⚕️ <b>${escapeHtml(d.full_name)}</b>\n${escapeHtml(spec)}\n`;
-    if (d.experience_years) text += `📅 ${d.experience_years} ${t.yearsExperience[lang]}\n`;
-    if (bio) text += `${escapeHtml(bio)}\n`;
-    await sendMessage(chatId, text, {}, lovableKey, telegramKey);
-    await sendEntityMediaToUser(supabase, chatId, 'staff', d.id, lovableKey, telegramKey);
+  const inlineKeyboard: InlineKeyboard = data.map((d: any) => [
+    { text: `👨‍⚕️ ${d.full_name}`, callback_data: `doc:${d.id}` },
+  ]);
+  await sendMessage(chatId, t.doctorsTitle[lang], { inlineKeyboard }, lovableKey, telegramKey);
+}
+
+async function showDoctorDetail(
+  supabase: any,
+  chatId: number,
+  lang: Lang,
+  doctorId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const { data: d } = await supabase.from('staff').select('*').eq('id', doctorId).maybeSingle();
+  if (!d) {
+    await sendMessage(chatId, t.noDoctors[lang], {}, lovableKey, telegramKey);
+    return;
   }
+  const spec = lang === 'uz' ? (d.specialty_uz ?? '') : (d.specialty_ru ?? '');
+  const bio = lang === 'uz' ? d.bio_uz : d.bio_ru;
+  let text = `👨‍⚕️ <b>${escapeHtml(d.full_name)}</b>`;
+  if (spec) text += `\n${escapeHtml(spec)}`;
+  if (d.experience_years) text += `\n📅 ${d.experience_years} ${t.yearsExperience[lang]}`;
+  if (bio) text += `\n\n${escapeHtml(bio)}`;
+  await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+  await sendEntityMediaToUser(supabase, chatId, 'staff', d.id, lovableKey, telegramKey);
 }
 
 async function showAddress(supabase: any, chatId: number, lang: Lang, lovableKey: string, telegramKey: string) {
