@@ -738,6 +738,7 @@ async function searchPatients(
 
   let text = t.patientsSearchTitle[lang];
   const buttons: InlineKeyboard = [
+    [{ text: t.patientsViewBtn[lang], callback_data: 'pat:view:menu' }],
     [{ text: t.patientsSearchBtn[lang], callback_data: 'pat:search' }],
   ];
 
