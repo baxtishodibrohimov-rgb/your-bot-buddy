@@ -622,12 +622,14 @@ export async function handleStaffComplaint(
 
   let prefix = '[XODIM] ';
   let isCoord = false;
+  let isReg = false;
   if (staffId) {
     const { data: s } = await supabase.from('staff').select('full_name, position').eq('id', staffId).maybeSingle();
     if (s) {
       const posLabel = t.staffPositions[s.position as StaffPosition]?.uz ?? s.position;
       prefix = `[XODIM: ${s.full_name} — ${posLabel}] `;
       if (s.position === 'koordinator') isCoord = true;
+      if (s.position === 'registratura') isReg = true;
     }
   }
 
@@ -641,7 +643,7 @@ export async function handleStaffComplaint(
   await sendMessage(
     chatId,
     t.staffComplaintSaved[lang],
-    { replyKeyboard: staffMenuKeyboard(lang, isCoord) },
+    { replyKeyboard: staffMenuKeyboard(lang, isCoord, isReg) },
     lovableKey,
     telegramKey,
   );
