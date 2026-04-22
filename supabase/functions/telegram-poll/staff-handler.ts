@@ -256,10 +256,15 @@ export async function handleStaffStep(
   text: string,
   lovableKey: string,
   telegramKey: string,
-) {
+): Promise<boolean> {
   const lang = patient.language;
   const state = patient.state ?? '';
   const data = (patient.state_data as Record<string, any>) ?? {};
+
+  // Maydon-maydon tahrirlash (yangi qiymat saqlash)
+  if (state === 'admin:stf:editfld') {
+    return await saveStaffFieldValue(supabase, patient, chatId, text, lovableKey, telegramKey);
+  }
 
   if (state === 'admin:stf:tg_id') {
     const trimmed = text.trim().replace(/^@/, '');
