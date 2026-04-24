@@ -24,6 +24,7 @@ import { Route as AdminLabOrdersRouteImport } from './routes/admin.lab-orders'
 import { Route as AdminComplaintsRouteImport } from './routes/admin.complaints'
 import { Route as AdminClinicRouteImport } from './routes/admin.clinic'
 import { Route as AdminChecklistsRouteImport } from './routes/admin.checklists'
+import { Route as AdminBroadcastsRouteImport } from './routes/admin.broadcasts'
 import { Route as AdminAppointmentsRouteImport } from './routes/admin.appointments'
 import { Route as AdminAdminsRouteImport } from './routes/admin.admins'
 
@@ -102,6 +103,11 @@ const AdminChecklistsRoute = AdminChecklistsRouteImport.update({
   path: '/checklists',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBroadcastsRoute = AdminBroadcastsRouteImport.update({
+  id: '/broadcasts',
+  path: '/broadcasts',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAppointmentsRoute = AdminAppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/admin/admins': typeof AdminAdminsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
+  '/admin/broadcasts': typeof AdminBroadcastsRoute
   '/admin/checklists': typeof AdminChecklistsRoute
   '/admin/clinic': typeof AdminClinicRoute
   '/admin/complaints': typeof AdminComplaintsRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/admin/admins': typeof AdminAdminsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
+  '/admin/broadcasts': typeof AdminBroadcastsRoute
   '/admin/checklists': typeof AdminChecklistsRoute
   '/admin/clinic': typeof AdminClinicRoute
   '/admin/complaints': typeof AdminComplaintsRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/admin/admins': typeof AdminAdminsRoute
   '/admin/appointments': typeof AdminAppointmentsRoute
+  '/admin/broadcasts': typeof AdminBroadcastsRoute
   '/admin/checklists': typeof AdminChecklistsRoute
   '/admin/clinic': typeof AdminClinicRoute
   '/admin/complaints': typeof AdminComplaintsRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin/admins'
     | '/admin/appointments'
+    | '/admin/broadcasts'
     | '/admin/checklists'
     | '/admin/clinic'
     | '/admin/complaints'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin/admins'
     | '/admin/appointments'
+    | '/admin/broadcasts'
     | '/admin/checklists'
     | '/admin/clinic'
     | '/admin/complaints'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin/admins'
     | '/admin/appointments'
+    | '/admin/broadcasts'
     | '/admin/checklists'
     | '/admin/clinic'
     | '/admin/complaints'
@@ -342,6 +354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminChecklistsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/broadcasts': {
+      id: '/admin/broadcasts'
+      path: '/broadcasts'
+      fullPath: '/admin/broadcasts'
+      preLoaderRoute: typeof AdminBroadcastsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/appointments': {
       id: '/admin/appointments'
       path: '/appointments'
@@ -362,6 +381,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAdminsRoute: typeof AdminAdminsRoute
   AdminAppointmentsRoute: typeof AdminAppointmentsRoute
+  AdminBroadcastsRoute: typeof AdminBroadcastsRoute
   AdminChecklistsRoute: typeof AdminChecklistsRoute
   AdminClinicRoute: typeof AdminClinicRoute
   AdminComplaintsRoute: typeof AdminComplaintsRoute
@@ -379,6 +399,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminsRoute: AdminAdminsRoute,
   AdminAppointmentsRoute: AdminAppointmentsRoute,
+  AdminBroadcastsRoute: AdminBroadcastsRoute,
   AdminChecklistsRoute: AdminChecklistsRoute,
   AdminClinicRoute: AdminClinicRoute,
   AdminComplaintsRoute: AdminComplaintsRoute,
