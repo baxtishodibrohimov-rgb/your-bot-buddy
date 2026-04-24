@@ -14,69 +14,44 @@ function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="container mx-auto max-w-4xl px-6 py-16">
-        <header className="mb-12">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm">
-            <span className="size-2 rounded-full bg-emerald-500" />
-            Bot ishga tushirildi
+        <header className="mb-12 flex items-start justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm">
+              <span className="size-2 rounded-full bg-emerald-500" />
+              Bot ishga tushirildi
+            </div>
+            <h1 className="mt-6 text-5xl font-bold tracking-tight">
+              Biodent <span className="text-muted-foreground">bot</span>
+            </h1>
+            <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
+              Stomatologiya klinikasi uchun Telegram bot va admin paneli.
+            </p>
           </div>
-          <h1 className="mt-6 text-5xl font-bold tracking-tight">
-            Biodent <span className="text-muted-foreground">bot</span>
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
-            Stomatologiya klinikasi uchun Telegram bot. Bemorlar bilan ishlash, tibbiy kartalar,
-            shikoyatlar va xodimlar boshqaruvi.
-          </p>
+          <a
+            href="/admin"
+            className="shrink-0 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
+          >
+            Admin panel
+          </a>
         </header>
 
         <section className="grid gap-4 md:grid-cols-2">
-          <Card title="1-bosqich ✅ Bemorlar qismi" status="ready">
+          <Card title="Telegram bot ✅" status="ready">
             <ul className="space-y-1.5 text-sm text-muted-foreground">
-              <li>• Til tanlash (O'zbek / Rus)</li>
-              <li>• Klinika haqida, xizmatlar, shifokorlar</li>
-              <li>• Manzil va bog'lanish</li>
-              <li>• Tibbiy karta to'ldirish</li>
-              <li>• Shikoyat va takliflar</li>
+              <li>• Bemorlar bilan ishlash, tibbiy karta, shikoyatlar</li>
+              <li>• Xodimlar, checklist, davomat</li>
+              <li>• Laboratoriya buyurtmalari</li>
+              <li>• Rezidentura bo'limi (himoyalangan kontent)</li>
             </ul>
           </Card>
-
-          <Card title="2-bosqich ⏳ Xodimlar" status="pending">
+          <Card title="Web admin paneli ✅" status="ready">
             <p className="text-sm text-muted-foreground">
-              Xodimlar uchun rolli kirish, davomat, lavozimga mos menyu.
+              Barcha ma'lumotlarni boshqarish, statistika, broadcast.
             </p>
+            <a href="/auth" className="mt-3 inline-block text-sm text-primary hover:underline">
+              Kirish →
+            </a>
           </Card>
-
-          <Card title="3-bosqich ⏳ Admin paneli" status="pending">
-            <p className="text-sm text-muted-foreground">
-              Web paneldan ma'lumot qo'shish, statistika, tahrirlash.
-            </p>
-          </Card>
-
-          <Card title="4-bosqich ⏳ Sayqal" status="pending">
-            <p className="text-sm text-muted-foreground">
-              Bildirishnomalar, hisobotlar, qo'shimcha funksiyalar.
-            </p>
-          </Card>
-        </section>
-
-        <section className="mt-12 rounded-xl border border-border bg-card p-6">
-          <h2 className="text-xl font-semibold">Botni sinash</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Telegram'da botingizni oching va <code className="rounded bg-muted px-1.5 py-0.5">/start</code> buyrug'ini yuboring.
-            Bot har daqiqada yangi xabarlarni qabul qiladi.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
-            <span className="rounded-md bg-muted px-2 py-1">Admin Telegram ID: 527846754</span>
-            <span className="rounded-md bg-muted px-2 py-1">Tillar: 🇺🇿 / 🇷🇺</span>
-            <span className="rounded-md bg-muted px-2 py-1">Polling: har 1 daqiqada</span>
-          </div>
-        </section>
-
-        <section className="mt-8 rounded-xl border border-amber-500/30 bg-amber-500/5 p-6">
-          <h3 className="font-semibold text-amber-600 dark:text-amber-400">⚠️ Token xavfsizligi</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Tokenni chatda yuborgan edingiz. Iltimos, @BotFather'da <code className="rounded bg-muted px-1.5 py-0.5">/revoke</code> qilib,
-            yangi token oling. Yangi token Cloud → Secrets → <code className="rounded bg-muted px-1.5 py-0.5">TELEGRAM_API_KEY</code> orqali yangilanadi.
-          </p>
         </section>
       </div>
     </div>
