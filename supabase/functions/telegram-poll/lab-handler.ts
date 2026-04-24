@@ -124,11 +124,14 @@ async function showLabOrdersList(
   lovableKey: string,
   telegramKey: string,
 ) {
-  const { data: orders } = await supabase
+  // 'done' uchun: laboratoriya tugatgan barcha ishlar (koordinator qabul qilgan 'received' ham shu ro'yxatda qoladi)
+  const query = supabase
     .from('lab_orders')
-    .select('id, patient_full_name, appliance_name')
-    .eq('status', status)
+    .select('id, patient_full_name, appliance_name, status')
     .order('created_at', { ascending: false });
+  const { data: orders } = status === 'done'
+    ? await query.in('status', ['done', 'received'])
+    : await query.eq('status', status);
 
   const titleMap = {
     new: t.labListNewTitle[lang],
@@ -143,7 +146,7 @@ async function showLabOrdersList(
   }
 
   const buttons: InlineKeyboard = orders.map((o: any) => [{
-    text: `👤 ${o.patient_full_name} — ${o.appliance_name}`,
+    text: `${o.status === 'received' ? '📬' : '👤'} ${o.patient_full_name} — ${o.appliance_name}`,
     callback_data: `lab:o:${o.id}`,
   }]);
 
