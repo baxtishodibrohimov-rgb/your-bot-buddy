@@ -77,8 +77,8 @@ export async function showResidentHome(
   const lang = patient.language;
   await setState(supabase, patient.id, 'res:home', null);
   const text = lang === 'uz'
-    ? '🎓 <b>Rezidentura</b>\n\nXush kelibsiz! Quyidagi bo\'limlardan tanlang.'
-    : '🎓 <b>Резидентура</b>\n\nДобро пожаловать! Выберите раздел.';
+    ? '🎓 <b>Rezidentura</b>\n\nXush kelibsiz! Quyidagi bo\'limlardan tanlang.\n\n⚠️ <b>Diqqat:</b> Bu bo\'limdagi barcha materiallar (videolar, rasmlar, matnlar, testlar) <b>maxfiy</b>. Ularni boshqalarga jo\'natish, saqlash va nusxalash <b>taqiqlangan</b> va texnik jihatdan bloklangan.'
+    : '🎓 <b>Резидентура</b>\n\nДобро пожаловать! Выберите раздел.\n\n⚠️ <b>Внимание:</b> Все материалы этого раздела (видео, изображения, тексты, тесты) являются <b>конфиденциальными</b>. Их пересылка, сохранение и копирование <b>запрещены</b> и технически заблокированы.';
   await sendMessage(chatId, text, { replyKeyboard: residentMenuKeyboard(lang) }, lovableKey, telegramKey);
   await showSectionsForResident(supabase, patient, chatId, null, lovableKey, telegramKey);
 }
@@ -116,7 +116,7 @@ async function showSectionsForResident(
     buttons.push([{ text: lang === 'uz' ? '⬅️ Orqaga' : '⬅️ Назад', callback_data: backCb }]);
   }
 
-  await sendMessage(chatId, title, buttons.length ? { inlineKeyboard: buttons } : {}, lovableKey, telegramKey);
+  await sendMessage(chatId, title, { ...(buttons.length ? { inlineKeyboard: buttons } : {}), protectContent: true }, lovableKey, telegramKey);
 
   // Agar parent bor bo'lsa — uning media va testlarini ko'rsatamiz
   if (parent) {
@@ -162,7 +162,7 @@ async function sendSectionContentToResident(
       await sendMessage(
         chatId,
         lang === 'uz' ? '📝 Bu bo\'lim uchun test mavjud.' : '📝 По этому разделу есть тест.',
-        { inlineKeyboard: testKb },
+        { inlineKeyboard: testKb, protectContent: true },
         lovableKey,
         telegramKey,
       );
@@ -184,6 +184,7 @@ async function sendSectionContentToResident(
           caption,
           // Test tugmasi faqat oxirgi mediaga biriktiriladi
           inlineKeyboard: isLast && testKb ? testKb : undefined,
+          protectContent: true,
         },
         lovableKey,
         telegramKey,
@@ -248,7 +249,7 @@ async function sendNextTest(
     const text = lang === 'uz'
       ? `🎉 <b>Test yakunlandi!</b>\n\n📊 Natija: <b>${score.correct}/${score.total}</b>`
       : `🎉 <b>Тест завершён!</b>\n\n📊 Результат: <b>${score.correct}/${score.total}</b>`;
-    await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+    await sendMessage(chatId, text, { protectContent: true }, lovableKey, telegramKey);
     await setState(supabase, patient.id, 'res:home', null);
     return;
   }
@@ -265,7 +266,7 @@ async function sendNextTest(
     : `❓ <b>Вопрос ${index + 1}/${tests.length}</b>\n\n`;
 
   await setState(supabase, patient.id, `res:t:${sectionId}`, { index, score });
-  await sendMessage(chatId, header + escapeHtml(test.question), { inlineKeyboard: buttons }, lovableKey, telegramKey);
+  await sendMessage(chatId, header + escapeHtml(test.question), { inlineKeyboard: buttons, protectContent: true }, lovableKey, telegramKey);
 }
 
 async function handleTestAnswer(
@@ -324,7 +325,7 @@ async function handleTestAnswer(
   const right = correctOpt
     ? `\n\n${lang === 'uz' ? 'To\'g\'ri javob' : 'Правильный ответ'}: <b>${escapeHtml(correctOpt.text)}</b>`
     : '';
-  await sendMessage(chatId, fb + right, {}, lovableKey, telegramKey);
+  await sendMessage(chatId, fb + right, { protectContent: true }, lovableKey, telegramKey);
 
   await sendNextTest(supabase, patient, chatId, sectionId, qIdx + 1, { correct, total }, lovableKey, telegramKey);
 }
@@ -388,7 +389,7 @@ async function showMyResults(
     ? `<b>Umumiy:</b> ${totalCorrect}/${totalCount} (${pctAll}%)`
     : `<b>Итого:</b> ${totalCorrect}/${totalCount} (${pctAll}%)`;
 
-  await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+  await sendMessage(chatId, text, { protectContent: true }, lovableKey, telegramKey);
 }
 
 // ============= REZIDENT XABARLARNI ROUTING =============
