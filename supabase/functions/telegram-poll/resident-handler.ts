@@ -162,7 +162,7 @@ async function sendSectionContentToResident(
       await sendMessage(
         chatId,
         lang === 'uz' ? '📝 Bu bo\'lim uchun test mavjud.' : '📝 По этому разделу есть тест.',
-        { inlineKeyboard: testKb },
+        { inlineKeyboard: testKb, protectContent: true },
         lovableKey,
         telegramKey,
       );
@@ -184,6 +184,7 @@ async function sendSectionContentToResident(
           caption,
           // Test tugmasi faqat oxirgi mediaga biriktiriladi
           inlineKeyboard: isLast && testKb ? testKb : undefined,
+          protectContent: true,
         },
         lovableKey,
         telegramKey,
