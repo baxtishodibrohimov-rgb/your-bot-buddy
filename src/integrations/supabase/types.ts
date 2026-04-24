@@ -21,6 +21,7 @@ export type Database = {
           id: string
           is_super_admin: boolean
           telegram_id: number
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -28,6 +29,7 @@ export type Database = {
           id?: string
           is_super_admin?: boolean
           telegram_id: number
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -35,6 +37,7 @@ export type Database = {
           id?: string
           is_super_admin?: boolean
           telegram_id?: number
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1216,7 +1219,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_admin_role: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       staff_position:

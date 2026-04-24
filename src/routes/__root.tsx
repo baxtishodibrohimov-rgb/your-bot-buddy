@@ -1,6 +1,13 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/lib/auth";
 
 import appCss from "../styles.css?url";
+
+interface RouterContext {
+  queryClient: QueryClient;
+}
 
 function NotFoundComponent() {
   return (
@@ -24,12 +31,12 @@ function NotFoundComponent() {
   );
 }
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
+      { title: "Biodent admin paneli" },
       { name: "description", content: "Your Bot Buddy creates custom bots from provided data and integrates with GitHub." },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Lovable App" },
@@ -69,5 +76,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  const { queryClient } = Route.useRouteContext();
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Outlet />
+        <Toaster />
+      </AuthProvider>
+    </QueryClientProvider>
+  );
 }
