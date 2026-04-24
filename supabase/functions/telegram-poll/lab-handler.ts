@@ -146,7 +146,7 @@ async function showLabOrdersList(
   }
 
   const buttons: InlineKeyboard = orders.map((o: any) => [{
-    text: `👤 ${o.patient_full_name} — ${o.appliance_name}`,
+    text: `${o.status === 'received' ? '📬' : '👤'} ${o.patient_full_name} — ${o.appliance_name}`,
     callback_data: `lab:o:${o.id}`,
   }]);
 
