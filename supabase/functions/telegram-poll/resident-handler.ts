@@ -325,7 +325,7 @@ async function handleTestAnswer(
   const right = correctOpt
     ? `\n\n${lang === 'uz' ? 'To\'g\'ri javob' : 'Правильный ответ'}: <b>${escapeHtml(correctOpt.text)}</b>`
     : '';
-  await sendMessage(chatId, fb + right, {}, lovableKey, telegramKey);
+  await sendMessage(chatId, fb + right, { protectContent: true }, lovableKey, telegramKey);
 
   await sendNextTest(supabase, patient, chatId, sectionId, qIdx + 1, { correct, total }, lovableKey, telegramKey);
 }
