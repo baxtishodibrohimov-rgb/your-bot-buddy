@@ -116,7 +116,7 @@ async function showSectionsForResident(
     buttons.push([{ text: lang === 'uz' ? '⬅️ Orqaga' : '⬅️ Назад', callback_data: backCb }]);
   }
 
-  await sendMessage(chatId, title, buttons.length ? { inlineKeyboard: buttons } : {}, lovableKey, telegramKey);
+  await sendMessage(chatId, title, { ...(buttons.length ? { inlineKeyboard: buttons } : {}), protectContent: true }, lovableKey, telegramKey);
 
   // Agar parent bor bo'lsa — uning media va testlarini ko'rsatamiz
   if (parent) {
