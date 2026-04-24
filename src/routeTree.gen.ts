@@ -13,6 +13,19 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminStaffRouteImport } from './routes/admin.staff'
+import { Route as AdminServicesRouteImport } from './routes/admin.services'
+import { Route as AdminResidentsRouteImport } from './routes/admin.residents'
+import { Route as AdminResidentSectionsRouteImport } from './routes/admin.resident-sections'
+import { Route as AdminPatientsRouteImport } from './routes/admin.patients'
+import { Route as AdminMediaRouteImport } from './routes/admin.media'
+import { Route as AdminLabWorkersRouteImport } from './routes/admin.lab-workers'
+import { Route as AdminLabOrdersRouteImport } from './routes/admin.lab-orders'
+import { Route as AdminComplaintsRouteImport } from './routes/admin.complaints'
+import { Route as AdminClinicRouteImport } from './routes/admin.clinic'
+import { Route as AdminChecklistsRouteImport } from './routes/admin.checklists'
+import { Route as AdminAppointmentsRouteImport } from './routes/admin.appointments'
+import { Route as AdminAdminsRouteImport } from './routes/admin.admins'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -34,16 +47,107 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminStaffRoute = AdminStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminServicesRoute = AdminServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminResidentsRoute = AdminResidentsRouteImport.update({
+  id: '/residents',
+  path: '/residents',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminResidentSectionsRoute = AdminResidentSectionsRouteImport.update({
+  id: '/resident-sections',
+  path: '/resident-sections',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPatientsRoute = AdminPatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMediaRoute = AdminMediaRouteImport.update({
+  id: '/media',
+  path: '/media',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLabWorkersRoute = AdminLabWorkersRouteImport.update({
+  id: '/lab-workers',
+  path: '/lab-workers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLabOrdersRoute = AdminLabOrdersRouteImport.update({
+  id: '/lab-orders',
+  path: '/lab-orders',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminComplaintsRoute = AdminComplaintsRouteImport.update({
+  id: '/complaints',
+  path: '/complaints',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminClinicRoute = AdminClinicRouteImport.update({
+  id: '/clinic',
+  path: '/clinic',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminChecklistsRoute = AdminChecklistsRouteImport.update({
+  id: '/checklists',
+  path: '/checklists',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAppointmentsRoute = AdminAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAdminsRoute = AdminAdminsRouteImport.update({
+  id: '/admins',
+  path: '/admins',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/admin/admins': typeof AdminAdminsRoute
+  '/admin/appointments': typeof AdminAppointmentsRoute
+  '/admin/checklists': typeof AdminChecklistsRoute
+  '/admin/clinic': typeof AdminClinicRoute
+  '/admin/complaints': typeof AdminComplaintsRoute
+  '/admin/lab-orders': typeof AdminLabOrdersRoute
+  '/admin/lab-workers': typeof AdminLabWorkersRoute
+  '/admin/media': typeof AdminMediaRoute
+  '/admin/patients': typeof AdminPatientsRoute
+  '/admin/resident-sections': typeof AdminResidentSectionsRoute
+  '/admin/residents': typeof AdminResidentsRoute
+  '/admin/services': typeof AdminServicesRoute
+  '/admin/staff': typeof AdminStaffRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin/admins': typeof AdminAdminsRoute
+  '/admin/appointments': typeof AdminAppointmentsRoute
+  '/admin/checklists': typeof AdminChecklistsRoute
+  '/admin/clinic': typeof AdminClinicRoute
+  '/admin/complaints': typeof AdminComplaintsRoute
+  '/admin/lab-orders': typeof AdminLabOrdersRoute
+  '/admin/lab-workers': typeof AdminLabWorkersRoute
+  '/admin/media': typeof AdminMediaRoute
+  '/admin/patients': typeof AdminPatientsRoute
+  '/admin/resident-sections': typeof AdminResidentSectionsRoute
+  '/admin/residents': typeof AdminResidentsRoute
+  '/admin/services': typeof AdminServicesRoute
+  '/admin/staff': typeof AdminStaffRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -51,14 +155,78 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/admin/admins': typeof AdminAdminsRoute
+  '/admin/appointments': typeof AdminAppointmentsRoute
+  '/admin/checklists': typeof AdminChecklistsRoute
+  '/admin/clinic': typeof AdminClinicRoute
+  '/admin/complaints': typeof AdminComplaintsRoute
+  '/admin/lab-orders': typeof AdminLabOrdersRoute
+  '/admin/lab-workers': typeof AdminLabWorkersRoute
+  '/admin/media': typeof AdminMediaRoute
+  '/admin/patients': typeof AdminPatientsRoute
+  '/admin/resident-sections': typeof AdminResidentSectionsRoute
+  '/admin/residents': typeof AdminResidentsRoute
+  '/admin/services': typeof AdminServicesRoute
+  '/admin/staff': typeof AdminStaffRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/auth' | '/admin/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/admin/admins'
+    | '/admin/appointments'
+    | '/admin/checklists'
+    | '/admin/clinic'
+    | '/admin/complaints'
+    | '/admin/lab-orders'
+    | '/admin/lab-workers'
+    | '/admin/media'
+    | '/admin/patients'
+    | '/admin/resident-sections'
+    | '/admin/residents'
+    | '/admin/services'
+    | '/admin/staff'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/admin'
-  id: '__root__' | '/' | '/admin' | '/auth' | '/admin/'
+  to:
+    | '/'
+    | '/auth'
+    | '/admin/admins'
+    | '/admin/appointments'
+    | '/admin/checklists'
+    | '/admin/clinic'
+    | '/admin/complaints'
+    | '/admin/lab-orders'
+    | '/admin/lab-workers'
+    | '/admin/media'
+    | '/admin/patients'
+    | '/admin/resident-sections'
+    | '/admin/residents'
+    | '/admin/services'
+    | '/admin/staff'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/admin/admins'
+    | '/admin/appointments'
+    | '/admin/checklists'
+    | '/admin/clinic'
+    | '/admin/complaints'
+    | '/admin/lab-orders'
+    | '/admin/lab-workers'
+    | '/admin/media'
+    | '/admin/patients'
+    | '/admin/resident-sections'
+    | '/admin/residents'
+    | '/admin/services'
+    | '/admin/staff'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -97,14 +265,131 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/staff': {
+      id: '/admin/staff'
+      path: '/staff'
+      fullPath: '/admin/staff'
+      preLoaderRoute: typeof AdminStaffRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/services': {
+      id: '/admin/services'
+      path: '/services'
+      fullPath: '/admin/services'
+      preLoaderRoute: typeof AdminServicesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/residents': {
+      id: '/admin/residents'
+      path: '/residents'
+      fullPath: '/admin/residents'
+      preLoaderRoute: typeof AdminResidentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/resident-sections': {
+      id: '/admin/resident-sections'
+      path: '/resident-sections'
+      fullPath: '/admin/resident-sections'
+      preLoaderRoute: typeof AdminResidentSectionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/patients': {
+      id: '/admin/patients'
+      path: '/patients'
+      fullPath: '/admin/patients'
+      preLoaderRoute: typeof AdminPatientsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/media': {
+      id: '/admin/media'
+      path: '/media'
+      fullPath: '/admin/media'
+      preLoaderRoute: typeof AdminMediaRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/lab-workers': {
+      id: '/admin/lab-workers'
+      path: '/lab-workers'
+      fullPath: '/admin/lab-workers'
+      preLoaderRoute: typeof AdminLabWorkersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/lab-orders': {
+      id: '/admin/lab-orders'
+      path: '/lab-orders'
+      fullPath: '/admin/lab-orders'
+      preLoaderRoute: typeof AdminLabOrdersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/complaints': {
+      id: '/admin/complaints'
+      path: '/complaints'
+      fullPath: '/admin/complaints'
+      preLoaderRoute: typeof AdminComplaintsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/clinic': {
+      id: '/admin/clinic'
+      path: '/clinic'
+      fullPath: '/admin/clinic'
+      preLoaderRoute: typeof AdminClinicRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/checklists': {
+      id: '/admin/checklists'
+      path: '/checklists'
+      fullPath: '/admin/checklists'
+      preLoaderRoute: typeof AdminChecklistsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/appointments': {
+      id: '/admin/appointments'
+      path: '/appointments'
+      fullPath: '/admin/appointments'
+      preLoaderRoute: typeof AdminAppointmentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/admins': {
+      id: '/admin/admins'
+      path: '/admins'
+      fullPath: '/admin/admins'
+      preLoaderRoute: typeof AdminAdminsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminAdminsRoute: typeof AdminAdminsRoute
+  AdminAppointmentsRoute: typeof AdminAppointmentsRoute
+  AdminChecklistsRoute: typeof AdminChecklistsRoute
+  AdminClinicRoute: typeof AdminClinicRoute
+  AdminComplaintsRoute: typeof AdminComplaintsRoute
+  AdminLabOrdersRoute: typeof AdminLabOrdersRoute
+  AdminLabWorkersRoute: typeof AdminLabWorkersRoute
+  AdminMediaRoute: typeof AdminMediaRoute
+  AdminPatientsRoute: typeof AdminPatientsRoute
+  AdminResidentSectionsRoute: typeof AdminResidentSectionsRoute
+  AdminResidentsRoute: typeof AdminResidentsRoute
+  AdminServicesRoute: typeof AdminServicesRoute
+  AdminStaffRoute: typeof AdminStaffRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAdminsRoute: AdminAdminsRoute,
+  AdminAppointmentsRoute: AdminAppointmentsRoute,
+  AdminChecklistsRoute: AdminChecklistsRoute,
+  AdminClinicRoute: AdminClinicRoute,
+  AdminComplaintsRoute: AdminComplaintsRoute,
+  AdminLabOrdersRoute: AdminLabOrdersRoute,
+  AdminLabWorkersRoute: AdminLabWorkersRoute,
+  AdminMediaRoute: AdminMediaRoute,
+  AdminPatientsRoute: AdminPatientsRoute,
+  AdminResidentSectionsRoute: AdminResidentSectionsRoute,
+  AdminResidentsRoute: AdminResidentsRoute,
+  AdminServicesRoute: AdminServicesRoute,
+  AdminStaffRoute: AdminStaffRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
@@ -118,3 +403,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
