@@ -36,6 +36,7 @@ export async function sendMessage(
     replyKeyboard?: ReplyKeyboard;
     removeKeyboard?: boolean;
     parseMode?: 'HTML' | 'Markdown';
+    protectContent?: boolean;
   } = {},
   lovableKey: string,
   telegramKey: string,
@@ -45,6 +46,10 @@ export async function sendMessage(
     text,
     parse_mode: opts.parseMode ?? 'HTML',
   };
+
+  if (opts.protectContent) {
+    body.protect_content = true;
+  }
 
   if (opts.inlineKeyboard) {
     body.reply_markup = { inline_keyboard: opts.inlineKeyboard };
