@@ -249,7 +249,7 @@ async function sendNextTest(
     const text = lang === 'uz'
       ? `🎉 <b>Test yakunlandi!</b>\n\n📊 Natija: <b>${score.correct}/${score.total}</b>`
       : `🎉 <b>Тест завершён!</b>\n\n📊 Результат: <b>${score.correct}/${score.total}</b>`;
-    await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+    await sendMessage(chatId, text, { protectContent: true }, lovableKey, telegramKey);
     await setState(supabase, patient.id, 'res:home', null);
     return;
   }
@@ -266,7 +266,7 @@ async function sendNextTest(
     : `❓ <b>Вопрос ${index + 1}/${tests.length}</b>\n\n`;
 
   await setState(supabase, patient.id, `res:t:${sectionId}`, { index, score });
-  await sendMessage(chatId, header + escapeHtml(test.question), { inlineKeyboard: buttons }, lovableKey, telegramKey);
+  await sendMessage(chatId, header + escapeHtml(test.question), { inlineKeyboard: buttons, protectContent: true }, lovableKey, telegramKey);
 }
 
 async function handleTestAnswer(
