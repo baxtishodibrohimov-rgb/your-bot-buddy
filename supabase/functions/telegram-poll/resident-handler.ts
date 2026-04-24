@@ -77,8 +77,8 @@ export async function showResidentHome(
   const lang = patient.language;
   await setState(supabase, patient.id, 'res:home', null);
   const text = lang === 'uz'
-    ? '🎓 <b>Rezidentura</b>\n\nXush kelibsiz! Quyidagi bo\'limlardan tanlang.'
-    : '🎓 <b>Резидентура</b>\n\nДобро пожаловать! Выберите раздел.';
+    ? '🎓 <b>Rezidentura</b>\n\nXush kelibsiz! Quyidagi bo\'limlardan tanlang.\n\n⚠️ <b>Diqqat:</b> Bu bo\'limdagi barcha materiallar (videolar, rasmlar, matnlar, testlar) <b>maxfiy</b>. Ularni boshqalarga jo\'natish, saqlash va nusxalash <b>taqiqlangan</b> va texnik jihatdan bloklangan.'
+    : '🎓 <b>Резидентура</b>\n\nДобро пожаловать! Выберите раздел.\n\n⚠️ <b>Внимание:</b> Все материалы этого раздела (видео, изображения, тексты, тесты) являются <b>конфиденциальными</b>. Их пересылка, сохранение и копирование <b>запрещены</b> и технически заблокированы.';
   await sendMessage(chatId, text, { replyKeyboard: residentMenuKeyboard(lang) }, lovableKey, telegramKey);
   await showSectionsForResident(supabase, patient, chatId, null, lovableKey, telegramKey);
 }
