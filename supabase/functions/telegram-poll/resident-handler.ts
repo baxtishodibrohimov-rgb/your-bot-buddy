@@ -389,7 +389,7 @@ async function showMyResults(
     ? `<b>Umumiy:</b> ${totalCorrect}/${totalCount} (${pctAll}%)`
     : `<b>Итого:</b> ${totalCorrect}/${totalCount} (${pctAll}%)`;
 
-  await sendMessage(chatId, text, {}, lovableKey, telegramKey);
+  await sendMessage(chatId, text, { protectContent: true }, lovableKey, telegramKey);
 }
 
 // ============= REZIDENT XABARLARNI ROUTING =============
