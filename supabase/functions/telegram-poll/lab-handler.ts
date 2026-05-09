@@ -1008,6 +1008,14 @@ export async function handleCoordLabCallback(
     const id = data.slice('clab:app:'.length);
     const { data: app } = await supabase.from('lab_appliance_types').select('id, name').eq('id', id).maybeSingle();
     if (!app) { await ack('⚠️'); return true; }
+    if ((patient.state ?? '') === 'clab:edit:appliance' && sd.order_id) {
+      await supabase.from('lab_orders')
+        .update({ appliance_type_id: app.id, appliance_name: app.name, updated_at: new Date().toISOString() })
+        .eq('id', sd.order_id).eq('status', 'new');
+      await ack('✅');
+      await finalizeEdit(supabase, patient, chatId, lovableKey, telegramKey);
+      return true;
+    }
     sd.appliance_type_id = app.id;
     sd.appliance_name = app.name;
     await setState(supabase, patient.id, 'clab:add:doctor', sd);
@@ -1019,11 +1027,37 @@ export async function handleCoordLabCallback(
     const id = data.slice('clab:doc:'.length);
     const { data: doc } = await supabase.from('lab_doctors').select('id, full_name').eq('id', id).maybeSingle();
     if (!doc) { await ack('⚠️'); return true; }
+    if ((patient.state ?? '') === 'clab:edit:doctor' && sd.order_id) {
+      await supabase.from('lab_orders')
+        .update({ doctor_id: doc.id, doctor_name: doc.full_name, updated_at: new Date().toISOString() })
+        .eq('id', sd.order_id).eq('status', 'new');
+      await ack('✅');
+      await finalizeEdit(supabase, patient, chatId, lovableKey, telegramKey);
+      return true;
+    }
     sd.doctor_id = doc.id;
     sd.doctor_name = doc.full_name;
     await setState(supabase, patient.id, 'clab:add:xray', sd);
     await ack();
     await sendMessage(chatId, t.labAskXray[lang], {}, lovableKey, telegramKey);
+    return true;
+  }
+  // Tahrirlash menyusini ochish
+  if (data.startsWith('clab:e:')) {
+    const id = data.slice('clab:e:'.length);
+    await ack();
+    await showCoordEditMenu(supabase, patient, chatId, id, lovableKey, telegramKey);
+    return true;
+  }
+  // Tahrirlash maydonini boshlash: clab:ef:<orderId>:<field>
+  if (data.startsWith('clab:ef:')) {
+    const rest = data.slice('clab:ef:'.length);
+    const sep = rest.lastIndexOf(':');
+    if (sep === -1) { await ack('⚠️'); return true; }
+    const orderId = rest.slice(0, sep);
+    const field = rest.slice(sep + 1);
+    await ack();
+    await startEditField(supabase, patient, chatId, orderId, field, lovableKey, telegramKey);
     return true;
   }
   return false;
