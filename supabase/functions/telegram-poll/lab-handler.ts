@@ -842,6 +842,44 @@ export async function handleCoordLabStep(
   const state = patient.state ?? '';
   const sd = (patient.state_data as any) ?? {};
 
+  // ===== EDIT (text) =====
+  if (state === 'clab:edit:patient') {
+    const name = text.trim();
+    if (name.length < 2 || name.length > 200) {
+      await sendMessage(chatId, lang === 'uz' ? '⚠️ Ism 2-200 belgi.' : '⚠️ Имя 2-200 символов.', {}, lovableKey, telegramKey);
+      return true;
+    }
+    const orderId = sd.order_id as string;
+    await supabase.from('lab_orders').update({ patient_full_name: name, updated_at: new Date().toISOString() }).eq('id', orderId).eq('status', 'new');
+    await finalizeEdit(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (state === 'clab:edit:notes') {
+    const orderId = sd.order_id as string;
+    const newNotes = text.trim() === '—' ? null : text.trim().slice(0, 2000);
+    await supabase.from('lab_orders').update({ notes: newNotes, updated_at: new Date().toISOString() }).eq('id', orderId).eq('status', 'new');
+    await finalizeEdit(supabase, patient, chatId, lovableKey, telegramKey);
+    return true;
+  }
+  if (state === 'clab:edit:xray' || state === 'clab:edit:scanner') {
+    if (text === '/done' || text === '/skip') {
+      const orderId = sd.order_id as string;
+      const kind = state === 'clab:edit:xray' ? 'xray3d' : 'scanner';
+      const newIds: string[] = sd.media_ids ?? [];
+      // Eskilarni o'chiramiz
+      await supabase.from('lab_order_media').delete().eq('order_id', orderId).eq('kind', kind);
+      // Yangilarni qo'shamiz
+      if (newIds.length > 0) {
+        await supabase.from('lab_order_media').insert(newIds.map((mid, idx) => ({
+          order_id: orderId, media_id: mid, kind, sort_order: idx,
+        })));
+      }
+      await finalizeEdit(supabase, patient, chatId, lovableKey, telegramKey);
+      return true;
+    }
+  }
+
+
   if (state === 'clab:add:patient') {
     const name = text.trim();
     if (name.length < 2 || name.length > 200) {
