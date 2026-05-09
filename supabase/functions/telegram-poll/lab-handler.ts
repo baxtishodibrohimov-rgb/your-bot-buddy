@@ -611,17 +611,147 @@ async function showCoordInProgressOrders(
     await sendMessage(chatId, `${t.coordLabInProgressTitle[lang]}\n\n${t.coordLabListEmpty[lang]}`, {}, lovableKey, telegramKey);
     return;
   }
-  let text = `${t.coordLabInProgressTitle[lang]}\n\n`;
+  await sendMessage(chatId, t.coordLabInProgressTitle[lang], {}, lovableKey, telegramKey);
   for (const o of orders) {
     const stIcon = o.status === 'new' ? '🆕' : '⚙️';
-    text += `${stIcon} <b>${escapeHtml(o.patient_full_name)}</b> — ${escapeHtml(o.appliance_name)}\n   👨‍⚕️ ${escapeHtml(o.doctor_name)}`;
+    let text = `${stIcon} <b>${escapeHtml(o.patient_full_name)}</b> — ${escapeHtml(o.appliance_name)}\n   👨‍⚕️ ${escapeHtml(o.doctor_name)}`;
     if (o.status === 'in_progress' && o.ready_due_date) {
       text += `\n   ⏰ ${fmtDateOnly(o.ready_due_date, lang)}`;
     }
-    text += '\n\n';
+    // Faqat 'new' (lab hali qabul qilmagan) buyurtmalarni tahrirlash mumkin
+    const buttons: InlineKeyboard | undefined = o.status === 'new'
+      ? [[{ text: lang === 'uz' ? '✏️ Tahrirlash' : '✏️ Редактировать', callback_data: `clab:e:${o.id}` }]]
+      : undefined;
+    await sendMessage(chatId, text, buttons ? { inlineKeyboard: buttons } : {}, lovableKey, telegramKey);
   }
-  await sendMessage(chatId, text, {}, lovableKey, telegramKey);
 }
+
+// ===== KOORDINATOR: BUYURTMANI TAHRIRLASH =====
+async function showCoordEditMenu(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  orderId: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const { data: o } = await supabase
+    .from('lab_orders')
+    .select('id, status, patient_full_name, appliance_name, doctor_name, notes')
+    .eq('id', orderId)
+    .maybeSingle();
+  if (!o) {
+    await sendMessage(chatId, t.coordLabListEmpty[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+  if (o.status !== 'new') {
+    await sendMessage(
+      chatId,
+      lang === 'uz'
+        ? '⚠️ Bu buyurtmani tahrirlab bo\'lmaydi — laboratoriya allaqachon qabul qilgan.'
+        : '⚠️ Этот заказ нельзя редактировать — лаборатория уже принял.',
+      {}, lovableKey, telegramKey,
+    );
+    return;
+  }
+  await setState(supabase, patient.id, 'clab:edit:menu', { order_id: orderId });
+  const text = (lang === 'uz' ? '✏️ <b>Tahrirlash</b>' : '✏️ <b>Редактирование</b>')
+    + `\n\n👤 ${escapeHtml(o.patient_full_name)}\n🦷 ${escapeHtml(o.appliance_name)}\n👨‍⚕️ ${escapeHtml(o.doctor_name)}`
+    + (o.notes ? `\n📝 ${escapeHtml(o.notes)}` : '')
+    + `\n\n${lang === 'uz' ? 'Qaysi qismni tahrirlamoqchisiz?' : 'Какую часть редактировать?'}`;
+  const buttons: InlineKeyboard = [
+    [{ text: lang === 'uz' ? '👤 Bemor ismi' : '👤 ФИО пациента', callback_data: `clab:ef:${orderId}:patient` }],
+    [{ text: lang === 'uz' ? '🦷 Apparat turi' : '🦷 Тип аппарата', callback_data: `clab:ef:${orderId}:appliance` }],
+    [{ text: lang === 'uz' ? '👨‍⚕️ Shifokor' : '👨‍⚕️ Врач', callback_data: `clab:ef:${orderId}:doctor` }],
+    [{ text: lang === 'uz' ? '📝 Izoh' : '📝 Заметка', callback_data: `clab:ef:${orderId}:notes` }],
+    [{ text: lang === 'uz' ? '🦴 3D rentgen' : '🦴 3D рентген', callback_data: `clab:ef:${orderId}:xray` }],
+    [{ text: lang === 'uz' ? '📡 Skaner' : '📡 Сканер', callback_data: `clab:ef:${orderId}:scanner` }],
+  ];
+  await sendMessage(chatId, text, { inlineKeyboard: buttons }, lovableKey, telegramKey);
+}
+
+async function startEditField(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  orderId: string,
+  field: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const sd: any = { order_id: orderId, media_ids: [] };
+  if (field === 'patient') {
+    await setState(supabase, patient.id, 'clab:edit:patient', sd);
+    await sendMessage(chatId, t.labAskPatient[lang], {}, lovableKey, telegramKey);
+    return;
+  }
+  if (field === 'notes') {
+    await setState(supabase, patient.id, 'clab:edit:notes', sd);
+    await sendMessage(
+      chatId,
+      lang === 'uz'
+        ? '📝 Yangi izohni yuboring (eski izoh almashtiriladi). Bo\'sh qoldirish uchun: <code>—</code>\n\n/cancel — bekor'
+        : '📝 Отправьте новую заметку (старая будет заменена). Для очистки: <code>—</code>\n\n/cancel — отмена',
+      {}, lovableKey, telegramKey,
+    );
+    return;
+  }
+  if (field === 'appliance') {
+    await setState(supabase, patient.id, 'clab:edit:appliance', sd);
+    await showApplianceTypePicker(supabase, chatId, lang, lovableKey, telegramKey);
+    return;
+  }
+  if (field === 'doctor') {
+    await setState(supabase, patient.id, 'clab:edit:doctor', sd);
+    await showDoctorPicker(supabase, chatId, lang, lovableKey, telegramKey);
+    return;
+  }
+  if (field === 'xray' || field === 'scanner') {
+    const stateName = field === 'xray' ? 'clab:edit:xray' : 'clab:edit:scanner';
+    await setState(supabase, patient.id, stateName, sd);
+    const askMsg = field === 'xray' ? t.labAskXray[lang] : t.labAskScanner[lang];
+    await sendMessage(
+      chatId,
+      askMsg + (lang === 'uz' ? '\n\n<i>Tugatish:</i> /done' : '\n\n<i>Завершить:</i> /done'),
+      {}, lovableKey, telegramKey,
+    );
+    return;
+  }
+}
+
+async function notifyLabOrderUpdated(
+  supabase: any,
+  order: any,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const text = `🔄 <b>Buyurtma yangilandi</b>\n\n👤 ${escapeHtml(order.patient_full_name)}\n🦷 ${escapeHtml(order.appliance_name)}\n👨‍⚕️ ${escapeHtml(order.doctor_name)}\n\n/laboratoriya — Yangi apparatlar bo'limini qaytadan oching.`;
+  await notifyAllLabWorkers(supabase, text, lovableKey, telegramKey);
+}
+
+async function finalizeEdit(
+  supabase: any,
+  patient: Patient,
+  chatId: number,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const lang = patient.language;
+  const sd = (patient.state_data as any) ?? {};
+  const orderId = sd.order_id as string;
+  await setState(supabase, patient.id, null, null);
+  if (!orderId) return;
+  const { data: order } = await supabase.from('lab_orders').select('*').eq('id', orderId).maybeSingle();
+  if (!order || order.status !== 'new') {
+    await sendMessage(chatId, lang === 'uz' ? '⚠️ Buyurtma topilmadi yoki allaqachon qabul qilingan.' : '⚠️ Заказ не найден или уже принят.', {}, lovableKey, telegramKey);
+    return;
+  }
+  await sendMessage(chatId, lang === 'uz' ? '✅ Saqlandi va laboratoriya xodimlari xabardor qilindi.' : '✅ Сохранено и сотрудники лаборатории уведомлены.', {}, lovableKey, telegramKey);
+  await notifyLabOrderUpdated(supabase, order, lovableKey, telegramKey);
+}
+
 
 // Kelgan: laboratoriya tayyor deb belgilagan, hali koordinator qabul qilmagan (status='done')
 async function showCoordIncomingOrders(
