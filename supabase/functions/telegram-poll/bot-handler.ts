@@ -863,7 +863,7 @@ export async function handleUpdate(
     const admin = await isAdmin(supabase, patient.telegram_id);
 
     // Koordinator lab media (xray/scanner/note bosqichlari) — admin emas ham bo'lishi mumkin
-    if (patient.state?.startsWith('clab:add:')) {
+    if (patient.state?.startsWith('clab:add:') || patient.state?.startsWith('clab:edit:')) {
       const handledLabMedia = await handleCoordLabMedia(supabase, patient, admin, chatId, msg, lovableKey, telegramKey);
       if (handledLabMedia) return;
     }
