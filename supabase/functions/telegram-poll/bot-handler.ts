@@ -863,7 +863,7 @@ export async function handleUpdate(
     const admin = await isAdmin(supabase, patient.telegram_id);
 
     // Koordinator lab media (xray/scanner/note bosqichlari) — admin emas ham bo'lishi mumkin
-    if (patient.state?.startsWith('clab:add:')) {
+    if (patient.state?.startsWith('clab:add:') || patient.state?.startsWith('clab:edit:')) {
       const handledLabMedia = await handleCoordLabMedia(supabase, patient, admin, chatId, msg, lovableKey, telegramKey);
       if (handledLabMedia) return;
     }
@@ -962,8 +962,8 @@ export async function handleUpdate(
     return;
   }
 
-  // Koordinator lab qo'shish state'lari (matn qadamlari)
-  if (patient.state?.startsWith('clab:add:')) {
+  // Koordinator lab qo'shish/tahrirlash state'lari (matn qadamlari)
+  if (patient.state?.startsWith('clab:add:') || patient.state?.startsWith('clab:edit:')) {
     const handledCLab = await handleCoordLabStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     if (handledCLab) return;
   }
