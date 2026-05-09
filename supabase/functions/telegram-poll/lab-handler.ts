@@ -535,6 +535,29 @@ async function notifyAllLabWorkers(
   }
 }
 
+async function notifyAllCoordinators(
+  supabase: any,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const { data: coords } = await supabase
+    .from('staff')
+    .select('telegram_id')
+    .eq('position', 'koordinator')
+    .eq('is_active', true);
+  const seen = new Set<number>();
+  for (const c of (coords ?? [])) {
+    if (!c.telegram_id || seen.has(c.telegram_id)) continue;
+    seen.add(c.telegram_id);
+    try {
+      await sendMessage(c.telegram_id, text, {}, lovableKey, telegramKey);
+    } catch (e) {
+      console.error('notifyAllCoordinators failed', e);
+    }
+  }
+}
+
 // ===========================================================
 // ============= KOORDINATOR LAB BO'LIMI =====================
 // ===========================================================
