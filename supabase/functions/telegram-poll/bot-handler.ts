@@ -962,8 +962,8 @@ export async function handleUpdate(
     return;
   }
 
-  // Koordinator lab qo'shish state'lari (matn qadamlari)
-  if (patient.state?.startsWith('clab:add:')) {
+  // Koordinator lab qo'shish/tahrirlash state'lari (matn qadamlari)
+  if (patient.state?.startsWith('clab:add:') || patient.state?.startsWith('clab:edit:')) {
     const handledCLab = await handleCoordLabStep(supabase, patient, chatId, text, lovableKey, telegramKey);
     if (handledCLab) return;
   }
