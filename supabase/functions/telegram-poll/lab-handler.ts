@@ -1078,14 +1078,14 @@ export async function handleCoordLabMedia(
   const sd = (patient.state_data as any) ?? {};
 
   let kind: 'xray3d' | 'scanner' | 'note' | null = null;
+  let isEdit = false;
   if (state === 'clab:add:xray') kind = 'xray3d';
   else if (state === 'clab:add:scanner') kind = 'scanner';
   else if (state === 'clab:add:notes:text') kind = 'note';
+  else if (state === 'clab:edit:xray') { kind = 'xray3d'; isEdit = true; }
+  else if (state === 'clab:edit:scanner') { kind = 'scanner'; isEdit = true; }
   if (!kind) return false;
 
-  // Mediani saqlash uchun upload qiluvchi sifatida adminni yoki koordinatorni ishlatamiz.
-  // Bizning saveAdminMedia admin obyektini talab qiladi — koordinator uchun "soxta" admin obyekti yaratish kerak.
-  // Eng oson yo'l: media_library ga to'g'ridan-to'g'ri yozamiz.
   const media = extractMediaFromMessage(msg);
   if (!media) return false;
   const { data: inserted } = await supabase
@@ -1110,6 +1110,19 @@ export async function handleCoordLabMedia(
 
   if (!inserted) {
     await sendMessage(chatId, '⚠️ ' + (lang === 'uz' ? 'Saqlab bo\'lmadi.' : 'Не удалось сохранить.'), {}, lovableKey, telegramKey);
+    return true;
+  }
+
+  if (isEdit) {
+    const ids: string[] = sd.media_ids ?? [];
+    ids.push(inserted.id);
+    sd.media_ids = ids;
+    await setState(supabase, patient.id, state, sd);
+    await sendMessage(
+      chatId,
+      `${t.labFileSaved[lang]} (${ids.length})\n\n` + (lang === 'uz' ? 'Yana fayl yuborishingiz mumkin yoki <b>/done</b> orqali yakunlang.' : 'Можете отправить ещё или завершите через <b>/done</b>.'),
+      {}, lovableKey, telegramKey,
+    );
     return true;
   }
 
