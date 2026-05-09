@@ -393,16 +393,11 @@ async function markLabOrderReady(
     return;
   }
   await sendMessage(chatId, t.labReadyDoneMsg[lang], {}, lovableKey, telegramKey);
-  await notifyCoordinator(
-    supabase,
-    updated.created_by_telegram_id,
-    t.labNotifyDoneToCoord[lang]
-      .replace('{patient}', escapeHtml(updated.patient_full_name))
-      .replace('{appliance}', escapeHtml(updated.appliance_name))
-      .replace('{worker}', escapeHtml(worker?.full_name ?? '—')),
-    lovableKey,
-    telegramKey,
-  );
+  const doneText = t.labNotifyDoneToCoord[lang]
+    .replace('{patient}', escapeHtml(updated.patient_full_name))
+    .replace('{appliance}', escapeHtml(updated.appliance_name))
+    .replace('{worker}', escapeHtml(worker?.full_name ?? '—'));
+  await notifyAllCoordinators(supabase, doneText, lovableKey, telegramKey);
   await notifyAdminsLab(
     supabase,
     `🎉 <b>Apparat tayyor!</b>\n👤 ${escapeHtml(updated.patient_full_name)}\n🦷 ${escapeHtml(updated.appliance_name)}\n🧑‍🔧 ${escapeHtml(worker?.full_name ?? '—')}`,
@@ -536,6 +531,29 @@ async function notifyAllLabWorkers(
       await sendMessage(w.telegram_id, text, {}, lovableKey, telegramKey);
     } catch (e) {
       console.error('notifyAllLabWorkers failed', e);
+    }
+  }
+}
+
+async function notifyAllCoordinators(
+  supabase: any,
+  text: string,
+  lovableKey: string,
+  telegramKey: string,
+) {
+  const { data: coords } = await supabase
+    .from('staff')
+    .select('telegram_id')
+    .eq('position', 'koordinator')
+    .eq('is_active', true);
+  const seen = new Set<number>();
+  for (const c of (coords ?? [])) {
+    if (!c.telegram_id || seen.has(c.telegram_id)) continue;
+    seen.add(c.telegram_id);
+    try {
+      await sendMessage(c.telegram_id, text, {}, lovableKey, telegramKey);
+    } catch (e) {
+      console.error('notifyAllCoordinators failed', e);
     }
   }
 }
