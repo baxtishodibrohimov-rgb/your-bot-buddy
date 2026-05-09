@@ -393,16 +393,11 @@ async function markLabOrderReady(
     return;
   }
   await sendMessage(chatId, t.labReadyDoneMsg[lang], {}, lovableKey, telegramKey);
-  await notifyCoordinator(
-    supabase,
-    updated.created_by_telegram_id,
-    t.labNotifyDoneToCoord[lang]
-      .replace('{patient}', escapeHtml(updated.patient_full_name))
-      .replace('{appliance}', escapeHtml(updated.appliance_name))
-      .replace('{worker}', escapeHtml(worker?.full_name ?? '—')),
-    lovableKey,
-    telegramKey,
-  );
+  const doneText = t.labNotifyDoneToCoord[lang]
+    .replace('{patient}', escapeHtml(updated.patient_full_name))
+    .replace('{appliance}', escapeHtml(updated.appliance_name))
+    .replace('{worker}', escapeHtml(worker?.full_name ?? '—'));
+  await notifyAllCoordinators(supabase, doneText, lovableKey, telegramKey);
   await notifyAdminsLab(
     supabase,
     `🎉 <b>Apparat tayyor!</b>\n👤 ${escapeHtml(updated.patient_full_name)}\n🦷 ${escapeHtml(updated.appliance_name)}\n🧑‍🔧 ${escapeHtml(worker?.full_name ?? '—')}`,
