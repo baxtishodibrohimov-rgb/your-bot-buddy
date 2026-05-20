@@ -1,4 +1,4 @@
-// Telegram bot polling - har daqiqada chaqiriladi
+// Telegram bot - webhook (tezkor) + polling (zaxira) ikkala rejimda ishlaydi
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { handleUpdate } from './bot-handler.ts';
 
@@ -8,13 +8,73 @@ const MIN_REMAINING_MS = 5_000;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-telegram-bot-api-secret-token',
 };
+
+async function deriveTelegramSecret(telegramApiKey: string): Promise<string> {
+  const data = new TextEncoder().encode(`telegram-webhook:${telegramApiKey}`);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  const b64 = btoa(String.fromCharCode(...new Uint8Array(hash)));
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // ============ WEBHOOK REJIMI ============
+  // Telegram secret_token header yuborgan bo'lsa - bu webhook chaqiruvi
+  const webhookSecret = req.headers.get('x-telegram-bot-api-secret-token');
+  if (webhookSecret) {
+    try {
+      const TELEGRAM_API_KEY = Deno.env.get('TELEGRAM_API_KEY')!;
+      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')!;
+      const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+      const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+      const expected = await deriveTelegramSecret(TELEGRAM_API_KEY);
+      if (webhookSecret !== expected) {
+        return new Response('Unauthorized', { status: 401, headers: corsHeaders });
+      }
+
+      const update = await req.json();
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+      // Debug uchun saqlash
+      if (typeof update.update_id === 'number') {
+        const chatId = update.message?.chat?.id ?? update.callback_query?.message?.chat?.id ?? 0;
+        const text = update.message?.text ?? update.callback_query?.data ?? null;
+        await supabase
+          .from('telegram_messages')
+          .upsert([{ update_id: update.update_id, chat_id: chatId, text, raw_update: update }], {
+            onConflict: 'update_id',
+          })
+          .then(() => {})
+          .catch((e) => console.error('upsert err', e));
+      }
+
+      // Asosiy handler
+      try {
+        await handleUpdate(update, supabase, LOVABLE_API_KEY, TELEGRAM_API_KEY);
+      } catch (err) {
+        console.error('handleUpdate error', err, JSON.stringify(update));
+      }
+
+      // Doim 200 qaytaramiz (aks holda Telegram retry qiladi)
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      console.error('webhook error', error);
+      return new Response(JSON.stringify({ ok: false }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  }
+
+  // ============ POLLING REJIMI (zaxira) ============
 
   try {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
