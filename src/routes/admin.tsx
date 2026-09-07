@@ -30,6 +30,9 @@ import {
   Wrench,
   LogOut,
   Image as ImageIcon,
+  ClipboardList,
+  BellRing,
+  SlidersHorizontal,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -52,6 +55,13 @@ const nav: NavGroup[] = [
     { to: "/admin/staff", label: "Xodimlar", icon: UserCog },
     { to: "/admin/checklists", label: "Checklistlar", icon: ClipboardCheck },
   ]},
+  { group: "Treatment Plan", items: [
+    { to: "/admin/tp", label: "Dashboard", icon: ClipboardList, exact: true },
+    { to: "/admin/tp/staff", label: "Planner/Doctor rollari", icon: UserCog },
+    { to: "/admin/tp/image-types", label: "Rasm turlari", icon: ImageIcon },
+    { to: "/admin/tp/reminders", label: "Eslatmalar", icon: BellRing },
+    { to: "/admin/tp/settings", label: "Sozlamalar", icon: SlidersHorizontal },
+  ]},
   { group: "Laboratoriya", items: [
     { to: "/admin/lab-orders", label: "Buyurtmalar", icon: FlaskConical },
     { to: "/admin/lab-workers", label: "Lab xodimlari", icon: Wrench },
@@ -70,23 +80,39 @@ const nav: NavGroup[] = [
 ];
 
 function AdminLayout() {
-  const { session, isAdmin, loading, signOut, user } = useAuth();
+  const { session, isAdmin, tpRoles, loading, signOut, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const hasAccess = isAdmin || tpRoles.length > 0;
 
   React.useEffect(() => {
-    if (!loading && (!session || !isAdmin)) {
+    if (!loading && (!session || !hasAccess)) {
       navigate({ to: "/auth" });
+      return;
     }
-  }, [loading, session, isAdmin, navigate]);
+    // Non-admin tp staff have no use for the general clinic dashboard —
+    // send them straight to the module they actually have access to.
+    if (!loading && hasAccess && !isAdmin && location.pathname === "/admin") {
+      navigate({ to: "/admin/tp" });
+    }
+  }, [loading, session, hasAccess, isAdmin, location.pathname, navigate]);
 
-  if (loading || !session || !isAdmin) {
+  if (loading || !session || !hasAccess) {
     return (
       <div className="flex min-h-screen items-center justify-center text-muted-foreground">
         Yuklanmoqda...
       </div>
     );
   }
+
+  // Non-admin Treatment Plan staff (planner/doctor/consultant) only see the
+  // case dashboard — configuration (roles, image types, reminders, settings)
+  // stays admin-only, both in the UI and enforced server-side by RLS.
+  const visibleNav = isAdmin
+    ? nav
+    : nav
+        .filter((g) => g.group === "Treatment Plan")
+        .map((g) => ({ ...g, items: g.items.filter((item) => item.exact) }));
 
   return (
     <SidebarProvider>
@@ -96,7 +122,7 @@ function AdminLayout() {
             <div className="px-2 py-1 text-sm font-semibold">Biodent Admin</div>
           </SidebarHeader>
           <SidebarContent>
-            {nav.map((g) => (
+            {visibleNav.map((g) => (
               <SidebarGroup key={g.group}>
                 <SidebarGroupLabel>{g.group}</SidebarGroupLabel>
                 <SidebarGroupContent>

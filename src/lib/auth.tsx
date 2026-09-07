@@ -6,6 +6,10 @@ interface AuthContextValue {
   session: Session | null;
   user: User | null;
   isAdmin: boolean;
+  /** True if the user is a `staff` row (linked via staff.user_id) holding at
+   * least one Treatment Plan role (planner/doctor/consultant). Admins also
+   * get full access regardless of this flag. */
+  tpRoles: string[];
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string) => Promise<{ error: string | null }>;
@@ -17,19 +21,25 @@ const AuthContext = React.createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = React.useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = React.useState(false);
+  const [tpRoles, setTpRoles] = React.useState<string[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   const checkAdmin = React.useCallback(async (uid: string | undefined) => {
     if (!uid) {
       setIsAdmin(false);
+      setTpRoles([]);
       return;
     }
-    const { data } = await supabase
-      .from("admins")
-      .select("id")
-      .eq("user_id", uid)
-      .maybeSingle();
-    setIsAdmin(!!data);
+    const [{ data: admin }, { data: staff }] = await Promise.all([
+      supabase.from("admins").select("id").eq("user_id", uid).maybeSingle(),
+      (supabase.from("staff" as any) as any)
+        .select("id, tp_staff_roles:tp_staff_roles(role)")
+        .eq("user_id", uid)
+        .eq("is_active", true)
+        .maybeSingle(),
+    ]);
+    setIsAdmin(!!admin);
+    setTpRoles(((staff as any)?.tp_staff_roles ?? []).map((r: any) => r.role));
   }, []);
 
   React.useEffect(() => {
@@ -68,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ session, user: session?.user ?? null, isAdmin, loading, signIn, signUp, signOut }}
+      value={{ session, user: session?.user ?? null, isAdmin, tpRoles, loading, signIn, signUp, signOut }}
     >
       {children}
     </AuthContext.Provider>

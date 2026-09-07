@@ -27,6 +27,12 @@ import { Route as AdminChecklistsRouteImport } from './routes/admin.checklists'
 import { Route as AdminBroadcastsRouteImport } from './routes/admin.broadcasts'
 import { Route as AdminAppointmentsRouteImport } from './routes/admin.appointments'
 import { Route as AdminAdminsRouteImport } from './routes/admin.admins'
+import { Route as AdminTpSettingsRouteImport } from './routes/admin.tp.settings'
+import { Route as AdminTpRemindersRouteImport } from './routes/admin.tp.reminders'
+import { Route as AdminTpImageTypesRouteImport } from './routes/admin.tp.image-types'
+import { Route as AdminTpStaffRouteImport } from './routes/admin.tp.staff'
+import { Route as AdminTpRouteImport } from './routes/admin.tp'
+import { Route as AdminTpCasesCaseIdRouteImport } from './routes/admin.tp.cases.$caseId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -118,6 +124,36 @@ const AdminAdminsRoute = AdminAdminsRouteImport.update({
   path: '/admins',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminTpRoute = AdminTpRouteImport.update({
+  id: '/tp',
+  path: '/tp',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTpStaffRoute = AdminTpStaffRouteImport.update({
+  id: '/tp/staff',
+  path: '/tp/staff',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTpImageTypesRoute = AdminTpImageTypesRouteImport.update({
+  id: '/tp/image-types',
+  path: '/tp/image-types',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTpRemindersRoute = AdminTpRemindersRouteImport.update({
+  id: '/tp/reminders',
+  path: '/tp/reminders',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTpSettingsRoute = AdminTpSettingsRouteImport.update({
+  id: '/tp/settings',
+  path: '/tp/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTpCasesCaseIdRoute = AdminTpCasesCaseIdRouteImport.update({
+  id: '/tp/cases/$caseId',
+  path: '/tp/cases/$caseId',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -137,6 +173,12 @@ export interface FileRoutesByFullPath {
   '/admin/residents': typeof AdminResidentsRoute
   '/admin/services': typeof AdminServicesRoute
   '/admin/staff': typeof AdminStaffRoute
+  '/admin/tp': typeof AdminTpRoute
+  '/admin/tp/staff': typeof AdminTpStaffRoute
+  '/admin/tp/image-types': typeof AdminTpImageTypesRoute
+  '/admin/tp/reminders': typeof AdminTpRemindersRoute
+  '/admin/tp/settings': typeof AdminTpSettingsRoute
+  '/admin/tp/cases/$caseId': typeof AdminTpCasesCaseIdRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -156,6 +198,12 @@ export interface FileRoutesByTo {
   '/admin/residents': typeof AdminResidentsRoute
   '/admin/services': typeof AdminServicesRoute
   '/admin/staff': typeof AdminStaffRoute
+  '/admin/tp': typeof AdminTpRoute
+  '/admin/tp/staff': typeof AdminTpStaffRoute
+  '/admin/tp/image-types': typeof AdminTpImageTypesRoute
+  '/admin/tp/reminders': typeof AdminTpRemindersRoute
+  '/admin/tp/settings': typeof AdminTpSettingsRoute
+  '/admin/tp/cases/$caseId': typeof AdminTpCasesCaseIdRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -177,6 +225,12 @@ export interface FileRoutesById {
   '/admin/residents': typeof AdminResidentsRoute
   '/admin/services': typeof AdminServicesRoute
   '/admin/staff': typeof AdminStaffRoute
+  '/admin/tp': typeof AdminTpRoute
+  '/admin/tp/staff': typeof AdminTpStaffRoute
+  '/admin/tp/image-types': typeof AdminTpImageTypesRoute
+  '/admin/tp/reminders': typeof AdminTpRemindersRoute
+  '/admin/tp/settings': typeof AdminTpSettingsRoute
+  '/admin/tp/cases/$caseId': typeof AdminTpCasesCaseIdRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -199,6 +253,12 @@ export interface FileRouteTypes {
     | '/admin/residents'
     | '/admin/services'
     | '/admin/staff'
+    | '/admin/tp'
+    | '/admin/tp/staff'
+    | '/admin/tp/image-types'
+    | '/admin/tp/reminders'
+    | '/admin/tp/settings'
+    | '/admin/tp/cases/$caseId'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -218,6 +278,12 @@ export interface FileRouteTypes {
     | '/admin/residents'
     | '/admin/services'
     | '/admin/staff'
+    | '/admin/tp'
+    | '/admin/tp/staff'
+    | '/admin/tp/image-types'
+    | '/admin/tp/reminders'
+    | '/admin/tp/settings'
+    | '/admin/tp/cases/$caseId'
     | '/admin'
   id:
     | '__root__'
@@ -238,6 +304,12 @@ export interface FileRouteTypes {
     | '/admin/residents'
     | '/admin/services'
     | '/admin/staff'
+    | '/admin/tp'
+    | '/admin/tp/staff'
+    | '/admin/tp/image-types'
+    | '/admin/tp/reminders'
+    | '/admin/tp/settings'
+    | '/admin/tp/cases/$caseId'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -375,6 +447,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/tp': {
+      id: '/admin/tp'
+      path: '/tp'
+      fullPath: '/admin/tp'
+      preLoaderRoute: typeof AdminTpRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/tp/staff': {
+      id: '/admin/tp/staff'
+      path: '/tp/staff'
+      fullPath: '/admin/tp/staff'
+      preLoaderRoute: typeof AdminTpStaffRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/tp/image-types': {
+      id: '/admin/tp/image-types'
+      path: '/tp/image-types'
+      fullPath: '/admin/tp/image-types'
+      preLoaderRoute: typeof AdminTpImageTypesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/tp/reminders': {
+      id: '/admin/tp/reminders'
+      path: '/tp/reminders'
+      fullPath: '/admin/tp/reminders'
+      preLoaderRoute: typeof AdminTpRemindersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/tp/settings': {
+      id: '/admin/tp/settings'
+      path: '/tp/settings'
+      fullPath: '/admin/tp/settings'
+      preLoaderRoute: typeof AdminTpSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/tp/cases/$caseId': {
+      id: '/admin/tp/cases/$caseId'
+      path: '/tp/cases/$caseId'
+      fullPath: '/admin/tp/cases/$caseId'
+      preLoaderRoute: typeof AdminTpCasesCaseIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
@@ -393,6 +507,12 @@ interface AdminRouteChildren {
   AdminResidentsRoute: typeof AdminResidentsRoute
   AdminServicesRoute: typeof AdminServicesRoute
   AdminStaffRoute: typeof AdminStaffRoute
+  AdminTpRoute: typeof AdminTpRoute
+  AdminTpStaffRoute: typeof AdminTpStaffRoute
+  AdminTpImageTypesRoute: typeof AdminTpImageTypesRoute
+  AdminTpRemindersRoute: typeof AdminTpRemindersRoute
+  AdminTpSettingsRoute: typeof AdminTpSettingsRoute
+  AdminTpCasesCaseIdRoute: typeof AdminTpCasesCaseIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -411,6 +531,12 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminResidentsRoute: AdminResidentsRoute,
   AdminServicesRoute: AdminServicesRoute,
   AdminStaffRoute: AdminStaffRoute,
+  AdminTpRoute: AdminTpRoute,
+  AdminTpStaffRoute: AdminTpStaffRoute,
+  AdminTpImageTypesRoute: AdminTpImageTypesRoute,
+  AdminTpRemindersRoute: AdminTpRemindersRoute,
+  AdminTpSettingsRoute: AdminTpSettingsRoute,
+  AdminTpCasesCaseIdRoute: AdminTpCasesCaseIdRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
