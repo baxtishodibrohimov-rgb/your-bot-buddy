@@ -86,12 +86,30 @@ flip to `status = sent` and the Telegram user gets the message with a
 `/admin/tp/reminders` lets you change the 24h/12h/6h/2h offsets without a
 deploy.
 
-**Phases 5–12** are not built yet — `/admin/tp/cases/$id` shows exactly what
-exists today (patient info, image gallery with required/missing badges,
-progress %, assignment, Master Problem List placeholder, audit log) and a
-disabled "TAHLILNI BOSHLASH" button explaining the wizard lands in Phase 5.
-See **ARCHITECTURE.md → Phase plan** for what's schema-ready vs. still
-needed for each.
+**Phase 5 — manual case entry, bulut image upload, Clinical Analysis Wizard.**
+- `/admin/tp` has a "Yangi bemor qo'shish" button to open a case by hand
+  (bypassing Cliniccards) via the `tp_create_manual_case` RPC — same
+  state machine, deadline and audit-log path as a synced case, distinguished
+  only by a `MANUAL-...` cliniccards id and an audit-log `source: "manual"`.
+- The case page's "Hammasini yuklash" button uploads files to Supabase
+  Storage (`tp-clinical-images` bucket) and drops them in the case's
+  **bulut** (pool) — `image_type_id = NULL` — since there's still no image
+  classifier (see the standing "don't invent it" rule). Each required-image
+  slot has a **+** (upload straight into that slot) and a **☁️** (pick from
+  the bulut) control; assigning a pool image into an already-filled slot
+  returns the previous occupant to the bulut instead of deleting it
+  (`tp_assign_pool_image` RPC).
+- "TAHLILNI BOSHLASH" opens `/admin/tp/cases/$id/analysis`: the seeded
+  `tp_analysis_templates` questions grouped under each assigned photo, and
+  an interactive FDI dental chart (`src/components/dental-chart.tsx`) with a
+  per-case "Sut tish / Doimiy tish" default plus per-tooth mixed-dentition
+  override (double-click). **The seeded question wording is a best-effort
+  reconstruction**, not a verbatim transcript of the clinic's own dictation
+  (that text wasn't available when this was built) — review/correct it
+  directly in `tp_analysis_templates` before relying on it clinically.
+
+**Phases 6–12** are not built yet. See **ARCHITECTURE.md → Phase plan** for
+what's schema-ready vs. still needed for each.
 
 ## Project structure (new module only)
 

@@ -1,10 +1,22 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import * as React from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { UserPlus } from "lucide-react";
 import { formatDistanceToNowStrict, isPast } from "date-fns";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/tp")({
   component: TreatmentPlanDashboard,
@@ -60,6 +72,105 @@ async function loadCases() {
   }));
 }
 
+function toLocalDatetimeInputValue(d: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function ManualCaseDialog() {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [open, setOpen] = React.useState(false);
+  const [fullName, setFullName] = React.useState("");
+  const [birthDate, setBirthDate] = React.useState("");
+  const [phone, setPhone] = React.useState("");
+  const [doctorName, setDoctorName] = React.useState("");
+  const [consultationAt, setConsultationAt] = React.useState(() => toLocalDatetimeInputValue(new Date()));
+  const [priority, setPriority] = React.useState("normal");
+
+  const create = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc("tp_create_manual_case" as any, {
+        p_full_name: fullName,
+        p_birth_date: birthDate || null,
+        p_phone: phone || null,
+        p_doctor_name: doctorName || null,
+        p_consultation_datetime: new Date(consultationAt).toISOString(),
+        p_priority: priority,
+      });
+      if (error) throw error;
+      return data as string;
+    },
+    onSuccess: (caseId: string) => {
+      toast.success("Bemor va case qo'lda qo'shildi");
+      qc.invalidateQueries({ queryKey: ["tp-cases-dashboard"] });
+      setOpen(false);
+      setFullName(""); setBirthDate(""); setPhone(""); setDoctorName("");
+      navigate({ to: "/admin/tp/cases/$caseId", params: { caseId } });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm"><UserPlus className="h-4 w-4 mr-1" /> Yangi bemor qo'shish</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Bemorni qo'lda qo'shish</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <Label>F.I.SH *</Label>
+            <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Bemor ismi familiyasi" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label>Tug'ilgan sana</Label>
+              <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label>Telefon</Label>
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+998..." />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label>Doktor</Label>
+            <Input value={doctorName} onChange={(e) => setDoctorName(e.target.value)} placeholder="Dr. ..." />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label>2-konsultatsiya vaqti *</Label>
+              <Input type="datetime-local" value={consultationAt} onChange={(e) => setConsultationAt(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label>Priority</Label>
+              <Select value={priority} onValueChange={setPriority}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            disabled={!fullName.trim() || !consultationAt || create.isPending}
+            onClick={() => create.mutate()}
+          >
+            Case yaratish
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function timeLeftLabel(consultationAt: string | null) {
   if (!consultationAt) return "—";
   const d = new Date(consultationAt);
@@ -100,9 +211,12 @@ function TreatmentPlanDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Treatment Planning Dashboard</h1>
-        <p className="text-sm text-muted-foreground">2-konsultatsiyaga tayyorgarlik holati</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Treatment Planning Dashboard</h1>
+          <p className="text-sm text-muted-foreground">2-konsultatsiyaga tayyorgarlik holati</p>
+        </div>
+        <ManualCaseDialog />
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
