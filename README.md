@@ -99,14 +99,20 @@ deploy.
   the bulut) control; assigning a pool image into an already-filled slot
   returns the previous occupant to the bulut instead of deleting it
   (`tp_assign_pool_image` RPC).
-- "TAHLILNI BOSHLASH" opens `/admin/tp/cases/$id/analysis`: the seeded
-  `tp_analysis_templates` questions grouped under each assigned photo, and
-  an interactive FDI dental chart (`src/components/dental-chart.tsx`) with a
-  per-case "Sut tish / Doimiy tish" default plus per-tooth mixed-dentition
-  override (double-click). **The seeded question wording is a best-effort
-  reconstruction**, not a verbatim transcript of the clinic's own dictation
-  (that text wasn't available when this was built) — review/correct it
-  directly in `tp_analysis_templates` before relying on it clinically.
+- "TAHLILNI BOSHLASH" opens `/admin/tp/cases/$id/analysis`: a one-photo-at-a-
+  time wizard that walks the clinic's confirmed 13-step capture order
+  (intraoral frontal → right buccal → left buccal → overjet → upper/lower
+  occlusal → frontal closed-mouth/"M"/smile → 45° smile → profile 90°
+  rest/"M"/smile — see `WIZARD_ORDER` in
+  `admin.tp.cases.$caseId.analysis.tsx`), with Keyingisi/Orqaga navigation
+  and numbered step pills to jump back and re-edit any earlier photo. The
+  interactive FDI dental chart (`src/components/dental-chart.tsx`, per-case
+  "Sut tish / Doimiy tish" default + per-tooth mixed-dentition override on
+  double-click) is shown under the lower-occlusal step. **The seeded
+  question wording is a best-effort reconstruction**, not a verbatim
+  transcript of the clinic's own dictation (that text wasn't available when
+  this was built) — review/correct it directly in `tp_analysis_templates`
+  before relying on it clinically.
 
 **Phases 6–12** are not built yet. See **ARCHITECTURE.md → Phase plan** for
 what's schema-ready vs. still needed for each.
