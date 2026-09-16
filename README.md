@@ -113,7 +113,19 @@ deploy.
   questions in `tp_analysis_templates` are the clinic's own confirmed
   wording (given directly, per step) — no invented clinical content.
 
-**Phases 6–12** are not built yet. See **ARCHITECTURE.md → Phase plan** for
+**Phase 7 — Master Problem List auto-generation.** Every wizard answer is
+now checked against a `tp_finding_description()` rule (confirmed
+answer-by-answer with the clinic — see the comment at the top of
+`20260916130000_tp_phase7_findings_autogeneration.sql`) via a trigger on
+`tp_analysis_answers`; a non-baseline choice or a non-empty free-text answer
+inserts/updates a row in `tp_findings`, tied back to its answer via
+`source_answer_id` so it disappears again if the answer is edited back to
+normal or deleted. The one exception, "Profil turi" (Protrusion/Retrusion),
+has no normal baseline to compare against, so it's intentionally left
+without a rule. The two mandible-symmetry questions (choice + free-text
+side note) combine into a single finding.
+
+**Phases 6, 8–12** are not built yet. See **ARCHITECTURE.md → Phase plan** for
 what's schema-ready vs. still needed for each.
 
 ## Project structure (new module only)

@@ -355,7 +355,8 @@ function CaseDetail() {
         <CardContent>
           {findings.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Hali muammolar aniqlanmagan — Clinical Analysis Wizard (Phase 5-7) orqali to'ldiriladi.
+              Hali muammolar aniqlanmagan — Clinical Analysis Wizard'da savollarga javob berilganda
+              avtomatik to'ldiriladi.
             </p>
           ) : (
             <ul className="space-y-2 text-sm">
