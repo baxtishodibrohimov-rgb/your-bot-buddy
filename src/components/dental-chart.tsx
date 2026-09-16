@@ -66,10 +66,23 @@ function effectiveState(toothCode: string, defaultDentition: string, statusRow: 
   return { missing, dentition, displayCode, canToggleDentition: position <= 5 };
 }
 
-const UPPER_LEFT_TO_RIGHT = ["18", "17", "16", "15", "14", "13", "12", "11", "21", "22", "23", "24", "25", "26", "27", "28"];
-const LOWER_LEFT_TO_RIGHT = ["48", "47", "46", "45", "44", "43", "42", "41", "31", "32", "33", "34", "35", "36", "37", "38"];
+// Each row is patient's-right-quadrant then patient's-left-quadrant, so the
+// gap between the two halves marks the midline (matches "o'ng va chap
+// kvadrat" being visually distinguishable within one jaw's row).
+const UPPER_RIGHT_QUADRANT = ["18", "17", "16", "15", "14", "13", "12", "11"];
+const UPPER_LEFT_QUADRANT = ["21", "22", "23", "24", "25", "26", "27", "28"];
+const LOWER_RIGHT_QUADRANT = ["48", "47", "46", "45", "44", "43", "42", "41"];
+const LOWER_LEFT_QUADRANT = ["31", "32", "33", "34", "35", "36", "37", "38"];
 
-export function DentalChart({ caseId }: { caseId: string }) {
+export function DentalChart({
+  caseId,
+  jaw = "both",
+  showDentitionToggle = true,
+}: {
+  caseId: string;
+  jaw?: "upper" | "lower" | "both";
+  showDentitionToggle?: boolean;
+}) {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["tp-dental-chart", caseId], queryFn: () => loadChart(caseId) });
   const clickTimers = React.useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -129,29 +142,32 @@ export function DentalChart({ caseId }: { caseId: string }) {
     }
   }
 
-  function renderRow(codes: string[]) {
+  function renderTooth(code: string) {
+    const state = effectiveState(code, data!.chart.default_dentition, statusByCode.get(code));
     return (
-      <div className="flex gap-1 justify-center flex-wrap">
-        {codes.map((code) => {
-          const state = effectiveState(code, data!.chart.default_dentition, statusByCode.get(code));
-          return (
-            <button
-              key={code}
-              onClick={() => onToothClick(code)}
-              title={state.missing ? `${code} — yo'q` : `${state.displayCode}${state.dentition === "primary" ? " (sut tish)" : ""}`}
-              className={cn(
-                "h-9 w-9 rounded border text-xs font-medium flex items-center justify-center transition-colors",
-                state.missing
-                  ? "bg-muted text-muted-foreground line-through border-dashed"
-                  : state.dentition === "primary"
-                    ? "bg-amber-100 border-amber-400 hover:border-primary"
-                    : "bg-background hover:border-primary",
-              )}
-            >
-              {state.missing ? "×" : state.displayCode}
-            </button>
-          );
-        })}
+      <button
+        key={code}
+        onClick={() => onToothClick(code)}
+        title={state.missing ? `${code} — yo'q` : `${state.displayCode}${state.dentition === "primary" ? " (sut tish)" : ""}`}
+        className={cn(
+          "h-9 w-9 rounded border text-xs font-medium flex items-center justify-center transition-colors",
+          state.missing
+            ? "bg-muted text-muted-foreground line-through border-dashed"
+            : state.dentition === "primary"
+              ? "bg-amber-100 border-amber-400 hover:border-primary"
+              : "bg-background hover:border-primary",
+        )}
+      >
+        {state.missing ? "×" : state.displayCode}
+      </button>
+    );
+  }
+
+  function renderRow(rightQuadrant: string[], leftQuadrant: string[]) {
+    return (
+      <div className="flex gap-3 justify-center flex-wrap">
+        <div className="flex gap-1">{rightQuadrant.map(renderTooth)}</div>
+        <div className="flex gap-1">{leftQuadrant.map(renderTooth)}</div>
       </div>
     );
   }
@@ -159,24 +175,26 @@ export function DentalChart({ caseId }: { caseId: string }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Standart holat:</span>
-          <Select value={data.chart.default_dentition} onValueChange={(v) => setDefaultDentition.mutate(v)}>
-            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="permanent">Doimiy tish</SelectItem>
-              <SelectItem value="primary">Sut tish</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {showDentitionToggle && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Standart holat:</span>
+            <Select value={data.chart.default_dentition} onValueChange={(v) => setDefaultDentition.mutate(v)}>
+              <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="permanent">Doimiy tish</SelectItem>
+                <SelectItem value="primary">Sut tish</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         <p className="text-xs text-muted-foreground">
           1 marta bosish = yo'q qilish/tiklash. 2 marta bosish (1-5 pozitsiya) = sut/doimiy tishni almashtirish.
         </p>
       </div>
       <div className="space-y-2 rounded-md border p-3">
-        {renderRow(UPPER_LEFT_TO_RIGHT)}
-        <div className="border-t my-2" />
-        {renderRow(LOWER_LEFT_TO_RIGHT)}
+        {jaw !== "lower" && renderRow(UPPER_RIGHT_QUADRANT, UPPER_LEFT_QUADRANT)}
+        {jaw === "both" && <div className="border-t my-2" />}
+        {jaw !== "upper" && renderRow(LOWER_RIGHT_QUADRANT, LOWER_LEFT_QUADRANT)}
       </div>
       <div className="flex gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-amber-100 border border-amber-400 inline-block" /> Sut tish</span>

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { DentalChart } from "@/components/dental-chart";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight, ImageOff } from "lucide-react";
@@ -39,9 +40,13 @@ const WIZARD_ORDER = [
 ];
 
 // The dental chart is one shared object per case (not a per-photo
-// question), shown right under the occlusal photo it was originally
-// dictated alongside — see dental-chart.tsx for the click mechanics.
-const DENTAL_CHART_AFTER_CODE = "intraoral_lower_occlusal";
+// question) — the upper/lower occlusal steps each show their own jaw's
+// half of it, per the clinic's spec. See dental-chart.tsx for the click
+// mechanics.
+const DENTAL_CHART_JAW_BY_CODE: Record<string, "upper" | "lower"> = {
+  intraoral_upper_occlusal: "upper",
+  intraoral_lower_occlusal: "lower",
+};
 
 async function loadWizard(caseId: string) {
   const [{ data: caseRow }, { data: imageTypes }, { data: templates }, { data: images }, { data: answers }] =
@@ -76,6 +81,20 @@ function StorageThumb({ img, alt }: { img: any; alt: string }) {
   const src = img.source === "upload" ? url : img.external_url;
   if (!src) return <div className="h-full w-full bg-muted" />;
   return <img src={src} alt={alt} className="h-full w-full object-contain" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />;
+}
+
+function TextAnswerField({ value, onCommit }: { value: string; onCommit: (v: string) => void }) {
+  const [draft, setDraft] = React.useState(value);
+  React.useEffect(() => setDraft(value), [value]);
+  return (
+    <Textarea
+      className="w-full md:w-96"
+      rows={2}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => { if (draft !== value) onCommit(draft); }}
+    />
+  );
 }
 
 function AnalysisWizard() {
@@ -199,6 +218,11 @@ function AnalysisWizard() {
                               ))}
                             </SelectContent>
                           </Select>
+                        ) : q.answer_type === "text" ? (
+                          <TextAnswerField
+                            value={currentValue}
+                            onCommit={(v) => saveAnswer.mutate({ templateId: q.id, existingId: existing?.id ?? null, value: v })}
+                          />
                         ) : (
                           <p className="text-xs text-muted-foreground">
                             "{q.answer_type}" turi hozircha bu wizardda qo'llab-quvvatlanmaydi.
@@ -214,10 +238,20 @@ function AnalysisWizard() {
         </CardContent>
       </Card>
 
-      {currentCode === DENTAL_CHART_AFTER_CODE && (
+      {DENTAL_CHART_JAW_BY_CODE[currentCode] && (
         <Card>
-          <CardHeader><CardTitle className="text-base">Tish jadvali (FDI)</CardTitle></CardHeader>
-          <CardContent><DentalChart caseId={caseId} /></CardContent>
+          <CardHeader>
+            <CardTitle className="text-base">
+              Tish jadvali (FDI) — {DENTAL_CHART_JAW_BY_CODE[currentCode] === "upper" ? "yuqori jag'" : "pastki jag'"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DentalChart
+              caseId={caseId}
+              jaw={DENTAL_CHART_JAW_BY_CODE[currentCode]}
+              showDentitionToggle={DENTAL_CHART_JAW_BY_CODE[currentCode] === "upper"}
+            />
+          </CardContent>
         </Card>
       )}
 

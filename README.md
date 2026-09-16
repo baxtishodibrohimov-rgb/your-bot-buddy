@@ -108,11 +108,10 @@ deploy.
   and numbered step pills to jump back and re-edit any earlier photo. The
   interactive FDI dental chart (`src/components/dental-chart.tsx`, per-case
   "Sut tish / Doimiy tish" default + per-tooth mixed-dentition override on
-  double-click) is shown under the lower-occlusal step. **The seeded
-  question wording is a best-effort reconstruction**, not a verbatim
-  transcript of the clinic's own dictation (that text wasn't available when
-  this was built) — review/correct it directly in `tp_analysis_templates`
-  before relying on it clinically.
+  double-click), split per jaw — shown at the upper-occlusal step for the
+  upper arch and the lower-occlusal step for the lower arch. The 22 seeded
+  questions in `tp_analysis_templates` are the clinic's own confirmed
+  wording (given directly, per step) — no invented clinical content.
 
 **Phases 6–12** are not built yet. See **ARCHITECTURE.md → Phase plan** for
 what's schema-ready vs. still needed for each.
